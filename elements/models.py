@@ -19,6 +19,8 @@ class StgDataElement(TranslatableModel):
     AGGREGATION_TYPE = ('Count','Sum','Average','Standard Deviation',
         'Variance', 'Min', 'max','None')
     dataelement_id = models.AutoField(primary_key=True)  # Field name made lowercase.
+    uuid = uuid = models.CharField(unique=False,max_length=36, blank=False, null=False,
+        default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')  # Field name made lowercase.
     code = models.CharField( unique=True, max_length=45,blank=True, null=False)
     translations = TranslatedFields(
         name = models.CharField(max_length=230, blank=False,null=False),  # Field name made lowercase.
@@ -53,6 +55,8 @@ class FactDataElement(models.Model):
     )
 
     fact_id = models.AutoField(primary_key=True)  # Field name made lowercase.
+    uuid = uuid = models.CharField(unique=False,max_length=36, blank=False, null=False,
+        default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')  # Field name made lowercase.
     dataelement = models.ForeignKey('StgDataElement', models.PROTECT,
         verbose_name = 'Data Element Name')  # Field name made lowercase.
     location = models.ForeignKey(StgLocation, models.PROTECT,verbose_name = 'Location',)  # Field name made lowercase.
@@ -159,6 +163,8 @@ class DataElementProxy(StgDataElement):
 
 class StgDataElementGroup(TranslatableModel):
     group_id = models.AutoField(primary_key=True)  # Field name made lowercase.
+    uuid = uuid = models.CharField(unique=False,max_length=36, blank=False, null=False,
+        default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')  # Field name made lowercase.
     translations = TranslatedFields(
         name = models.CharField(max_length=200, blank=False, null=False,
             verbose_name = 'Group Name'),  # Field
