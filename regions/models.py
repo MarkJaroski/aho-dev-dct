@@ -34,6 +34,16 @@ class StgLocationLevel(TranslatableModel):
     def __str__(self):
         return self.name #display only the level name
 
+    # The filter function need to be modified to work with django parler as follows:
+    def clean(self): # Don't allow end_period to be greater than the start_period.
+        if StgLocationLevel.objects.filter(
+            translations__name=self.name).count() and not self.locationlevel_id:
+            raise ValidationError({'name':_('Sorry! This location level exists')})
+
+    def save(self, *args, **kwargs):
+        super(StgLocationLevel, self).save(*args, **kwargs)
+
+
 class StgWorldbankIncomegroups(TranslatableModel):
     wb_income_groupid = models.AutoField(primary_key=True)  # Field name made lowercase.
     translations = TranslatedFields(
@@ -58,6 +68,15 @@ class StgWorldbankIncomegroups(TranslatableModel):
 
     def __str__(self):
         return self.name #display only the level name
+
+    # The filter function need to be modified to work with django parler as follows:
+    def clean(self): # Don't allow end_period to be greater than the start_period.
+        if StgWorldbankIncomegroups.objects.filter(
+            translations__name=self.name).count() and not self.wb_income_groupid:
+            raise ValidationError({'name':_('Sorry! This economic grouping exists')})
+
+    def save(self, *args, **kwargs):
+        super(StgWorldbankIncomegroups, self).save(*args, **kwargs)
 
 class StgEconomicZones(TranslatableModel):
     economiczone_id = models.AutoField(primary_key=True)  # Field name made lowercase.
@@ -84,12 +103,20 @@ class StgEconomicZones(TranslatableModel):
     def __str__(self):
         return self.name #display the data source name
 
+    # The filter function need to be modified to work with django parler as follows:
+    def clean(self): # Don't allow end_period to be greater than the start_period.
+        if StgEconomicZones.objects.filter(
+            translations__name=self.name).count() and not self.economiczone_id:
+            raise ValidationError({'name':_('Sorry! This economic block exists')})
+
+    def save(self, *args, **kwargs):
+        super(StgEconomicZones, self).save(*args, **kwargs)
 
 class StgSpecialcategorization(TranslatableModel):
     specialstates_id = models.AutoField(primary_key=True)  # Field name made lowercase.
     translations = TranslatedFields(
         name = models.CharField(max_length=230,blank=False, null=False,
-            verbose_name = 'Special State'),  # Field name made lowercase.
+            verbose_name = 'State Category'),  # Field name made lowercase.
         shortname = models.CharField(unique=True,max_length=50,blank=False,null=False,
             verbose_name = 'Short Name'),  # Field name made lowercase.
         description = models.TextField(blank=True, null=True)  # Field name made lowercase.
@@ -103,12 +130,22 @@ class StgSpecialcategorization(TranslatableModel):
     class Meta:
         managed = True
         db_table = 'stg_specialcategorization'
-        verbose_name = 'Special Categorization'
-        verbose_name_plural = 'Special Categorizations'
+        verbose_name = 'State Category'
+        verbose_name_plural = 'State Categories'
         ordering = ('code', )
 
     def __str__(self):
         return self.name #display only the level name
+
+    # The filter function need to be modified to work with django parler as follows:
+    def clean(self): # Don't allow end_period to be greater than the start_period.
+        if StgSpecialcategorization.objects.filter(
+            translations__name=self.name).count() and not self.specialstates_id:
+            raise ValidationError({'name':_('Sorry! This states categorization exists')})
+
+    def save(self, *args, **kwargs):
+        super(StgSpecialcategorization, self).save(*args, **kwargs)
+
 
 class StgLocation(TranslatableModel):
     location_id = models.AutoField(primary_key=True)  # Field name made lowercase.
@@ -119,21 +156,20 @@ class StgLocation(TranslatableModel):
     translations = TranslatedFields(
         name = models.CharField(max_length=230,blank=False, null=False,
             verbose_name = 'Location Name'),  # Field name made lowercase.
-        iso_alpha = models.CharField(unique=True, max_length=15, blank=False,
-            null=False,verbose_name = 'ISO Alpha Code'),  # Field name made lowercase.
-        iso_number = models.CharField(unique=True, max_length=15, blank=False,
-            verbose_name = 'ISO Numeric Code'),
         description = models.TextField(blank=True, null=True),
         latitude = models.FloatField(blank=True, null=True),
         longitude = models.FloatField(blank=True, null=True),
         cordinate = models.TextField(blank=True, null=True)
     )
+    iso_alpha = models.CharField(unique=True, max_length=15, blank=False,
+        null=False,verbose_name = 'Alpha Code')  # Field name made lowercase.
+    iso_number = models.CharField(unique=True, max_length=15, blank=False,
+        verbose_name = 'Numeric Code')
     code = models.CharField(unique=True, max_length=15, blank=True, null=False,
         verbose_name = 'Location Code')  # Field name made lowercase.
     parent = models.ForeignKey('self', models.PROTECT,blank=True, null=True,
         verbose_name = 'Parent Location',default=1,
         help_text="You are not allowed to edit this field because it is related to other records")  # Field name made lowercase.
-
     wb_income = models.ForeignKey('StgWorldbankIncomegroups', models.PROTECT,blank=False,
         null=False, verbose_name = 'WB Income Group', default='99')  # Field name made lowercase.
     zone = models.ForeignKey(StgEconomicZones, models.PROTECT, blank=False,
@@ -160,7 +196,7 @@ class StgLocation(TranslatableModel):
         if StgLocation.objects.filter(
             translations__name=self.name).count() and not self.location_id:
             raise ValidationError(
-                {'name':_('Location with the same name already exists')})
+                {'name':_('Location with the this name already exists')})
 
     def save(self, *args, **kwargs):
         super(StgLocation, self).save(*args, **kwargs)

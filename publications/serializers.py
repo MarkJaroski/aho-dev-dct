@@ -1,6 +1,5 @@
 from rest_framework.serializers import (
     ModelSerializer, ReadOnlyField)
-
 from publications.models import (StgResourceType,StgKnowledgeProduct,
     StgProductDomain)
 

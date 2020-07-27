@@ -7,6 +7,10 @@ from django.forms import TextInput,Textarea #for customizing textarea row and co
 from commoninfo.admin import OverideImportExport, OverideExport
 from .models import (StgCategoryParent,StgCategoryoption,StgMeasuremethod,
     StgValueDatatype,StgDatasource)
+from .resources import(DisaggregateCategoryExport,DataSourceExport,
+    DisaggregateOptionExport,MeasureTypeExport,DataTypeExport)
+from import_export.admin import (ImportExportModelAdmin,
+    ImportExportActionModelAdmin,)
 from django_admin_listfilter_dropdown.filters import (
     DropdownFilter, RelatedDropdownFilter, ChoiceDropdownFilter,
     RelatedOnlyDropdownFilter) #custom import
@@ -20,7 +24,7 @@ class DisaggregateCategoryAdmin(TranslatableAdmin,OverideExport):
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
     }
-    #resource_class = DisaggregateCategoryExport #for export only
+    resource_class = DisaggregateCategoryExport #for export only
     list_display=['name','code','shortname','description',]
     list_display_links = ('code', 'name',)
     search_fields = ('name', 'shortname','code',) #display search field
@@ -39,7 +43,7 @@ class DisaggregationAdmin(TranslatableAdmin,OverideExport):
                 'fields': ('description',),
             }),
         )
-    #resource_class = DisaggregateOptionExport #for export only
+    resource_class = DisaggregateOptionExport #for export only
     list_display=['name','code','shortname','description','category',]
     list_display_links = ('code', 'name',)
     search_fields = ('name',) #display search field
@@ -58,7 +62,7 @@ class DatatypeAdmin(TranslatableAdmin,OverideExport):
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
     }
-    #resource_class = DataTypeExport
+    resource_class = DataTypeExport
     list_display=['code','name','description',]
     list_display_links = ('code', 'name',)
     search_fields = ('name','code',) #display search field
@@ -81,7 +85,7 @@ class DatasourceAdmin(TranslatableAdmin,OverideExport):
                 'fields': ('description',),
             }),
         )
-    #resource_class = DataSourceExport #for export only
+    resource_class = DataSourceExport #for export only
     list_display=['name','shortname','code','description']
     list_display_links = ('code', 'name',)
     search_fields = ('code','name',) #display search field
@@ -97,7 +101,7 @@ class MeasuredAdmin(TranslatableAdmin,OverideExport):
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
     }
-    #resource_class = MeasureTypeExport
+    resource_class = MeasureTypeExport
     list_display=['code','name','measure_value','description',]
     list_display_links = ('code', 'name',)
     search_fields = ('name',) #display search field

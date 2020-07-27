@@ -3,16 +3,23 @@ from django import forms
 from django.conf import settings # allow import of projects settings at the root
 from django.forms import BaseInlineFormSet
 from parler.admin import TranslatableAdmin
+import data_wizard # Solution to data import madness that had refused to go
+from itertools import groupby #additional import for managing grouped dropdowm
+from indicators.serializers import FactDataIndicatorSerializer
+from django.forms.models import ModelChoiceField, ModelChoiceIterator
 from .models import (StgIndicatorReference,StgIndicator,StgIndicatorDomain,
-    FactDataIndicator,IndicatorProxy,)
+    FactDataIndicator,IndicatorProxy,AhoDoamain_Lookup,aho_factsindicator_archive,
+    StgNarrative_Type,StgAnalyticsNarrative,StgIndicatorNarrative)
 from django.forms import TextInput,Textarea # customize textarea row and column size
 from commoninfo.admin import OverideImportExport,OverideExport
+from .resources import (IndicatorResourceExport, IndicatorResourceImport,
+    AchivedIndicatorResourceExport,DomainResourceExport,IndicatorResourceExport)
 from django_admin_listfilter_dropdown.filters import (
     DropdownFilter, RelatedDropdownFilter, ChoiceDropdownFilter,
     RelatedOnlyDropdownFilter) #custom
 from commoninfo.fields import RoundingDecimalFormField # For fixing rounded decimal
 from regions.models import StgLocation,StgLocationLevel
-from home.models import ( StgDatasource,)
+from home.models import ( StgDatasource,StgCategoryoption)
 
 #The following 3 functions are used to register global actions performed on the data. See action listbox
 def transition_to_pending (modeladmin, request, queryset):
@@ -28,13 +35,57 @@ def transition_to_rejected (modeladmin, request, queryset):
 transition_to_rejected.short_description = "Mark selected as Rejected"
 
 
+class GroupedModelChoiceIterator(ModelChoiceIterator):
+    def __iter__(self):
+        if self.field.empty_label is not None:
+            yield (u"", self.field.empty_label)
+        if self.field.cache_choices:
+            if self.field.choice_cache is None:
+                self.field.choice_cache = [
+                    (self.field.group_label(group), [self.choice(ch) for ch in choices])
+                        for group,choices in groupby(self.queryset.all(),
+                            key=lambda row: getattr(row, self.field.group_by_field))
+                ]
+            for choice in self.field.choice_cache:
+                yield choice
+        else:
+            for group, choices in groupby(self.queryset.all(),
+	        key=lambda row: getattr(row, self.field.group_by_field)):
+                    yield (self.field.group_label(group),
+                        [self.choice(ch) for ch in choices])
+
+
+class GroupedModelChoiceField(ModelChoiceField):
+    def __init__(
+        self, group_by_field, group_label=None, cache_choices=False,
+        *args, **kwargs):
+        """
+        group_by_field is the name of a field on the model
+        group_label is a function to return a label for each choice group
+        """
+        super(GroupedModelChoiceField, self).__init__(*args, **kwargs)
+        self.group_by_field = group_by_field
+        self.cache_choices = cache_choices
+        if group_label is None:
+            self.group_label = lambda group: group
+        else:
+            self.group_label = group_label
+
+    def _get_choices(self):
+        """
+        Exactly as per ModelChoiceField except returns new iterator class
+        """
+        if hasattr(self, '_choices'):
+            return self._choices
+        return GroupedModelChoiceIterator(self)
+    choices = property(_get_choices, ModelChoiceField._set_choices)
+
+
 @admin.register(StgIndicatorReference)
 class IndicatorRefAdmin(TranslatableAdmin):
-
     def sort_data(self, request):
         language_code = settings.LANGUAGE_CODE
         StgIndicatorReference.objects.translated(language_code).order_by('translations__code')
-
     from django.db import models
     formfield_overrides = {
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
@@ -57,7 +108,7 @@ class IndicatorRefAdmin(TranslatableAdmin):
 
 
 @admin.register(StgIndicator)
-class IndicatorAdmin(TranslatableAdmin): #add export action to facilitate export od selected fields
+class IndicatorAdmin(TranslatableAdmin,OverideExport): #add export action to facilitate export od selected fields
     from django.db import models
     formfield_overrides = {
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
@@ -73,7 +124,7 @@ class IndicatorAdmin(TranslatableAdmin): #add export action to facilitate export
                 'preferred_datasources','measuremethod',),
             }),
         )
-#    resource_class = ResourceResourceExport
+    resource_class = IndicatorResourceExport
     list_display=['name','afrocode','shortname','measuremethod']
     list_display_links = ('afrocode', 'name',) #display as clickable link
     search_fields = ('name', 'afrocode') #display search field
@@ -88,7 +139,7 @@ class IndicatorAdmin(TranslatableAdmin): #add export action to facilitate export
 
 
 @admin.register(StgIndicatorDomain)
-class IndicatorDomainAdmin(TranslatableAdmin):
+class IndicatorDomainAdmin(TranslatableAdmin,OverideExport):
     from django.db import models
     formfield_overrides = {
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
@@ -103,7 +154,7 @@ class IndicatorDomainAdmin(TranslatableAdmin):
                 'fields': ('description','indicators'),
             }),
         )
-    # resource_class = DomainResourceExport
+    resource_class = DomainResourceExport
     list_display=['name','code','parent','level']
     list_display_links = ('code', 'name',)
     search_fields = ('name','shortname','code') #display search field
@@ -117,10 +168,11 @@ class IndicatorDomainAdmin(TranslatableAdmin):
     )
 
 class IndicatorProxyForm(forms.ModelForm):
-    # categoryoption = GroupedModelChoiceField(group_by_field='category',
-    #     #This queryset was modified by Daniel to order the grouped list by  date created
-    #     queryset=StgCategoryoption.objects.all().order_by('category__category_id'),
-    # )
+    categoryoption = GroupedModelChoiceField(group_by_field='category',
+        #This queryset was modified by Daniel to order the grouped list by  date created
+        queryset=StgCategoryoption.objects.all().order_by('category__category_id'),
+    )
+
     '''
     Implemented after overrriding decimal place restriction that facts with >3
     decimal places. The RoundingDecimalFormField is in serializer.py
@@ -184,6 +236,8 @@ class IndicatorProxyForm(forms.ModelForm):
 
 
 # Register fact_data serializer to allow import os semi-structured data Excel/CSV
+data_wizard.register(
+    "Import Indicator Data Records",FactDataIndicatorSerializer)
 @admin.register(FactDataIndicator)
 class IndicatorFactAdmin(OverideImportExport):
     form = IndicatorProxyForm #overrides the default django model form
@@ -252,12 +306,12 @@ class IndicatorFactAdmin(OverideImportExport):
         if not request.user.has_perm('indicators.delete_factdataindicator'):
             actions.pop('delete_selected', None)
         return actions
-    #
-    # def get_export_resource_class(self):
-    #     return IndicatorResourceExport
-    #
-    # def get_import_resource_class(self):
-    #     return IndicatorResourceImport
+
+    def get_export_resource_class(self):
+        return IndicatorResourceExport
+
+    def get_import_resource_class(self):
+        return IndicatorResourceImport
 
     readonly_fields = ('indicator', 'location', 'start_period',)
     fieldsets = ( # used to create frameset sections on the data entry form
@@ -291,14 +345,14 @@ class LimitModelFormset(BaseInlineFormSet):
         super(LimitModelFormset, self).__init__(*args, **kwargs)
         instance = kwargs["instance"]
         self.queryset = FactDataIndicator.objects.filter(
-            indicator_id=instance).order_by('-date_created')[:2]
+            indicator_id=instance).order_by('-date_created')[:5]
 
 # this class define the fact table as a tubular (not columnar) form for ease of entry as requested by Davy Liboko
 class FactIndicatorInline(admin.TabularInline):
     form = IndicatorProxyForm #overrides the default django form
     model = FactDataIndicator
-    extra = 2 # Used to control  number of empty rows displayed.
     formset = LimitModelFormset
+    extra = 2 # Used to control  number of empty rows displayed.
 
     """
     Davy requested that the form input be restricted to the user's country.
@@ -311,7 +365,8 @@ class FactIndicatorInline(admin.TabularInline):
         if db_field.name == "location":
             if request.user.is_superuser:
                 kwargs["queryset"] = StgLocation.objects.filter(
-                locationlevel__name__in =['Regional','Country']).order_by(
+                # Looks up for the traslated location level name in related table
+                locationlevel__translations__name__in =['Global','Regional','Country']).order_by(
                     'locationlevel', 'location_id') #superuser can access all countries at level 2 in the database
             elif request.user.groups.filter(name__icontains='Admin'):
                 kwargs["queryset"] = StgLocation.objects.filter(
@@ -355,111 +410,109 @@ class IndicatorProxy(TranslatableAdmin):
         ('translations__name',DropdownFilter),
     )
 
-# @admin.register(aho_factsindicator_archive)
-# class IndicatorFactArchiveAdmin(TranslatableAdmin):
-#     def has_add_permission(self, request): #removes the add button because no data entry is needed
-#         return False
-#
-#     def has_delete_permission(self, request, obj=None):
-#         return False
-#
-#     def get_afrocode(obj):
-#         return obj.indicator.afrocode
-#     get_afrocode.admin_order_field  = 'indicator__afrocode'  #Lookup to allow column sorting by AFROCODE
-#     get_afrocode.short_description = 'Indicator Code'  #Renames the column head
-#
-#     def get_queryset(self, request):
-#         qs = super().get_queryset(request)
-#         # Only superusers and admin are allowed to view all countries data
-#         if request.user.is_superuser or request.user.groups.filter(
-#             name__icontains='Admins'):
-#             return qs #provide access to all instances/rows of fact data indicators
-#         return qs.filter(location=request.user.location)  #provide access to user's country indicator instances
-#
-#     resource_class = AchivedIndicatorResourceExport
-#     list_display=['location', 'indicator',get_afrocode,'period','categoryoption',
-#         'value_received','target_value','string_value','get_comment_display',]
-#     search_fields = ('indicator__name', 'location__name','period',
-#         'indicator__afrocode') #display search field
-#     list_per_page = 50 #limit records displayed on admin site to 50
+@admin.register(aho_factsindicator_archive)
+class IndicatorFactArchiveAdmin(TranslatableAdmin,OverideExport):
+    def has_add_permission(self, request): #removes the add button because no data entry is needed
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def get_afrocode(obj):
+        return obj.indicator.afrocode
+    get_afrocode.admin_order_field  = 'indicator__afrocode'  #Lookup to allow column sorting by AFROCODE
+    get_afrocode.short_description = 'Indicator Code'  #Renames the column head
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        # Only superusers and admin are allowed to view all countries data
+        if request.user.is_superuser or request.user.groups.filter(
+            name__icontains='Admins'):
+            return qs #provide access to all instances/rows of fact data indicators
+        return qs.filter(location=request.user.location)  #provide access to user's country indicator instances
+
+    #resource_class = AchivedIndicatorResourceExport
+    list_display=['location', 'indicator',get_afrocode,'period','categoryoption',
+        'value_received','target_value','string_value','get_comment_display',]
+    search_fields = ('indicator__name', 'location__name','period',
+        'indicator__afrocode') #display search field
+    list_per_page = 50 #limit records displayed on admin site to 50
 
 
 
-# @admin.register(StgNarrative_Type)
-# class NarrativeTypeAdmin(TranslatableAdmin):
-#     from django.db import models
-#     formfield_overrides = {
-#         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
-#         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
-#     }
-#
-#     list_display=['name','code','shortname','description',]
-#     list_display_links =('code','name',)
-#     search_fields = ('code','name','shortname') #display search field
-#     list_per_page = 30 #limit records displayed on admin site to 15
-#     exclude = ('date_lastupdated','code',)
-#
-#
-# @admin.register(StgAnalyticsNarrative)
-# class AnalyticsNarrativeAdmin(TranslatableAdmin):
-#     from django.db import models
-#     formfield_overrides = {
-#         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
-#         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
-#     }
-#
-#     list_display=['narrative_type','location','domain','narrative_text']
-#     list_display_links =('narrative_type','domain')
-#     search_fields = ('code','location__name','domain__name') #display search field
-#     list_per_page = 30 #limit records displayed on admin site to 15
-#     exclude = ('date_lastupdated','code',)
-#     list_filter = (
-#       ('location',RelatedOnlyDropdownFilter),
-#     )
-#     exclude = ('date_lastupdated','code',)
-#
-#
-# @admin.register(AhoDoamain_Lookup)
-# class AhoDoamain_LookupAdmin(OverideExport):
-#     def has_delete_permission(self, request, obj=None): # Removes the add button on the admin interface
-#         return False
-#
-#     def has_add_permission(self, request, obj=None): # Removes the add button on the admin interface
-#         return False
-#
-#     #This method removes the save buttons from the model form
-#     def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
-#         extra_context = extra_context or {}
-#         extra_context['show_save_and_continue'] = False
-#         extra_context['show_save'] = False
-#         return super(AhoDoamain_LookupAdmin, self).changeform_view(
-#             request, object_id, extra_context=extra_context)
-#
-#     list_display=('indicator_name','code','domain_name', 'domain_level',)
-#     list_display_links = None # make the link for change object non-clickable
-#     readonly_fields = ('indicator_name','code','domain_name', 'domain_level',)
-#     search_fields = ('indicator_name','code','domain_name', 'domain_level',)
-#     ordering = ('indicator_name',)
-#     list_filter = (
-#         ('domain_name', DropdownFilter,),
-#     )
-#     ordering = ('indicator_name',)
+@admin.register(StgNarrative_Type)
+class NarrativeTypeAdmin(TranslatableAdmin,OverideExport):
+    from django.db import models
+    formfield_overrides = {
+        models.CharField: {'widget': TextInput(attrs={'size':'100'})},
+        models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
+    }
+    list_display=['name','code','shortname','description',]
+    list_display_links =('code','name',)
+    search_fields = ('code','name','shortname') #display search field
+    list_per_page = 30 #limit records displayed on admin site to 15
+    exclude = ('date_lastupdated','code',)
 
 
-# @admin.register(StgIndicatorNarrative)
-# class IndicatorNarrativeAdmin(OverideExport):
-#     from django.db import models
-#     formfield_overrides = {
-#         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
-#         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
-#     }
-#
-#     list_display=['code','narrative_type','location','indicator',
-#     'narrative_text',]
-#     list_display_links =('code',)
-#     search_fields = ('code','location__name','indicator__name') #display search field
-#     list_per_page = 30 #limit records displayed on admin site to 15
-#     exclude = ('date_lastupdated','code',)
-#     list_filter = (
-#       ('location',RelatedOnlyDropdownFilter),
-#     )
+@admin.register(StgAnalyticsNarrative)
+class AnalyticsNarrativeAdmin(OverideExport):
+    from django.db import models
+    formfield_overrides = {
+        models.CharField: {'widget': TextInput(attrs={'size':'100'})},
+        models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
+    }
+
+    list_display=['narrative_type','location','domain','narrative_text']
+    list_display_links =('narrative_type','domain')
+    search_fields = ('code','location__name','domain__name') #display search field
+    list_per_page = 30 #limit records displayed on admin site to 15
+    exclude = ('date_lastupdated','code',)
+    list_filter = (
+      ('location',RelatedOnlyDropdownFilter),
+    )
+    exclude = ('date_lastupdated','code',)
+
+@admin.register(StgIndicatorNarrative)
+class IndicatorNarrativeAdmin(OverideExport):
+    from django.db import models
+    formfield_overrides = {
+        models.CharField: {'widget': TextInput(attrs={'size':'100'})},
+        models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
+    }
+
+    list_display=['code','narrative_type','location','indicator',
+    'narrative_text',]
+    list_display_links =('code',)
+    search_fields = ('code','location__name','indicator__name') #display search field
+    list_per_page = 30 #limit records displayed on admin site to 15
+    exclude = ('date_lastupdated','code',)
+    list_filter = (
+      ('location',RelatedOnlyDropdownFilter),
+    )
+
+
+@admin.register(AhoDoamain_Lookup)
+class AhoDoamain_LookupAdmin(OverideExport):
+    def has_delete_permission(self, request, obj=None): # Removes the add button on the admin interface
+        return False
+
+    def has_add_permission(self, request, obj=None): # Removes the add button on the admin interface
+        return False
+
+    #This method removes the save buttons from the model form
+    def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['show_save_and_continue'] = False
+        extra_context['show_save'] = False
+        return super(AhoDoamain_LookupAdmin, self).changeform_view(
+            request, object_id, extra_context=extra_context)
+
+    list_display=('indicator_name','code','domain_name', 'domain_level',)
+    list_display_links = None # make the link for change object non-clickable
+    readonly_fields = ('indicator_name','code','domain_name', 'domain_level',)
+    search_fields = ('indicator_name','code','domain_name', 'domain_level',)
+    ordering = ('indicator_name',)
+    list_filter = (
+        ('domain_name', DropdownFilter,),
+    )
+    ordering = ('indicator_name',)

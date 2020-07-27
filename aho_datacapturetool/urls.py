@@ -43,7 +43,7 @@ urlpatterns = i18n_patterns ( # must be python immutable list () and not []
     path('', views.index, name='index'),
     path('admin/', admin.site.urls),
     path('accounts/login/', views.login_view, name='login'),
-
+    path('datawizard/', include('data_wizard.urls')), #for data import wizard
    #Reset and Changepassword urls
     path('password-reset/', auth_views.PasswordResetView.as_view(),
         name='password_reset'),

@@ -1,17 +1,19 @@
 from django.contrib import admin
 from parler.admin import TranslatableAdmin
+from django.utils.html import format_html
+import data_wizard # Solution to data import madness that had refused to go
 from django.forms import TextInput,Textarea #customize textarea row and column size
 from import_export.formats import base_formats
-from .models import (
-    StgProductDomain,StgKnowledgeProduct,StgResourceType)
+from .models import StgProductDomain,StgKnowledgeProduct,StgResourceType
 from commoninfo.admin import OverideImportExport,OverideExport
+# from publications.serializers import StgKnowledgeProductSerializer
 from django_admin_listfilter_dropdown.filters import (
     DropdownFilter, RelatedDropdownFilter, ChoiceDropdownFilter,
     RelatedOnlyDropdownFilter) #custom
-from import_export.admin import(
-    ImportExportModelAdmin,ExportMixin, ImportExportActionModelAdmin,)
-
-
+from .resources import (StgKnowledgeProductResourceExport,
+    StgKnowledgeProductResourceImport)
+from import_export.admin import (ImportExportModelAdmin, ExportMixin,
+    ImportExportActionModelAdmin)
 
 #Methods used to register global actions performed on data. See actions listbox
 def transition_to_pending (modeladmin, request, queryset):
@@ -71,7 +73,8 @@ class ProductDomainAdmin(TranslatableAdmin,OverideExport):
         ('publications',RelatedOnlyDropdownFilter,),# Added 16/12/2019 for M2M lookup
     )
 
-
+# data_wizard.register(StgKnowledgeProduct)
+#     "Import Knowledge Resource List",StgKnowledgeProductSerializer)
 @admin.register(StgKnowledgeProduct)
 class ProductAdmin(TranslatableAdmin,ImportExportModelAdmin,ImportExportActionModelAdmin):
     from django.db import models
@@ -82,7 +85,7 @@ class ProductAdmin(TranslatableAdmin,ImportExportModelAdmin,ImportExportActionMo
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         if request.user.is_superuser or \
-            request.user.groups.filter(name__icontains='Admins'):
+            request.user.groups.filter(pk=1):
             # Provide access to all instances/rows of all location, i.e. all AFRO member states
             return qs
         return qs.filter(location_id=request.user.location_id)#provide user with specific country details!
@@ -155,18 +158,17 @@ class ProductAdmin(TranslatableAdmin,ImportExportModelAdmin,ImportExportActionMo
             }),
         )
 
-    def get_location(obj):
-           return obj.location.name
-    get_location.short_description = 'Location'
-
-
-    def get_type(obj):
-           return obj.type.name
-    get_type.short_description = 'Type'
+    # def get_location(obj):
+    #        return obj.location.name
+    # get_location.short_description = 'Location'
+    #
+    #
+    # def get_type(obj):
+    #        return obj.type.name
+    # get_type.short_description = 'Type'
 
     # To display the choice field values use the helper method get_foo_display where foo is the field name
-
-    list_display=['code','title',get_type,get_location,'author','year_published',
+    list_display=['code','title','author','year_published',
         'internal_url','show_external_url','cover_image','get_comment_display']
     list_display_links = ['code','title',]
     readonly_fields = ('comment',)

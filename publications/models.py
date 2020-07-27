@@ -37,6 +37,17 @@ class StgResourceType(TranslatableModel):
         return self.name #display the knowledge product category name
 
 
+    def clean(self):
+        if StgResourceType.objects.filter(
+            translations__name=self.name).count() and not self.type_id and not \
+                self.code:
+            raise ValidationError({'name':_('Resource type with the same \
+                name exists')})
+
+    def save(self, *args, **kwargs):
+        super(StgResourceType, self).save(*args, **kwargs)
+
+
 class StgKnowledgeProduct(TranslatableModel):
     STATUS_CHOICES = (
         ('pending', 'Pending'),
@@ -118,19 +129,19 @@ class StgProductDomain(TranslatableModel):
     domain_id = models.AutoField(primary_key=True)  # Field name made lowercase.
     translations = TranslatedFields(
         name = models.CharField(max_length=230, blank=False, null=False,
-            verbose_name = 'Domain Name'),  # Field name made lowercase.
+            verbose_name = 'Theme Name'),  # Field name made lowercase.
         shortname = models.CharField(max_length=45,null=True,
             verbose_name = 'Short Name',),  # Field name made lowercase.
         description = models.TextField(blank=True, null=True),
         level = models.IntegerField(default=1,verbose_name='Level')
         )
     code = models.CharField(unique=True, max_length=50, blank=True,
-            null=True, verbose_name = 'Domain Code')  # Field name made lowercase.
+            null=True, verbose_name = 'Theme Code')  # Field name made lowercase.
     parent = models.ForeignKey('self',on_delete=models.CASCADE,
-        blank=True,null=True,verbose_name = 'Parent Domain')  # Field name made lowercase.
+        blank=True,null=True,verbose_name = 'Main Theme')  # Field name made lowercase.
     publications = models.ManyToManyField(StgKnowledgeProduct,
         db_table='stg_product_domain_members',
-        blank=True,verbose_name = 'Publications')  # Field name made lowercase.
+        blank=True,verbose_name = 'Resources')  # Field name made lowercase.
     date_created = models.DateTimeField(blank=True, null=True, auto_now_add=True,
         verbose_name = 'Date Created')
     date_lastupdated = models.DateTimeField(blank=True, null=True, auto_now=True,
@@ -139,8 +150,8 @@ class StgProductDomain(TranslatableModel):
     class Meta:
         managed = True # must be true to create the model table in mysql
         db_table = 'stg_publication_domain'
-        verbose_name = 'Resource Category'
-        verbose_name_plural = ' Resource Categories'
+        verbose_name = 'Resource Theme'
+        verbose_name_plural = ' Resource Themes'
         ordering = ('code', )
 
     def __str__(self):
@@ -150,8 +161,8 @@ class StgProductDomain(TranslatableModel):
         if StgProductDomain.objects.filter(
             translations__name=self.name).count() and not self.domain_id and not \
                 self.code:
-            raise ValidationError({'name':_('Resource Category with the same \
-                name already exists')})
+            raise ValidationError({'name':_('Resource Theme with the same \
+                name exists')})
 
     def save(self, *args, **kwargs):
         super(StgProductDomain, self).save(*args, **kwargs)

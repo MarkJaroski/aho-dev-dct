@@ -68,7 +68,7 @@ class LocationResourceImport (resources.ModelResource):
 
 
 class LocationLevelResourceExport (resources.ModelResource):
-    code = Field(attribute='code', column_name='Regional Code')
+    code = Field(attribute='code', column_name='Level Code')
     Level_name = Field(attribute='name', column_name='Location Name')
     level_type = Field(attribute='type', column_name='Type')
     description = Field(attribute='latitude', column_name='Latitude')
@@ -81,8 +81,8 @@ class LocationLevelResourceExport (resources.ModelResource):
 
 
 class IncomegroupsResourceExport (resources.ModelResource):
-    code = Field(attribute='code', column_name='Income Group Code')
-    income_group = Field(attribute='name', column_name='Income Group')
+    code = Field(attribute='code', column_name='Income Level Code')
+    income_group = Field(attribute='name', column_name='Income Level Name')
     shortname = Field(attribute='shortname', column_name='Short Name')
     description = Field(attribute='latitude', column_name='Description')
 
@@ -95,8 +95,8 @@ class IncomegroupsResourceExport (resources.ModelResource):
 
 
 class EconomicZoneResourceExport (resources.ModelResource):
-    code = Field(attribute='code', column_name='Block Code')
-    economic_zone = Field(attribute='name', column_name='Zone Name')
+    code = Field(attribute='code', column_name='Economic Block Code')
+    economic_zone = Field(attribute='name', column_name='Economic Block Name')
     shortname = Field(attribute='shortname', column_name='Short Name')
     description = Field(attribute='latitude', column_name='Description')
 
@@ -107,8 +107,8 @@ class EconomicZoneResourceExport (resources.ModelResource):
         fields = ('code','economic_zone','shortname', 'description',)
 
 class SpecialcategorizationResourceExport (resources.ModelResource):
-    code = Field(attribute='code', column_name='Country Code')
-    state = Field(attribute='name', column_name='Country Name')
+    code = Field(attribute='code', column_name='Special Category Code')
+    state = Field(attribute='name', column_name='Special Category Name')
     shortname = Field(attribute='shortname', column_name='Short Name')
     description = Field(attribute='latitude', column_name='Description')
 

@@ -16,25 +16,27 @@ def make_choices(values):
     return [(v, v) for v in values]
 
 class StgDataElement(TranslatableModel):
-    AGGREGATION_TYPE = ('Sum','Average', 'Count','Standard Deviation',
+    AGGREGATION_TYPE = ('Count','Sum','Average','Standard Deviation',
         'Variance', 'Min', 'max','None')
     dataelement_id = models.AutoField(primary_key=True)  # Field name made lowercase.
+    code = models.CharField( unique=True, max_length=45,blank=True, null=False)
     translations = TranslatedFields(
         name = models.CharField(max_length=230, blank=False,null=False),  # Field name made lowercase.
         shortname = models.CharField(_('Short name'), max_length=50),  # Field name made lowercase.
         description = models.TextField(blank=True, null=True),  # Field name made lowercase.
-        aggregation_type = models.CharField(max_length=45, verbose_name = 'Data Aggregation',
-            choices=make_choices(AGGREGATION_TYPE),default=AGGREGATION_TYPE[0])  # Field name made lowercase.
     )
-    code = models.CharField( unique=True, max_length=45,blank=True, null=False)
-    measuremethod = models.ForeignKey(StgMeasuremethod, models.PROTECT,
-        verbose_name = 'Measure Factor',default=1)
+    aggregation_type = models.CharField(max_length=45, verbose_name = 'Data Aggregation',
+        choices=make_choices(AGGREGATION_TYPE),default=AGGREGATION_TYPE[0])  # Field name made lowercase.
+    # measuremethod = models.ForeignKey(StgMeasuremethod, models.PROTECT,
+    #     verbose_name = 'Measure Factor',default=1)
     date_created = models.DateTimeField(blank=True, null=True, auto_now_add=True,
         verbose_name = 'Date Created')
     date_lastupdated = models.DateTimeField(blank=True, null=True, auto_now=True,
         verbose_name = 'Date Modified')
 
     class Meta:
+        managed = True
+        db_table = 'stg_data_element'
         verbose_name = _("Element")
         verbose_name_plural = _('Data Elements')
         ordering = ('code',)
@@ -144,12 +146,11 @@ by Daniel Mbugua to resolve the issue of parent-child saving issue in the
 multi-records entry form.My credits to Mr Mbugua of MSc DCT, UoN-Kenya
 
 """
-
 class DataElementProxy(StgDataElement):
     class Meta:
         proxy = True
-        verbose_name = 'Grid'
-        verbose_name_plural = ' Data Grid'
+        verbose_name = 'Multi_Records Form'
+        verbose_name_plural = ' Multi_Records Form'
 
 
     def clean(self):

@@ -46,9 +46,6 @@ class FactDataResourceImport(resources.ModelResource):
     # period = Field(column_name='Period',attribute='period',)
     start_period = Field(attribute='start_year', column_name='Start Period')
     end_period = Field( attribute='end_year', column_name='End Period')
-
-
-
     value = Field(attribute='value', column_name='Value')
 
     class Meta:
@@ -61,14 +58,14 @@ class FactDataResourceImport(resources.ModelResource):
 
 
 class FactDataResourceExport(resources.ModelResource):
-    location_name = Field(attribute='location__name', column_name='Country')
+    location_name = Field(attribute='location__name', column_name='Location')
     dataelement = Field(attribute='dataelement__name', column_name='Data Element Name')
     element_code= Field(attribute='dataelement__code', column_name='Data Element Code')
     categoryoption = Field(attribute='categoryoption', column_name='Modality')
-    period = Field( attribute='period', column_name='Period')
     value = Field(attribute='value', column_name='Value')
     datasource = Field(attribute='datasource', column_name='Data Source')
     valuetype = Field(attribute='valuetype', column_name='Data Type')
+    period = Field( attribute='period', column_name='Period')
     comment = Field(attribute='comment', column_name='Approval Status')
 
     class Meta:
@@ -76,7 +73,7 @@ class FactDataResourceExport(resources.ModelResource):
         skip_unchanged = False
         report_skipped = False
         fields = ('element_code','dataelement', 'location_name', 'categoryoption',
-            'period','value','datasource','valuetype','comment',)
+            'value','datasource','valuetype','period','comment',)
 
 
 class DataElementExport(resources.ModelResource):
@@ -89,6 +86,7 @@ class DataElementExport(resources.ModelResource):
 
     class Meta:
         model = StgDataElement
+        verbose_name = 'Data Element'        
         skip_unchanged = False
         report_skipped = False
         fields = ('code','name', 'location_name', 'shortname','description',

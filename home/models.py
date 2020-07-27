@@ -120,10 +120,10 @@ class StgMeasuremethod(TranslatableModel):
         name = models.CharField(max_length=230, blank=False, null=False,
             verbose_name = 'Name'),  # Field name made lowercase.
         measure_value = models.DecimalField(max_digits=50, decimal_places=0,
-            blank=True, null=True, verbose_name = 'Measure Type'),  # Field name made lowercase.
+            blank=True, null=True, verbose_name = 'Numeric Value'),  # Field name made lowercase.
         description = models.TextField(max_length=200, blank=True, null=True)
     )
-    code = models.CharField(max_length=50,unique=True, blank=True, null=False),  # Field name made lowercase.
+    code = models.CharField(max_length=50,unique=True, blank=True, null=False)  # Field name made lowercase.
     date_created = models.DateTimeField(blank=True, null=True, auto_now_add=True,
         verbose_name = 'Date Created')
     date_lastupdated = models.DateTimeField(blank=True, null=True, auto_now=True,

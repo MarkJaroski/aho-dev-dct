@@ -2,7 +2,6 @@ from import_export import resources
 from import_export.fields import Field
 from .models import (FactDataIndicator, StgIndicator, StgIndicatorDomain,
     aho_factsindicator_archive,)
-
 from home.models import StgCategoryoption,StgDatasource,StgValueDatatype
 from regions.models import StgLocation
 from import_export.widgets import ForeignKeyWidget, DateWidget
@@ -27,34 +26,37 @@ class IndicatorResourceImport(resources.ModelResource):
         widget=ForeignKeyWidget(StgIndicator, 'afrocode'))
     indicator_name = Field(column_name='Indicator Name',attribute='indicator',
         widget=ForeignKeyWidget(StgIndicator, 'name'))
-    location_code = Field(column_name='Country Code',attribute='location',
+    location_code = Field(column_name='Location Code',attribute='location',
         widget=ForeignKeyWidget(StgLocation, 'code'))
-    location_name = Field(column_name='Country Name',attribute='location__name',
+    location_name = Field(column_name='Location Name',attribute='location__name',
         widget=ForeignKeyWidget(StgLocation, 'name'))
-    categoryoption_code = Field( column_name='Modality Code',
+    categoryoption_code = Field( column_name='Disaggregaton Code',
         attribute='categoryoption',widget=ForeignKeyWidget(StgCategoryoption, 'code'))
-    categoryoption_name = Field(column_name='Modality Name',
+    categoryoption_name = Field(column_name='Disaggregation Option',
         attribute='categoryoption__name',widget=ForeignKeyWidget(StgCategoryoption,'name'))
     datasource = Field( column_name='Data Source',attribute='datasource',
         widget=ForeignKeyWidget(StgDatasource, 'code'))
-    valuetype = Field( column_name='Data Type',attribute='valuetype',
+    valuetype = Field( column_name='Data Value Type',attribute='valuetype',
         widget=ForeignKeyWidget(StgValueDatatype, 'code'))
     start_period = Field(column_name='Start Period', attribute='start_period',)
     end_period = Field(column_name='End Period', attribute='end_period',)
     value_received = Field(column_name='Value',attribute='value_received',)
     target_value = Field(column_name='Target Value',attribute='target_value',)
+    string_value = Field(column_name='String Value',attribute='string_value',)
+    comment = Field(column_name='Special Remarks',attribute='comment',)
 
     class Meta:
         model = FactDataIndicator
         skip_unchanged = False
         report_skipped = False
-        fields = ('indicator_code', 'location_code', 'categoryoption_code','datasource',
-            'valuetype','start_period','end_period','value_received','target_value',)
+        fields = ('indicator_code', 'location_code', 'categoryoption_code',
+            'datasource','valuetype','start_period','end_period',
+            'value_received','target_value','string_value','comment',)
 
 
 class IndicatorResourceExport(resources.ModelResource):
-    location__name = Field(attribute='location__name', column_name='Country')
-    location__code = Field(attribute='location__code', column_name='Country Code')
+    location__name = Field(attribute='location__name', column_name='Location')
+    location__code = Field(attribute='location__code', column_name='Location Code')
     indicator__name = Field(attribute='indicator__name', column_name='Indicator Name')
     indicator__afrocode = Field(attribute='indicator__afrocode', column_name='Code')
     categoryoption__code = Field(attribute='categoryoption__code', column_name='Disaggregation Code')
@@ -71,8 +73,9 @@ class IndicatorResourceExport(resources.ModelResource):
         model = FactDataIndicator
         skip_unchanged = False
         report_skipped = False
-        fields = ('location__name','location__code','indicator__name','indicator__afrocode',
-            'categoryoption__code','categoryoption__name','period','value_received','comment','string_value',)
+        fields = ('location__name','location__code','indicator__name',
+            'indicator__afrocode','categoryoption__code','categoryoption__name',
+            'period','value_received','comment','string_value',)
 
 
 class DomainResourceImport(resources.ModelResource): #to be worked on!
@@ -91,7 +94,6 @@ class DomainResourceImport(resources.ModelResource): #to be worked on!
             pass
         else:
             instance.save()
-
     domain_code= Field(
         attribute='code', column_name='Domain Code')
     domain_name = Field(
@@ -110,7 +112,7 @@ class DomainResourceImport(resources.ModelResource): #to be worked on!
 
 class DomainResourceExport(resources.ModelResource):
     domain_code= Field(
-        attribute='code', column_name='Domain Code')
+        attribute='code', column_name='Theme Code')
     domain_name = Field(
         attribute='name', column_name='Data Element Name')
     shortname = Field(
@@ -127,9 +129,9 @@ class DomainResourceExport(resources.ModelResource):
 
 class AchivedIndicatorResourceExport(resources.ModelResource):
     location__name = Field(
-        attribute='location__name', column_name='Country')
+        attribute='location__name', column_name='Location')
     location__code = Field(
-        attribute='location__code', column_name='Country Code')
+        attribute='location__code', column_name='Location Code')
     indicator__name = Field(
         attribute='indicator__name', column_name='Indicator Name')
     indicator__afrocode = Field(

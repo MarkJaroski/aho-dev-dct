@@ -145,9 +145,9 @@ class DataTypeExport(resources.ModelResource):
 
 class DataSourceExport(resources.ModelResource):
     datasource_code= Field(
-        attribute='code', column_name='Source Code')
+        attribute='code', column_name='Data Source Code')
     name = Field(
-        attribute='name', column_name='Measure Name')
+        attribute='name', column_name='Data Source Name')
     shortname = Field(
         attribute='shortname', column_name='Short Name')
     description = Field(
