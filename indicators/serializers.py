@@ -1,32 +1,36 @@
 from rest_framework.serializers import (
     ModelSerializer, ReadOnlyField, DecimalField)
-
+from parler_rest.serializers import TranslatableModelSerializer
+from parler_rest.fields import TranslatedFieldsField
 from indicators.models import (
     StgIndicatorReference, StgIndicator, StgIndicatorDomain,
     FactDataIndicator,)
 
 class StgIndicatorReferenceSerializer(ModelSerializer):
+    translations = TranslatedFieldsField(shared_model=StgIndicatorReference)
+
     class Meta:
         model = StgIndicatorReference
-        fields = ['reference_id', 'name', 'shortname', 'code', 'description']
+        fields = ['reference_id','code', 'translations']
 
 
-class StgIndicatorSerializer(ModelSerializer):
+class StgIndicatorSerializer(TranslatableModelSerializer):
+    translations = TranslatedFieldsField(shared_model=StgIndicator)
+
     class Meta:
         model = StgIndicator
         fields = [
-            'indicator_id', 'name', 'shortname', 'afrocode', 'gen_code',
-            'definition','measuremethod','numerator_description',
-            'denominator_description','preferred_datasources', 'reference',
+            'indicator_id','afrocode', 'gen_code','measuremethod',
+            'reference','translations'
         ]
 
 
-class StgIndicatorDomainSerializer(ModelSerializer):
+class StgIndicatorDomainSerializer(TranslatableModelSerializer):
+    translations = TranslatedFieldsField(shared_model=StgIndicatorDomain)
+
     class Meta:
         model = StgIndicatorDomain
-        fields = [
-            'domain_id', 'name', 'shortname', 'code', 'description',
-            'parent', 'indicators']
+        fields = ['domain_id', 'code','parent','translations']
 
 # This clas overrides the decimal field in order to
 # round off the decimal places.

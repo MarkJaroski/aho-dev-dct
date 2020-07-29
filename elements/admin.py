@@ -309,7 +309,8 @@ class FactElementInline(admin.TabularInline):
                 locationlevel__translations__name__in =[
                     'Regional','Country']).order_by('locationlevel', 'location_id')
             else:
-                kwargs["queryset"] = StgLocation.objects.filter(location_id=request.user.location_id) #permissions for user country filter---works as per Davy's request
+                kwargs["queryset"] = StgLocation.objects.filter(
+                    location_id=request.user.location_id) #permissions for user country filter---works as per Davy's request
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     fields = ('dataelement','location','datasource', 'valuetype',

@@ -3,7 +3,7 @@ from indicators import views
 
 router = SimpleRouter()
 router.register(
-    r'indicator_sources', views.StgIndicatorReferenceViewSet, "indicator_sources")
+    r'indicator_references', views.StgIndicatorReferenceViewSet, "indicator_references")
 router.register(
     r'indicators', views.StgIndicatorViewSet, "indicators")
 router.register(

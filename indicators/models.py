@@ -18,7 +18,9 @@ STATUS_CHOICES = ( #choices for approval of indicator data by authorized users
 )
 
 class StgIndicatorReference(TranslatableModel):
-    reference_id = models.AutoField(primary_key=True)  # Field name made lowercase.
+    reference_id = models.AutoField(primary_key=True)  # Field name made lowercase
+    uuid = uuid = models.CharField(unique=True,max_length=36, blank=False, null=False,
+        default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')
     translations = TranslatedFields(
         name = models.CharField(_("Reference Name"),max_length=230, blank=False,
             null=False,default="Global List of 100 Core Health Indicators"),  # Field name made lowercase.
@@ -35,14 +37,12 @@ class StgIndicatorReference(TranslatableModel):
     class Meta:
         managed = True
         db_table = 'stg_indicator_reference'
-        verbose_name = 'Reference'
-        verbose_name_plural = ' References'
+        verbose_name = 'Indicator Reference'
+        verbose_name_plural = ' Indicator References'
         #ordering = ('code', )
-
 
     def __str__(self):
         return self.name #display the data source name
-
 
     # The filter function need to be modified to work with django parler as follows:
     def clean(self): # Don't allow end_period to be greater than the start_period.
@@ -55,13 +55,13 @@ class StgIndicatorReference(TranslatableModel):
 
 class StgIndicator(TranslatableModel):
     indicator_id = models.AutoField(primary_key=True)  # Field name made lowercase.
+    uuid = uuid = models.CharField(unique=True,max_length=36, blank=False, null=False,
+        default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')
     translations = TranslatedFields(
         name = models.CharField( max_length=500, blank=False, null=False,
             verbose_name = _('Indicator Name')),  # Field name made lowercase.
         shortname = models.CharField(unique=True, max_length=120, blank=False,
             null=True, verbose_name = 'Short Name'),  # Field name made lowercase.
-        gen_code = models.CharField( max_length=10, blank=True, null=True,
-            verbose_name = 'Geneva Code'),  # Field name made lowercase.
         definition = models.TextField(blank=False,
             null=True,verbose_name = 'Indicator Definition' ),  # Field name made lowercase.
         preferred_datasources = models.CharField(max_length=5000,
@@ -73,11 +73,12 @@ class StgIndicator(TranslatableModel):
     )
     afrocode = models.CharField(max_length=10,blank=True, null=False,
         unique=True, verbose_name = 'Indicator Code',)  # Field name made lowercase.
+    gen_code = models.CharField( max_length=10, blank=True, null=True,
+        verbose_name = 'Geneva Code')  # Field name made lowercase.
     measuremethod = models.ForeignKey(StgMeasuremethod, models.PROTECT,blank=True,
         null=True, verbose_name = 'Type of Measure')  # Field name made lowercase.
     reference = models.ForeignKey(StgIndicatorReference, models.PROTECT,
         default=1, verbose_name ='Indicator Reference')  # Field name made lowercase.
-
     date_created = models.DateTimeField(blank=True, null=True, auto_now_add=True,
         verbose_name = 'Date Created')
     date_lastupdated = models.DateTimeField(blank=True, null=True, auto_now=True,
@@ -105,6 +106,8 @@ class StgIndicator(TranslatableModel):
 
 class StgIndicatorDomain(TranslatableModel):
     domain_id = models.AutoField(primary_key=True)  # Field name made lowercase.
+    uuid = uuid = models.CharField(unique=True,max_length=36, blank=False, null=False,
+        default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')
     translations = TranslatedFields(
         name = models.CharField(max_length=150, blank=False, null=False,
             verbose_name = 'Theme Name'),  # Field name made lowercase.
@@ -136,7 +139,6 @@ class StgIndicatorDomain(TranslatableModel):
     def __str__(self):
         return self.name #ddisplay disagregation options
 
-
     # The filter function need to be modified to work with django parler as follows:
     def clean(self): # Don't allow end_period to be greater than the start_period.
         if StgIndicatorDomain.objects.filter(
@@ -146,13 +148,12 @@ class StgIndicatorDomain(TranslatableModel):
     def save(self, *args, **kwargs):
         super(StgIndicatorDomain, self).save(*args, **kwargs)
 
+
 class FactDataIndicator(models.Model):
   # discriminator for ownership of data this was decided on 13/12/2019 with Gift
-    DATAOWNER_CHOICES = (
-        (1, 'Country'),
-        (2,'AFRO'),
-    )
     fact_id = models.AutoField(primary_key=True)  # Field name made lowercase.
+    uuid = uuid = models.CharField(unique=True,max_length=36, blank=False, null=False,
+        default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')
     indicator = models.ForeignKey(StgIndicator, models.PROTECT,
         verbose_name = 'Indicator Name',)  # Field name made lowercase.
     location = models.ForeignKey(StgLocation, models.PROTECT,
@@ -374,6 +375,8 @@ class AhoDoamain_Lookup(models.Model):
 
 class aho_factsindicator_archive(models.Model):
     fact_id = models.AutoField(primary_key=True)  # Field name made lowercase.
+    uuid = uuid = models.CharField(unique=True,max_length=36, blank=False, null=False,
+        default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')
     indicator = models.ForeignKey('StgIndicator', models.PROTECT,blank=False,
         null=False, verbose_name = 'Indicator Name',)  # Field name made lowercase.
     location = models.ForeignKey(StgLocation, models.PROTECT,verbose_name = 'Location Name')
@@ -423,6 +426,8 @@ class aho_factsindicator_archive(models.Model):
 
 class StgNarrative_Type(TranslatableModel):
     type_id = models.AutoField(primary_key=True)  # Field name made lowercase.
+    uuid = uuid = models.CharField(unique=True,max_length=36, blank=False, null=False,
+        default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')
     code = models.CharField(unique=True, max_length=50, blank=True, null=False,
         verbose_name = 'Code')  # Field name made lowercase.
     translations = TranslatedFields(
@@ -461,6 +466,8 @@ class StgNarrative_Type(TranslatableModel):
 
 class StgAnalyticsNarrative(models.Model):
     analyticstext_id = models.AutoField(primary_key=True)
+    uuid = uuid = models.CharField(unique=True,max_length=36, blank=False, null=False,
+        default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')
     narrative_type = models.ForeignKey(StgNarrative_Type,models.PROTECT,
         verbose_name = 'Type', db_column='narrative_type_id')
     domain = models.ForeignKey(StgIndicatorDomain,models.PROTECT,  blank=False,
@@ -488,7 +495,9 @@ class StgAnalyticsNarrative(models.Model):
 
 
 class StgIndicatorNarrative(models.Model):
-    indicatornarrative_id = models.AutoField(primary_key=True)  # Field name made lowercase.
+    indicatornarrative_id = models.AutoField(primary_key=True)
+    uuid = uuid = models.CharField(unique=True,max_length=36, blank=False, null=False,
+        default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')
     narrative_type = models.ForeignKey(StgNarrative_Type,models.PROTECT,
         verbose_name = 'Type',db_column='narrative_type_id')
     indicator = models.ForeignKey('StgIndicator', models.PROTECT,blank=False,

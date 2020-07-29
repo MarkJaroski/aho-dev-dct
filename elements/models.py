@@ -19,7 +19,7 @@ class StgDataElement(TranslatableModel):
     AGGREGATION_TYPE = ('Count','Sum','Average','Standard Deviation',
         'Variance', 'Min', 'max','None')
     dataelement_id = models.AutoField(primary_key=True)  # Field name made lowercase.
-    uuid = uuid = models.CharField(unique=False,max_length=36, blank=False, null=False,
+    uuid = uuid = models.CharField(unique=True,max_length=36, blank=False, null=False,
         default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')  # Field name made lowercase.
     code = models.CharField( unique=True, max_length=45,blank=True, null=False)
     translations = TranslatedFields(
@@ -27,10 +27,8 @@ class StgDataElement(TranslatableModel):
         shortname = models.CharField(_('Short name'), max_length=50),  # Field name made lowercase.
         description = models.TextField(blank=True, null=True),  # Field name made lowercase.
     )
-    aggregation_type = models.CharField(max_length=45, verbose_name = 'Data Aggregation',
+    aggregation_type = models.CharField(max_length=45, verbose_name = 'Aggregate Type',
         choices=make_choices(AGGREGATION_TYPE),default=AGGREGATION_TYPE[0])  # Field name made lowercase.
-    # measuremethod = models.ForeignKey(StgMeasuremethod, models.PROTECT,
-    #     verbose_name = 'Measure Factor',default=1)
     date_created = models.DateTimeField(blank=True, null=True, auto_now_add=True,
         verbose_name = 'Date Created')
     date_lastupdated = models.DateTimeField(blank=True, null=True, auto_now=True,
@@ -55,7 +53,7 @@ class FactDataElement(models.Model):
     )
 
     fact_id = models.AutoField(primary_key=True)  # Field name made lowercase.
-    uuid = uuid = models.CharField(unique=False,max_length=36, blank=False, null=False,
+    uuid = uuid = models.CharField(unique=True,max_length=36, blank=False, null=False,
         default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')  # Field name made lowercase.
     dataelement = models.ForeignKey('StgDataElement', models.PROTECT,
         verbose_name = 'Data Element Name')  # Field name made lowercase.
@@ -156,14 +154,13 @@ class DataElementProxy(StgDataElement):
         verbose_name = 'Multi_Records Form'
         verbose_name_plural = ' Multi_Records Form'
 
-
     def clean(self):
         pass
 
 
 class StgDataElementGroup(TranslatableModel):
     group_id = models.AutoField(primary_key=True)  # Field name made lowercase.
-    uuid = uuid = models.CharField(unique=False,max_length=36, blank=False, null=False,
+    uuid = uuid = models.CharField(unique=True,max_length=36, blank=False, null=False,
         default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')  # Field name made lowercase.
     translations = TranslatedFields(
         name = models.CharField(max_length=200, blank=False, null=False,

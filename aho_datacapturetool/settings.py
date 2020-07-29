@@ -23,9 +23,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'jz&%c@07o%z_mo&qs2t@-io)vm5ul_0j*kwm@#&m0m4nf7j5a^'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost','127.0.0.1',]
 
 
 # Application definition
@@ -46,6 +46,8 @@ INSTALLED_APPS = [
     'elements',
     'publications',
     'regions',
+    'facilities',
+    'health_workforce',
     'data_wizard',
     'data_wizard.sources',
     'rest_framework', # register Django
@@ -168,7 +170,6 @@ LANGUAGES = ( #added
 ('en','English'),
 ('fr', 'French'),
 ('pt','Portuguese'),
-('de','German'),
 )
 
 PARLER_LANGUAGES = {
@@ -176,7 +177,6 @@ None: (
 {'code': 'en'},
 {'code': 'fr'},
 {'code': 'pt'},
-{'code': 'de'},
 ),
 'default': {
 'fallback': 'en',

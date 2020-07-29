@@ -370,7 +370,7 @@ class FactIndicatorInline(admin.TabularInline):
                     'locationlevel', 'location_id') #superuser can access all countries at level 2 in the database
             elif request.user.groups.filter(name__icontains='Admin'):
                 kwargs["queryset"] = StgLocation.objects.filter(
-                locationlevel__name__in =['Regional','Country']).order_by(
+                locationlevel__translations__name__in =['Regional','Country']).order_by(
                     'locationlevel', 'location_id')
             else:
                 kwargs["queryset"] = StgLocation.objects.filter(

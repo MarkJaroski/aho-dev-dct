@@ -10,7 +10,9 @@ def make_choices(values):
 
 class StgLocationLevel(TranslatableModel):
     LEVEL = ('level 1','Level 2','Level 3', 'Level 4', 'Level 5',)
-    locationlevel_id = models.AutoField(primary_key=True)  # Field name made lowercase.
+    locationlevel_id = models.AutoField(primary_key=True)
+    uuid = uuid = models.CharField(unique=True,max_length=36,blank=False,null=False,
+        default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')
     translations = TranslatedFields(
         type = models.CharField(max_length=50, choices=make_choices(LEVEL),
             default=LEVEL[0],verbose_name = 'Location Level'),  # Field name made lowercase.
@@ -45,7 +47,9 @@ class StgLocationLevel(TranslatableModel):
 
 
 class StgWorldbankIncomegroups(TranslatableModel):
-    wb_income_groupid = models.AutoField(primary_key=True)  # Field name made lowercase.
+    wb_income_groupid = models.AutoField(primary_key=True)
+    uuid = uuid = models.CharField(unique=True,max_length=36,blank=False,null=False,
+        default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')
     translations = TranslatedFields(
         name = models.CharField(max_length=230, blank=False, null=False,
             verbose_name = 'Income Group',),  # Field name made lowercase.
@@ -79,7 +83,9 @@ class StgWorldbankIncomegroups(TranslatableModel):
         super(StgWorldbankIncomegroups, self).save(*args, **kwargs)
 
 class StgEconomicZones(TranslatableModel):
-    economiczone_id = models.AutoField(primary_key=True)  # Field name made lowercase.
+    economiczone_id = models.AutoField(primary_key=True)
+    uuid = uuid = models.CharField(unique=True,max_length=36,blank=False,null=False,
+        default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')
     translations = TranslatedFields(
     name = models.CharField(max_length=230,blank=False, null=False,
         verbose_name = 'Economic Block'),
@@ -113,7 +119,9 @@ class StgEconomicZones(TranslatableModel):
         super(StgEconomicZones, self).save(*args, **kwargs)
 
 class StgSpecialcategorization(TranslatableModel):
-    specialstates_id = models.AutoField(primary_key=True)  # Field name made lowercase.
+    specialstates_id = models.AutoField(primary_key=True)
+    uuid = uuid = models.CharField(unique=True,max_length=36,blank=False,null=False,
+        default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')
     translations = TranslatedFields(
         name = models.CharField(max_length=230,blank=False, null=False,
             verbose_name = 'State Category'),  # Field name made lowercase.
@@ -148,7 +156,9 @@ class StgSpecialcategorization(TranslatableModel):
 
 
 class StgLocation(TranslatableModel):
-    location_id = models.AutoField(primary_key=True)  # Field name made lowercase.
+    location_id = models.AutoField(primary_key=True)
+    uuid = uuid = models.CharField(unique=True,max_length=36,blank=False,null=False,
+        default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')
     locationlevel = models.ForeignKey('StgLocationLevel', models.PROTECT,
         verbose_name = 'Location Level',
         help_text="You are not allowed to make changes to this Field because it \

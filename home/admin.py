@@ -107,3 +107,61 @@ class MeasuredAdmin(TranslatableAdmin,OverideExport):
     search_fields = ('name',) #display search field
     list_per_page = 15 #limit records displayed on admin site to 15
     exclude = ('date_created','date_lastupdated','code',)
+
+# ---------------------------------------------------------------------------------------------
+# The following two admin classes are used to customize the Data_Wizard page.
+# The classes overrides admin.py in site-packages/data_wizard/sources/
+# ---------------------------------------------------------------------------------------------
+class FileSourceAdmin(ImportActionModelAdmin):
+    def get_queryset(self, request):
+    		qs = super().get_queryset(request)
+    		if request.user.is_superuser or request.user.groups.filter(
+                name__icontains='Admins'):
+    			return qs #provide access to all instances/rows of fact data indicators
+    		return qs.filter(location=request.user.location)  # provide access to user's country indicator instances
+    def formfield_for_foreignkey(self, db_field, request =None, **kwargs):
+        if db_field.name == "location":
+            if request.user.is_superuser:
+                kwargs["queryset"] = StgLocation.objects.filter(
+                locationlevel__translations__name__in =['Global','Regional','Country']).order_by(
+                    'locationlevel', 'location_id') #superuser can access all countries at level 2 in the database
+            elif request.user.groups.filter(name__icontains='Admins'):
+                kwargs["queryset"] = StgLocation.objects.filter(
+                locationlevel__translations__name__in =['Regional','Country']).order_by(
+                    'locationlevel', 'location_id')
+            else:
+                kwargs["queryset"] = StgLocation.objects.filter(
+                    #permissions for user country filter---works as per Davy's request
+                    location_id=request.user.location_id)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+    fields = ('location','name','file',)
+    list_display=['name','location','date']
+admin.site.register(FileSource, FileSourceAdmin)
+
+
+# This class admin class is used to customize change page for the URL data source
+class URLSourceAdmin(ImportActionModelAdmin):
+    def get_queryset(self, request):
+    		qs = super().get_queryset(request)
+    		if request.user.is_superuser or request.user.groups.filter(
+                name__icontains='Admins'):
+    			return qs #provide access to all instances/rows of fact data indicators
+    		return qs.filter(location=request.user.location)  # provide access to user's country indicator instances
+    def formfield_for_foreignkey(self, db_field, request =None, **kwargs):
+        if db_field.name == "location":
+            if request.user.is_superuser:
+                kwargs["queryset"] = StgLocation.objects.filter(
+                locationlevel__translations__name__in =['Global','Regional','Country']).order_by(
+                    'locationlevel', 'location_id') #superuser can access all countries at level 2 in the database
+            elif request.user.groups.filter(name__icontains='Admins'):
+                kwargs["queryset"] = StgLocation.objects.filter(
+                locationlevel__translations__name__in =['Regional','Country']).order_by(
+                    'locationlevel', 'location_id')
+            else:
+                kwargs["queryset"] = StgLocation.objects.filter(
+                    #permissions for user country filter---works as per Davy's request
+                    location_id=request.user.location_id)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+    fields = ('location','name','url',)
+    list_display=['name','location','url','date']
+admin.site.register(URLSource,URLSourceAdmin)

@@ -4,15 +4,13 @@ from django.utils.html import format_html
 import data_wizard # Solution to data import madness that had refused to go
 from django.forms import TextInput,Textarea #customize textarea row and column size
 from import_export.formats import base_formats
-from .models import StgProductDomain,StgKnowledgeProduct,StgResourceType
+from .models import (StgFacilityType,StgFacilityInfrastructure,
+    StgFacilityOwnership,StgHealthFacility,StgServiceDomain)
 from commoninfo.admin import OverideImportExport,OverideExport
 # from publications.serializers import StgKnowledgeProductSerializer
-from regions.models import StgLocation
 from django_admin_listfilter_dropdown.filters import (
     DropdownFilter, RelatedDropdownFilter, ChoiceDropdownFilter,
     RelatedOnlyDropdownFilter) #custom
-from .resources import (StgKnowledgeProductResourceExport,
-    StgKnowledgeProductResourceImport)
 from import_export.admin import (ImportExportModelAdmin, ExportMixin,
     ImportExportActionModelAdmin)
 
@@ -29,23 +27,50 @@ def transition_to_rejected (modeladmin, request, queryset):
     queryset.update (comment = 'rejected')
 transition_to_rejected.short_description = "Mark selected as Rejected"
 
-@admin.register(StgResourceType)
-class ResourceTypeAdmin(TranslatableAdmin):
+@admin.register(StgFacilityType)
+class FacilityTypeAdmin(TranslatableAdmin):
     from django.db import models
     formfield_overrides = {
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
     }
-
-    list_display=['code','name','categorization','description']
+    list_display=['code','name','description']
     list_display_links =('code', 'name',)
     search_fields = ('code','name',) #display search field
-    list_per_page = 15 #limit records displayed on admin site to 15
+    list_per_page = 30 #limit records displayed on admin site to 15
     exclude = ('date_created','date_lastupdated','code',)
 
 
-@admin.register(StgProductDomain)
-class ProductDomainAdmin(TranslatableAdmin,OverideExport):
+@admin.register(StgFacilityInfrastructure)
+class FacilityInfrastructure (TranslatableAdmin):
+    from django.db import models
+    formfield_overrides = {
+        models.CharField: {'widget': TextInput(attrs={'size':'100'})},
+        models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
+    }
+    list_display=['code','name','shortname','description']
+    list_display_links =('code', 'name',)
+    search_fields = ('code','name',) #display search field
+    list_per_page = 30 #limit records displayed on admin site to 15
+    exclude = ('date_created','date_lastupdated','code',)
+
+
+@admin.register(StgFacilityOwnership)
+class FacilityOwdership (TranslatableAdmin):
+    from django.db import models
+    formfield_overrides = {
+        models.CharField: {'widget': TextInput(attrs={'size':'100'})},
+        models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
+    }
+    list_display=['code','name','location','shortname','description','address',]
+    list_display_links =('code', 'name',)
+    search_fields = ('code','name','shortname',) #display search field
+    list_per_page = 30 #limit records displayed on admin site to 15
+    exclude = ('date_created','date_lastupdated','code',)
+
+
+@admin.register(StgServiceDomain)
+class ServiceDomainAdmin(TranslatableAdmin,OverideExport):
     from django.db import models
     formfield_overrides = {
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
@@ -53,31 +78,30 @@ class ProductDomainAdmin(TranslatableAdmin,OverideExport):
     }
 
     fieldsets = (
-        ('Resource Attributes', {
+        ('Service Domain Attributes', {
                 'fields':('name','shortname','description','parent',) #afrocode may be null
             }),
-        ('Resource Publications', {
-                'fields':('publications',) #afrocode may be null
+        ('Service Domain Facilities', {
+                'fields':('facilities','level') #afrocode may be null
             }),
         )
 
     list_display=['name','code','shortname','description','level']
-    list_display_links =('code', 'name',)
+    list_display_links =('code', 'name','shortname',)
     search_fields = ('code','name',) #display search field
 
-    filter_horizontal = ('publications',) # this should display an inline with multiselect
+    filter_horizontal = ('facilities',) # this should display an inline with multiselect
 
     exclude = ('date_created','date_lastupdated','code',)
     list_per_page = 30 #limit records displayed on admin site to 15
     list_filter = (
         ('parent',RelatedOnlyDropdownFilter),
-        ('publications',RelatedOnlyDropdownFilter,),# Added 16/12/2019 for M2M lookup
+        ('facilities',RelatedOnlyDropdownFilter,),# Added 16/12/2019 for M2M lookup
     )
 
-# data_wizard.register(StgKnowledgeProduct)
-#     "Import Knowledge Resource List",StgKnowledgeProductSerializer)
-@admin.register(StgKnowledgeProduct)
-class ProductAdmin(TranslatableAdmin,ImportExportModelAdmin,ImportExportActionModelAdmin):
+
+@admin.register(StgHealthFacility)
+class FacilityAdmin(TranslatableAdmin,ImportExportModelAdmin,ImportExportActionModelAdmin):
     from django.db import models
     formfield_overrides = {
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
@@ -90,16 +114,6 @@ class ProductAdmin(TranslatableAdmin,ImportExportModelAdmin,ImportExportActionMo
             # Provide access to all instances/rows of all location, i.e. all AFRO member states
             return qs
         return qs.filter(location_id=request.user.location_id)#provide user with specific country details!
-
-    #to make URl clickable, I changed show_url to just url in the list_display tuple
-    def show_external_url(self, obj):
-        return format_html("<a href='{url}'>{url}</a>", url=obj.external_url)
-
-    def show_url(self, obj):
-        return obj.url if obj.url else 'None'
-
-    show_external_url.allow_tags = True
-    show_external_url.short_description= 'External File Link'
 
     """
     Returns available export formats.
@@ -122,58 +136,56 @@ class ProductAdmin(TranslatableAdmin,ImportExportModelAdmin,ImportExportActionMo
               base_formats.XLSX,
         )
         return [f for f in formats if f().can_export()]
+    #
+    # def get_export_resource_class(self):
+    #     return StgKnowledgeProductResourceExport
+    #
+    # def get_import_resource_class(self):
+    #     return StgKnowledgeProductResourceImport
 
-    def get_export_resource_class(self):
-        return StgKnowledgeProductResourceExport
-
-    def get_import_resource_class(self):
-        return StgKnowledgeProductResourceImport
-
-     #This function is used to register permissions for approvals. See signals,py
-    def get_actions(self, request):
-        actions = super(ProductAdmin, self).get_actions(request)
-        if not request.user.has_perm('resources.approve_stgknowledgeproduct'):
-           actions.pop('transition_to_approved', None)
-        if not request.user.has_perm('resources.reject_stgknowledgeproduct'):
-            actions.pop('transition_to_rejected', None)
-        if not request.user.has_perm('resources.delete_stgknowledgeproduct'):
-            actions.pop('delete_selected', None)
-        return actions
-
-    def get_export_resource_class(self):
-        return StgKnowledgeProductResourceExport
-
-    def get_import_resource_class(self):
-        return StgKnowledgeProductResourceImport
+    #  #This function is used to register permissions for approvals. See signals,py
+    # def get_actions(self, request):
+    #     actions = super(ProductAdmin, self).get_actions(request)
+    #     if not request.user.has_perm('resources.approve_stgknowledgeproduct'):
+    #        actions.pop('transition_to_approved', None)
+    #     if not request.user.has_perm('resources.reject_stgknowledgeproduct'):
+    #         actions.pop('transition_to_rejected', None)
+    #     if not request.user.has_perm('resources.delete_stgknowledgeproduct'):
+    #         actions.pop('delete_selected', None)
+    #     return actions
+    #
+    # def get_export_resource_class(self):
+    #     return StgKnowledgeProductResourceExport
+    #
+    # def get_import_resource_class(self):
+    #     return StgKnowledgeProductResourceImport
 
     fieldsets = (
-        ('Publication Attributes', {
-                'fields':('title','type','categorization','location',) #afrocode may be null
+        ('Facility Attributes', {
+                'fields':('name','shortname','type','description','owner') #afrocode may be null
             }),
-            ('Description & Abstract', {
-                'fields': ('description', 'abstract',),
+            ('Infrastructure and Location', {
+                'fields': ('location', 'infrastructure','year_established'),
             }),
-            ('Attribution & Access Details', {
-                'fields': ('author','year_published','internal_url',
-                    'external_url','cover_image',),
+            ('Contact & Access Details', {
+                'fields': ('address','latitude','longitude','email','url',),
             }),
         )
 
-    def get_location(obj):
-           return obj.location.name
-    get_location.short_description = 'Location'
-
-
-    def get_type(obj):
-           return obj.type.name
-    get_type.short_description = 'Type'
+    # def get_location(obj):
+    #        return obj.location.name
+    # get_location.short_description = 'Location'
+    #
+    #
+    # def get_type(obj):
+    #        return obj.type.name
+    # get_type.short_description = 'Type'
 
     # To display the choice field values use the helper method get_foo_display where foo is the field name
-    list_display=['code','title','author','year_published',get_type,get_location,
-        'internal_url','show_external_url','cover_image','get_comment_display']
-    list_display_links = ['code','title',]
-    readonly_fields = ('comment',)
-    search_fields = ('title','type__name','location__name',) #display search field
+    list_display=['code','name','year_established','owner','type','infrastructure',
+        'url','address','email','status']
+    list_display_links = ['code','name',]
+    search_fields = ('name','type__name','location__name',) #display search field
     list_per_page = 30 #limit records displayed on admin site to 30
     actions = [transition_to_pending,transition_to_approved,
         transition_to_rejected]

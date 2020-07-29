@@ -8,6 +8,8 @@ from django.core.exceptions import ValidationError
 class StgCategoryParent(TranslatableModel):
     """This model has stgcategory data"""
     category_id = models.AutoField(primary_key=True, verbose_name = 'Category Name')  # Field name made lowercase.
+    uuid = uuid = models.CharField(unique=True,max_length=36, blank=False, null=False,
+        default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')  # Field name made lowercase.
     translations = TranslatedFields(
         name = models.CharField(max_length=230, blank=False, null=False,
             verbose_name = _('Category')),  # Field name made lowercase.
@@ -33,6 +35,8 @@ class StgCategoryParent(TranslatableModel):
 
 class StgCategoryoption(TranslatableModel):
     categoryoption_id = models.AutoField(primary_key=True)  # Field name made lowercase.
+    uuid = uuid = models.CharField(unique=True,max_length=36, blank=False, null=False,
+        default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')  # Field name made lowercase.
     category = models.ForeignKey(StgCategoryParent, models.PROTECT,
         verbose_name = 'Disaggregation Category')  # Field name made lowercase.
     translations = TranslatedFields(
@@ -60,6 +64,8 @@ class StgCategoryoption(TranslatableModel):
 
 class StgDatasource(TranslatableModel):
     datasource_id = models.AutoField(primary_key=True)  # Field name made lowercase.
+    uuid = uuid = models.CharField(unique=True,max_length=36, blank=False, null=False,
+        default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')  # Field name made lowercase.
     translations = TranslatedFields(
         name = models.CharField(max_length=230, blank=False, null=False,
             verbose_name = 'Data Source'),  # Field name made lowercase.
@@ -91,6 +97,8 @@ class StgDatasource(TranslatableModel):
 
 class StgValueDatatype(TranslatableModel):
     valuetype_id = models.AutoField(primary_key=True)  # Field name made lowercase.
+    uuid = uuid = models.CharField(unique=True,max_length=36, blank=False, null=False,
+        default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')  # Field name made lowercase.
     translations = TranslatedFields(
         name = models.CharField(max_length=50, verbose_name = 'Value Name'),  # Field name made lowercase.
         shortname = models.CharField(max_length=50, blank=True, null=True,
@@ -116,6 +124,8 @@ class StgValueDatatype(TranslatableModel):
 
 class StgMeasuremethod(TranslatableModel):
     measuremethod_id = models.AutoField(primary_key=True)
+    uuid = uuid = models.CharField(unique=True,max_length=36, blank=False, null=False,
+        default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')
     translations = TranslatedFields(
         name = models.CharField(max_length=230, blank=False, null=False,
             verbose_name = 'Name'),  # Field name made lowercase.

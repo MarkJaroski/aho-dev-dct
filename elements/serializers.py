@@ -1,15 +1,14 @@
 from rest_framework.serializers import (
     ModelSerializer, ReadOnlyField, Serializer,DecimalField)
-
+from parler_rest.serializers import TranslatableModelSerializer
+from parler_rest.fields import TranslatedFieldsField
 from elements.models import (StgDataElement, FactDataElement)
 
-
-
-class StgDataElementSerializer(ModelSerializer):
+class StgDataElementSerializer(TranslatableModelSerializer):
+    translations = TranslatedFieldsField(shared_model=StgDataElement)
     class Meta:
         model = StgDataElement
-        fields = ['dataelement_id','name','shortname', 'code','measuremethod',
-            'description', 'aggregation_type']
+        fields = ['dataelement_id','code','aggregation_type','translations']
 
 
 # This clas overrides the decimal field in order to

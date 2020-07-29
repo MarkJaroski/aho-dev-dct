@@ -12,10 +12,15 @@ def make_choices(values):
 
 # New model to take care of resource types added 11/05/2019 courtesy of Gift
 class StgResourceType(TranslatableModel):
-    type_id = models.AutoField(primary_key=True)  # Field name made lowercase.
+    FLAG = ('publications','health_workforce','general',)
+    type_id = models.AutoField(primary_key=True)
+    uuid = uuid = models.CharField(unique=True,max_length=36,blank=False,null=False,
+        default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')
     translations = TranslatedFields(
         name = models.CharField(max_length=230, blank=False, null=False,
             verbose_name = 'Resource Type Name'),  # Field name made lowercase.
+        categorization = models.CharField(max_length=50, choices=make_choices(FLAG),
+            default=FLAG[0],verbose_name = 'Category'),
         description = models.TextField(blank=True, null=True,
             verbose_name = 'Description')  # Field name made lowercase.
     )
@@ -29,7 +34,7 @@ class StgResourceType(TranslatableModel):
     class Meta:
         managed = True
         db_table = 'stg_resource_type'
-        verbose_name = 'Type'
+        verbose_name = 'Resource Type'
         verbose_name_plural = 'Resource Types'
         ordering = ('code', )
 
@@ -59,7 +64,9 @@ class StgKnowledgeProduct(TranslatableModel):
         ('toolkit', 'Toolkit'),
         ('publication', 'Publication'),
     )
-    product_id = models.AutoField(primary_key=True)  # Field name made lowercase.
+    product_id = models.AutoField(primary_key=True)
+    uuid = uuid = models.CharField(unique=True,max_length=36,blank=False,null=False,
+        default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')
     type = models.ForeignKey(StgResourceType, models.PROTECT,blank=False,
         null=False,verbose_name = 'Resource Type')
     translations = TranslatedFields(
@@ -126,7 +133,9 @@ class StgKnowledgeProduct(TranslatableModel):
 
 
 class StgProductDomain(TranslatableModel):
-    domain_id = models.AutoField(primary_key=True)  # Field name made lowercase.
+    domain_id = models.AutoField(primary_key=True)
+    uuid = uuid = models.CharField(unique=True,max_length=36,blank=False,null=False,
+        default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')
     translations = TranslatedFields(
         name = models.CharField(max_length=230, blank=False, null=False,
             verbose_name = 'Theme Name'),  # Field name made lowercase.

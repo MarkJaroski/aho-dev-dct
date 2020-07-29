@@ -78,16 +78,18 @@ def get_app_list(context, order=True):
                         'models': [model_dict],
                     }
 
-    #This dict has been added to take care of memu ordering on AHO interface
+    # This dict has been added to take care of modules ordering on the interface
     ordering = {
     'Home':1,
     'Indicators':2,
     'Elements':3,
     'Publications':4,
     'Regions':5,
-    'Sources':6,
-    'Data_Wizard':7,
-    'Authentication':8
+    'Facilities':6,
+    'Health_Workforce':7,
+    'Sources':8,
+    'Data_Wizard':9,
+    'Authentication':10
     }
     # Create the list to be sorted using the ordering dict.
     app_list = list(app_dict.values())
