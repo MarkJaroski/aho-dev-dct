@@ -63,6 +63,13 @@ class StgCategoryoption(TranslatableModel):
         return self.name #ddisplay disagregation options
 
 class StgDatasource(TranslatableModel):
+    LEVEL_CHOICES = ( #choices for approval of indicator data by authorized users
+        (1, _('Global')),
+        (2,_('Regional')),
+        (3,_('National')),
+        (4,_('Sub-national')),
+        (5,_('Independent'))
+    )
     datasource_id = models.AutoField(primary_key=True)  # Field name made lowercase.
     uuid = uuid = models.CharField(unique=True,max_length=36, blank=False, null=False,
         default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')  # Field name made lowercase.
@@ -71,6 +78,10 @@ class StgDatasource(TranslatableModel):
             verbose_name = 'Data Source'),  # Field name made lowercase.
         shortname = models.CharField(max_length=50, blank=True, null=True,
             verbose_name = 'Short Name'),  # Field name made lowercase.
+        level = models.CharField(max_length=2,blank=False, null=False,
+            choices= LEVEL_CHOICES,verbose_name = 'Source Level',
+            default=LEVEL_CHOICES[2][0],
+            help_text="Level can be global, regional, national, subnational"),  # Field name made lowercase.
         description = models.TextField( blank=False, null=False,
             default='No specific definition')
     )
@@ -143,7 +154,7 @@ class StgMeasuremethod(TranslatableModel):
         managed = True
         db_table = 'stg_measuremethod'
         verbose_name = ' Measure Type'
-        verbose_name_plural = 'Indicator Measure Types'
+        verbose_name_plural = 'Measure Types'
         #ordering = ('name', )
 
     def __str__(self):

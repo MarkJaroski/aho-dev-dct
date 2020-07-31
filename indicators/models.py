@@ -75,8 +75,8 @@ class StgIndicator(TranslatableModel):
         unique=True, verbose_name = 'Indicator Code',)  # Field name made lowercase.
     gen_code = models.CharField( max_length=10, blank=True, null=True,
         verbose_name = 'Geneva Code')  # Field name made lowercase.
-    measuremethod = models.ForeignKey(StgMeasuremethod, models.PROTECT,blank=True,
-        null=True, verbose_name = 'Type of Measure')  # Field name made lowercase.
+    # measuremethod = models.ForeignKey(StgMeasuremethod, models.PROTECT,blank=True,
+    #     null=True, verbose_name = 'Type of Measure')  # Field name made lowercase.
     reference = models.ForeignKey(StgIndicatorReference, models.PROTECT,
         default=1, verbose_name ='Indicator Reference')  # Field name made lowercase.
     date_created = models.DateTimeField(blank=True, null=True, auto_now_add=True,
@@ -164,14 +164,16 @@ class FactDataIndicator(models.Model):
     datasource = models.ForeignKey(StgDatasource, models.PROTECT,
         verbose_name = 'Data Source')  # Field name made lowercase.
     # This field is used to lookup the type of data required such as text, integer or float
-    valuetype = models.ForeignKey(StgValueDatatype, models.PROTECT,
-        null=False,blank=False,default=999,verbose_name = 'Data Type')  # Field name made lowercase.
+    measuremethod = models.ForeignKey(StgMeasuremethod, models.PROTECT,blank=True,
+        null=True, verbose_name = 'Type of Measure')  # Field name made lowercase.
+    # valuetype = models.ForeignKey(StgValueDatatype, models.PROTECT,
+    #     null=False,blank=False,default=999,verbose_name = 'Data Type')  # Field name made lowercase.
     numerator_value = models.DecimalField(max_digits=20, decimal_places=2,
         blank=True, null=True, verbose_name = _('Numerator'))  # Field name made lowercase.
     denominator_value = models.DecimalField(max_digits=20,decimal_places=2,
         blank=True, null=True, verbose_name = 'Denominator')  # Field name made lowercase.
     value_received = DecimalField(max_digits=20,decimal_places=2,
-        blank=True, null=False, verbose_name = 'Value')  # Field name made lowercase.
+        blank=True, null=False, verbose_name = 'Data Value')  # Field name made lowercase.
     min_value = models.DecimalField(max_digits=20,decimal_places=2,
         blank=True, null=True,verbose_name = 'Minimum Value')  # Field name made lowercase.
     max_value = models.DecimalField(max_digits=20,decimal_places=2,

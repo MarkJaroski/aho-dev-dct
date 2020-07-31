@@ -6,6 +6,7 @@ from parler.admin import TranslatableAdmin
 from django.forms import TextInput,Textarea
 from import_export.formats import base_formats
 from django.forms import BaseInlineFormSet
+from django.forms.models import ModelChoiceField, ModelChoiceIterator
 from import_export.admin import (
     ImportExportModelAdmin,ExportMixin, ImportExportActionModelAdmin,)
 #This are additional imports to override the default Django forms
@@ -24,8 +25,7 @@ from commoninfo.fields import RoundingDecimalFormField # For fixing rounded deci
 from django_admin_listfilter_dropdown.filters import (
     DropdownFilter, RelatedDropdownFilter, ChoiceDropdownFilter,
     RelatedOnlyDropdownFilter) #custom
-from home.models import StgCategoryoption
-from django.forms.models import ModelChoiceField, ModelChoiceIterator
+from home.models import ( StgDatasource,StgCategoryoption)
 
 # The following 3 functions are used to register admin actions
 # performed on the data elements. See actions listbox
@@ -198,13 +198,17 @@ class DataElementFactAdmin(OverideImportExport,ImportExportActionModelAdmin):
         if db_field.name == "location":
             if request.user.is_superuser:
                 kwargs["queryset"] = StgLocation.objects.filter(
-                pk__gte=1).order_by('location_id')
+                # Looks up for the traslated location level name in related table
+                locationlevel__translations__name__in =[
+                'Global','Regional','Country']).order_by('locationlevel', 'location_id')
             elif request.user.groups.filter(name__icontains='Admin'):
                 kwargs["queryset"] = StgLocation.objects.filter(
-                pk__gt=1).order_by('location_id')
+                locationlevel__translations__name__in =[
+                'Regional','Country']).order_by('locationlevel', 'location_id')
             else:
                 kwargs["queryset"] = StgLocation.objects.filter(
-                    location_id=request.user.location_id) #permissions for user country filter---works as per Davy's request
+                    location_id=request.user.location_id) #permissions to user country only
+
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     #This function is used to get the afrocode from related indicator model for use in list_display

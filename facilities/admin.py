@@ -6,8 +6,9 @@ from django.forms import TextInput,Textarea #customize textarea row and column s
 from import_export.formats import base_formats
 from .models import (StgFacilityType,StgFacilityInfrastructure,
     StgFacilityOwnership,StgHealthFacility,StgServiceDomain)
-from commoninfo.admin import OverideImportExport,OverideExport
+from commoninfo.admin import OverideImportExport,OverideExport,OverideImport
 # from publications.serializers import StgKnowledgeProductSerializer
+from .resources import (StgFacilityResourceExport,)
 from django_admin_listfilter_dropdown.filters import (
     DropdownFilter, RelatedDropdownFilter, ChoiceDropdownFilter,
     RelatedOnlyDropdownFilter) #custom
@@ -62,7 +63,7 @@ class FacilityOwdership (TranslatableAdmin):
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
     }
-    list_display=['code','name','location','shortname','description','address',]
+    list_display=['code','name','location','shortname','description',]
     list_display_links =('code', 'name',)
     search_fields = ('code','name','shortname',) #display search field
     list_per_page = 30 #limit records displayed on admin site to 15
@@ -91,7 +92,6 @@ class ServiceDomainAdmin(TranslatableAdmin,OverideExport):
     search_fields = ('code','name',) #display search field
 
     filter_horizontal = ('facilities',) # this should display an inline with multiselect
-
     exclude = ('date_created','date_lastupdated','code',)
     list_per_page = 30 #limit records displayed on admin site to 15
     list_filter = (
@@ -101,7 +101,8 @@ class ServiceDomainAdmin(TranslatableAdmin,OverideExport):
 
 
 @admin.register(StgHealthFacility)
-class FacilityAdmin(TranslatableAdmin,ImportExportModelAdmin,ImportExportActionModelAdmin):
+class FacilityAdmin(TranslatableAdmin,ImportExportModelAdmin,OverideImport,
+        ImportExportActionModelAdmin):
     from django.db import models
     formfield_overrides = {
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
@@ -136,30 +137,8 @@ class FacilityAdmin(TranslatableAdmin,ImportExportModelAdmin,ImportExportActionM
               base_formats.XLSX,
         )
         return [f for f in formats if f().can_export()]
-    #
-    # def get_export_resource_class(self):
-    #     return StgKnowledgeProductResourceExport
-    #
-    # def get_import_resource_class(self):
-    #     return StgKnowledgeProductResourceImport
 
-    #  #This function is used to register permissions for approvals. See signals,py
-    # def get_actions(self, request):
-    #     actions = super(ProductAdmin, self).get_actions(request)
-    #     if not request.user.has_perm('resources.approve_stgknowledgeproduct'):
-    #        actions.pop('transition_to_approved', None)
-    #     if not request.user.has_perm('resources.reject_stgknowledgeproduct'):
-    #         actions.pop('transition_to_rejected', None)
-    #     if not request.user.has_perm('resources.delete_stgknowledgeproduct'):
-    #         actions.pop('delete_selected', None)
-    #     return actions
-    #
-    # def get_export_resource_class(self):
-    #     return StgKnowledgeProductResourceExport
-    #
-    # def get_import_resource_class(self):
-    #     return StgKnowledgeProductResourceImport
-
+    #resource_class = StgFacilityResourceExport
     fieldsets = (
         ('Facility Attributes', {
                 'fields':('name','shortname','type','description','owner') #afrocode may be null
@@ -168,27 +147,16 @@ class FacilityAdmin(TranslatableAdmin,ImportExportModelAdmin,ImportExportActionM
                 'fields': ('location', 'infrastructure','year_established'),
             }),
             ('Contact & Access Details', {
-                'fields': ('address','latitude','longitude','email','url',),
+                'fields': ('latitude','longitude','address','email','phone_number','url',),
             }),
         )
-
-    # def get_location(obj):
-    #        return obj.location.name
-    # get_location.short_description = 'Location'
-    #
-    #
-    # def get_type(obj):
-    #        return obj.type.name
-    # get_type.short_description = 'Type'
-
+    filter_horizontal = ['infrastructure'] # this should display an inline with multisele
     # To display the choice field values use the helper method get_foo_display where foo is the field name
-    list_display=['code','name','year_established','owner','type','infrastructure',
-        'url','address','email','status']
+    list_display=['code','name','year_established','owner','type','url','address',
+        'email','phone_number']
     list_display_links = ['code','name',]
     search_fields = ('name','type__name','location__name',) #display search field
     list_per_page = 30 #limit records displayed on admin site to 30
-    actions = [transition_to_pending,transition_to_approved,
-        transition_to_rejected]
     exclude = ('date_created','date_lastupdated','code',)
     list_filter = (
         ('location',RelatedOnlyDropdownFilter),

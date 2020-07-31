@@ -79,16 +79,16 @@ class DatasourceAdmin(TranslatableAdmin,OverideExport):
     }
     fieldsets = (
         ('Data source Attributes', {
-                'fields': ('name','shortname',)
+                'fields': ('name','shortname','level',)
             }),
             ('Detailed Description', {
                 'fields': ('description',),
             }),
         )
     resource_class = DataSourceExport #for export only
-    list_display=['name','shortname','code','description']
+    list_display=['name','shortname','code','description','level']
     list_display_links = ('code', 'name',)
-    search_fields = ('code','name',) #display search field
+    search_fields = ('code','name','level') #display search field
     list_per_page = 15 #limit records displayed on admin site to 15
     exclude = ('date_created','date_lastupdated',)
 

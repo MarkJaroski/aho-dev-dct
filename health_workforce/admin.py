@@ -10,21 +10,22 @@ from import_export.admin import (ImportExportModelAdmin, ExportMixin,
     ImportExportActionModelAdmin)
 from commoninfo.admin import OverideImportExport,OverideExport
 from .models import (ResourceTypeProxy,HumanWorkforceResourceProxy,
-    StgInstitutionType,StgTrainingInstitution,StgHealthWorkforceFacts)
+    StgInstitutionType,StgTrainingInstitution,StgHealthWorkforceFacts,
+    StgHealthCadre,StgInstitutionProgrammes)
 from facilities.models import (StgHealthFacility,)
 from regions.models import StgLocation
 
 #Methods used to register global actions performed on data. See actions listbox
 def transition_to_pending (modeladmin, request, queryset):
-    queryset.update(comment = 'pending')
+    queryset.update(status = 'pending')
 transition_to_pending.short_description = "Mark selected as Pending"
 
 def transition_to_approved (modeladmin, request, queryset):
-    queryset.update (comment = 'approved')
+    queryset.update (status = 'approved')
 transition_to_approved.short_description = "Mark selected as Approved"
 
 def transition_to_rejected (modeladmin, request, queryset):
-    queryset.update (comment = 'rejected')
+    queryset.update (status = 'rejected')
 transition_to_rejected.short_description = "Mark selected as Rejected"
 
 
@@ -56,6 +57,22 @@ class InsitutionTypeAdmin(TranslatableAdmin):
     search_fields = ('code','name','shortname') #display search field
     list_per_page = 30 #limit records displayed on admin site to 15
     exclude = ('date_created','date_lastupdated','code',)
+
+
+@admin.register(StgInstitutionProgrammes)
+class ProgrammesAdmin(TranslatableAdmin):
+    from django.db import models
+    formfield_overrides = {
+        models.CharField: {'widget': TextInput(attrs={'size':'100'})},
+        models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
+    }
+
+    list_display=['code','name','description']
+    list_display_links =('code', 'name',)
+    search_fields = ('code','name',) #display search field
+    list_per_page = 15 #limit records displayed on admin site to 15
+    exclude = ('date_created','date_lastupdated','code',)
+
 
 @admin.register(HumanWorkforceResourceProxy)
 class ResourceAdmin(TranslatableAdmin,ImportExportModelAdmin,
@@ -105,11 +122,6 @@ class ResourceAdmin(TranslatableAdmin,ImportExportModelAdmin,
         )
         return [f for f in formats if f().can_export()]
 
-    def get_export_resource_class(self):
-        return StgKnowledgeProductResourceExport
-
-    def get_import_resource_class(self):
-        return StgKnowledgeProductResourceImport
 
      #This function is used to register permissions for approvals. See signals,py
     def get_actions(self, request):
@@ -141,17 +153,17 @@ class ResourceAdmin(TranslatableAdmin,ImportExportModelAdmin,
             }),
         )
 
-    # def get_location(obj):
-    #        return obj.location.name
-    # get_location.short_description = 'Location'
-    #
-    #
-    # def get_type(obj):
-    #        return obj.type.name
-    # get_type.short_description = 'Type'
+    def get_location(obj):
+           return obj.location.name
+    get_location.short_description = 'Location'
+
+
+    def get_type(obj):
+           return obj.type.name
+    get_type.short_description = 'Type'
 
     # To display the choice field values use the helper method get_foo_display where foo is the field name
-    list_display=['code','title','author','year_published',
+    list_display=['code','title','author',get_type,get_location,'year_published',
         'internal_url','show_external_url','cover_image','get_comment_display']
     list_display_links = ['code','title',]
     readonly_fields = ('comment',)
@@ -182,31 +194,39 @@ class TrainingInsitutionAdmin(TranslatableAdmin,OverideExport):
         return qs.filter(location_id=request.user.location_id)#provide the user with specific country details!
 
     # #This function is for filtering location to display regional level only. The database field must be parentid for the dropdown list
-    # def formfield_for_foreignkey(self, db_field, request =None, **kwargs): #to implement user filtering her
-    #     if db_field.name == "parent":
-    #         if request.user.is_superuser or request.user.groups.filter(
-    #             name__icontains='Admins'):
-    #             kwargs["queryset"] = StgLocation.objects.filter(
-    #             locationlevel__name__in =['Regional','Global']).order_by('locationlevel',) #superuser can access all countries at level 2 in the database
-    #         else:
-    #             kwargs["queryset"] = StgLocation.objects.filter(
-    #                 location_id=request.user.location_id) #permissions for user country filter---works as per Davy's request
-    #     return super().formfield_for_foreignkey(db_field, request, **kwargs)
+    def formfield_for_foreignkey(self, db_field, request =None, **kwargs): #to implement user filtering her
+        if db_field.name == "location":
+            if request.user.is_superuser:
+                kwargs["queryset"] = StgLocation.objects.filter(
+                # Looks up for the traslated location level name in related table
+                locationlevel__translations__name__in =[
+                'Global','Regional','Country']).order_by('locationlevel', 'location_id')
+            elif request.user.groups.filter(name__icontains='Admin'):
+                kwargs["queryset"] = StgLocation.objects.filter(
+                locationlevel__translations__name__in =[
+                'Regional','Country']).order_by('locationlevel', 'location_id')
+            else:
+                kwargs["queryset"] = StgLocation.objects.filter(
+                    location_id=request.user.location_id) #permissions to user country only
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     fieldsets = (
         ('Institution Details',{
                 'fields': (
-                    'name', 'type','accreditation','accreditation_info',)
+                    'name', 'type','accreditation','accreditation_info','regulator')
+            }),
+
+            ('Contact Details', {
+                'fields': ('location','address','posta','email','phone_number',
+                'url', 'latitude','longitude'),
             }),
             ('Academic Details', {
-                'fields': ('programmes', 'level','language',),
-            }),
-            ('Contact Details', {
-                'fields': ('location','address','posta','email','latitude','longitude'),
+                'fields': ( 'faculty','language','programmes',),
             }),
         )
 
-    list_display=['name','type','code','programmes','location','language',]
+    filter_horizontal = ('programmes',) # this should display  inline with multiselect
+    list_display=['name','type','code','location','url','email']
     list_display_links = ('code', 'name',) #display as clickable link
     search_fields = ('code','name', 'type') #display search field
     list_per_page = 30 #limit records displayed on admin site to 15
@@ -217,15 +237,56 @@ class TrainingInsitutionAdmin(TranslatableAdmin,OverideExport):
     )
 
 
-
-@admin.register(StgHealthWorkforceFacts)
-class HealthworforceFactsAdmin(TranslatableAdmin,ImportExportModelAdmin,
-    ImportExportActionModelAdmin):
+@admin.register(StgHealthCadre)
+class HealthCadreAdmin(TranslatableAdmin,OverideExport):
     from django.db import models
     formfield_overrides = {
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
     }
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser or request.user.groups.filter(
+            name__icontains='Admins'):
+            return qs #provide access to all instances/rows of all location, i.e. all AFRO member states
+        return qs.filter(location_id=request.user.location_id)#provide the user with specific country details!
+
+    fieldsets = (
+        ('Occulation/Cadre Details',{
+                'fields': (
+                    'name', 'shortname','code','description','academic','parent')
+            }),
+    )
+    list_display=['name','shortname','code','description','academic','parent']
+    list_display_links = ('code', 'shortname','name',) #display as clickable link
+    search_fields = ('code','name', 'shortname','parent') #display search field
+    list_per_page = 30 #limit records displayed on admin site to 15
+    exclude = ('date_created','date_lastupdated',)
+    list_filter = (
+        ('code',DropdownFilter),
+    )
+
+
+
+@admin.register(StgHealthWorkforceFacts)
+class HealthworforceFactsAdmin(ImportExportModelAdmin,ImportExportActionModelAdmin):
+    from django.db import models
+    formfield_overrides = {
+        models.CharField: {'widget': TextInput(attrs={'size':'100'})},
+        models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
+    }
+
+    def get_actions(self, request):
+        actions = super(HealthworforceFactsAdmin, self).get_actions(request)
+        if not request.user.has_perm('health_workforce.approve_stghealthworkforcefacts'):
+           actions.pop('transition_to_approved', None)
+        if not request.user.has_perm('health_workforce.reject_stghealthworkforcefacts'):
+            actions.pop('transition_to_rejected', None)
+        if not request.user.has_perm('health_workforce.delete_stghealthworkforcefacts'):
+            actions.pop('delete_selected', None)
+        return actions
+
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         if request.user.is_superuser or \
@@ -233,6 +294,22 @@ class HealthworforceFactsAdmin(TranslatableAdmin,ImportExportModelAdmin,
             # Provide access to all instances/rows of all location, i.e. all AFRO member states
             return qs
         return qs.filter(location_id=request.user.location_id)#provide user with specific country details!
+
+    def formfield_for_foreignkey(self, db_field, request =None, **kwargs):
+        if db_field.name == "location":
+            if request.user.is_superuser:
+                kwargs["queryset"] = StgLocation.objects.filter(
+                # Looks up for the traslated location level name in related table
+                locationlevel__translations__name__in =['Global','Regional','Country']).order_by(
+                    'locationlevel', 'location_id') #superuser can access all countries at level 2 in the database
+            elif request.user.groups.filter(name__icontains='Admin'):
+                kwargs["queryset"] = StgLocation.objects.filter(
+                locationlevel__translations__name__in =['Regional','Country']).order_by(
+                    'locationlevel', 'location_id')
+            else:
+                kwargs["queryset"] = StgLocation.objects.filter(
+                    location_id=request.user.location_id) #permissions to user country only
+        return super().formfield_for_foreignkey(db_field, request,**kwargs)
 
     """
     Returns available export formats.
@@ -255,60 +332,23 @@ class HealthworforceFactsAdmin(TranslatableAdmin,ImportExportModelAdmin,
               base_formats.XLSX,
         )
         return [f for f in formats if f().can_export()]
-    #
-    # def get_export_resource_class(self):
-    #     return StgKnowledgeProductResourceExport
-    #
-    # def get_import_resource_class(self):
-    #     return StgKnowledgeProductResourceImport
-
-    #  #This function is used to register permissions for approvals. See signals,py
-    # def get_actions(self, request):
-    #     actions = super(ProductAdmin, self).get_actions(request)
-    #     if not request.user.has_perm('resources.approve_stgknowledgeproduct'):
-    #        actions.pop('transition_to_approved', None)
-    #     if not request.user.has_perm('resources.reject_stgknowledgeproduct'):
-    #         actions.pop('transition_to_rejected', None)
-    #     if not request.user.has_perm('resources.delete_stgknowledgeproduct'):
-    #         actions.pop('delete_selected', None)
-    #     return actions
-    #
-    # def get_export_resource_class(self):
-    #     return StgKnowledgeProductResourceExport
-    #
-    # def get_import_resource_class(self):
-    #     return StgKnowledgeProductResourceImport
 
     fieldsets = (
-        ('Healthworkforce Attributes', {
-                'fields':('name','shortname','code','description',
-                'academic','aggregation_type') #afrocode may be null
+        ('Health Occulation/Cadre Data',{
+                'fields': (
+                    'cadre_id', 'location','categoryoption','datasource',)
             }),
-            (' Location and Affilication', {
-                'fields': ('location', 'institution','facility','status'),
+            ('Reporting Period & Values', {
+                'fields':('start_year','end_year','measuremethod','value',
+            )
             }),
-        )
-
-    # def get_location(obj):
-    #        return obj.location.name
-    # get_location.short_description = 'Location'
-    #
-    #
-    # def get_type(obj):
-    #        return obj.type.name
-    # get_type.short_description = 'Type'
-
-    # To display the choice field values use the helper method get_foo_display where foo is the field name
-    list_display=['name','code','shortname','location','institution','facility',
-        'academic','status']
-    list_display_links = ['code','name','shortname','location']
-    search_fields = ('name','code','shortname','location__name',) #display search field
-    list_per_page = 30 #limit records displayed on admin site to 30
-    actions = [transition_to_pending,transition_to_approved,
-        transition_to_rejected]
+    )
+    actions =[transition_to_pending, transition_to_approved, transition_to_rejected]
+    list_display=['cadre_id','location','categoryoption','period','value','status']
+    list_display_links = ('cadre_id', 'location',) #display as clickable link
+    search_fields = ('cadre_id','cadre_id', 'period') #display search field
+    list_per_page = 30 #limit records displayed on admin site to 15
     exclude = ('date_created','date_lastupdated',)
     list_filter = (
-        ('location',RelatedOnlyDropdownFilter),
-        ('institution',RelatedOnlyDropdownFilter),
-        ('facility',RelatedOnlyDropdownFilter),
+        ('cadre_id',RelatedOnlyDropdownFilter),
     )

@@ -121,11 +121,12 @@ class IndicatorAdmin(TranslatableAdmin,OverideExport): #add export action to fac
             }),
             ('Secondary Attributes', {
                 'fields': ('numerator_description', 'denominator_description',
-                'preferred_datasources','measuremethod',),
+                'preferred_datasources',),
             }),
         )
     resource_class = IndicatorResourceExport
-    list_display=['name','afrocode','shortname','measuremethod']
+    list_display=['name','afrocode','shortname','numerator_description',
+        'denominator_description','reference',]
     list_display_links = ('afrocode', 'name',) #display as clickable link
     search_fields = ('name', 'afrocode') #display search field
     list_per_page = 30 #limit records displayed on admin site to 30
@@ -169,7 +170,7 @@ class IndicatorDomainAdmin(TranslatableAdmin,OverideExport):
 
 class IndicatorProxyForm(forms.ModelForm):
     categoryoption = GroupedModelChoiceField(group_by_field='category',
-        #This queryset was modified by Daniel to order the grouped list by  date created
+    # This queryset was modified by Daniel to order the grouped list by  date created
         queryset=StgCategoryoption.objects.all().order_by('category__category_id'),
     )
 
@@ -269,16 +270,19 @@ class IndicatorFactAdmin(OverideImportExport):
     in ascending order
     """
     def formfield_for_foreignkey(self, db_field, request =None, **kwargs):
-        if db_field.name == "location":# Implements user filtering
+        if db_field.name == "location":
             if request.user.is_superuser:
                 kwargs["queryset"] = StgLocation.objects.filter(
-                pk__gte=1).order_by('location_id')
+                # Looks up for the traslated location level name in related table
+                locationlevel__translations__name__in =['Global','Regional','Country']).order_by(
+                    'locationlevel', 'location_id') #superuser can access all countries at level 2 in the database
             elif request.user.groups.filter(name__icontains='Admin'):
                 kwargs["queryset"] = StgLocation.objects.filter(
-                pk__gte=1).order_by('location_id')
+                locationlevel__translations__name__in =['Regional','Country']).order_by(
+                    'locationlevel', 'location_id')
             else:
                 kwargs["queryset"] = StgLocation.objects.filter(
-                    location_id=request.user.location_id)
+                    location_id=request.user.location_id) #permissions to user country only
 
         # Restricted permission to data source implememnted on 20/03/2020
         if db_field.name == "datasource":
@@ -374,7 +378,7 @@ class FactIndicatorInline(admin.TabularInline):
                     'locationlevel', 'location_id')
             else:
                 kwargs["queryset"] = StgLocation.objects.filter(
-                    location_id=request.user.location_id) #permissions for user country filter---works as per Davy's request
+                    location_id=request.user.location_id) #permissions to user country only
 
     # This is a new construct created upon request by Davy to restrict data source access
         if db_field.name == "datasource":# Restricted data source implememnted on 20/03/2020

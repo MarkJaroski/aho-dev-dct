@@ -1,37 +1,34 @@
 from import_export import resources
 from import_export.fields import Field
-from .models import StgKnowledgeProduct
+from .models import StgHealthFacility
 from import_export.widgets import ForeignKeyWidget
-from .models import StgProductDomain
 from home.models import StgDatasource
 from regions.models import StgLocation
 
 # Davy's Skype 26/10/2018 suggestions - limit fields to be imported/exported
 # using ModelResource. This also applies to
-class StgKnowledgeProductResourceExport (resources.ModelResource):
-    code = Field(attribute='code', column_name='Resource Code')
-    title = Field(attribute='title', column_name='Resource Name')
-    type = Field(attribute='type', column_name='Resource Type')
-    categorization = Field(attribute='categorization',
-        column_name='Reseource Categorization',)
-    domain = Field(attribute='domain__name', column_name='Resource Theme')
+class StgFacilityResourceExport (resources.ModelResource):
+    code = Field(attribute='code', column_name='Facility Code')
+    name = Field(attribute='name',column_name='Facility Name',
+        widget=ForeignKeyWidget(StgHealthFacility, 'name'))
+    type = Field(attribute='type', column_name='Facility Type')
+    owner = Field(attribute='owner',column_name='Facility Ownership ',)
     location = Field(attribute='location_name', column_name='Location Name')
-    repository = Field(attribute='datasource__name', column_name='Reference Name')
-    abstract = Field(attribute='abstract', column_name='Abstract')
-    author = Field(attribute='author', column_name='Author')
-    year_published = Field(attribute='year_published', column_name='Year Published')
-    external_url = Field(attribute='external_url', column_name='Hyperlink (URL)')
+    address = Field(attribute='address', column_name='Address')
+    email = Field(attribute='email', column_name='Email')
+    phone_number = Field(attribute='phone_number', column_name='Author')
+    url = Field(attribute='url', column_name='Web Adddress (URL)')
 
 
     class Meta:
-        model = StgKnowledgeProduct
+        model = StgHealthFacility
         skip_unchanged = False
         report_skipped = False
-        fields = ('code','title','type','domain','location','repository', 'abstract','author',
-            'year_published','external_url',)
+        fields = ('code','name','type','owner','location','address','email',
+            'phone_number','url',)
 
 
-class StgKnowledgeProductResourceImport (resources.ModelResource):
+class StgFacilityResourceImport (resources.ModelResource):
     def before_save_instance(
         self, instance, using_transactions, dry_run):
         save_instance( # Called with dry_run=True to ensure no records are saved
@@ -72,7 +69,7 @@ class StgKnowledgeProductResourceImport (resources.ModelResource):
 
     class Meta:
         exclude = ('location_name',)
-        model = StgKnowledgeProduct
+        model = StgHealthFacility
         skip_unchanged = False
         report_skipped = False
         fields = ('code','title', 'type','categorization','location_code','repository',
