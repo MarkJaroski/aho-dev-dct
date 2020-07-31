@@ -41,13 +41,7 @@ api_patterns = [
 
 urlpatterns = i18n_patterns ( # must be python immutable list () and not []
     path('', views.index, name='index'),
-    path('en/', views.index, name='index'), # If no APi route load the login page
-    path('fr/', views.index, name='index'), # If no APi route load the login page
-    path('pt/', views.index, name='index'), # If no APi route load the login page
     path('admin/', admin.site.urls),
-    path('en/admin/', admin.site.urls),
-    path('fr/admin/', admin.site.urls),
-    path('pt/admin/', admin.site.urls),
     path('accounts/login/', views.login_view, name='login'),
     path('datawizard/', include('data_wizard.urls')), #for data import wizard
    #Reset and Changepassword urls
