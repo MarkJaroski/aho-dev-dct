@@ -30,7 +30,7 @@ DATABASES = {
         'PASSWORD': os.environ['DBPASS'],
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-            'ssl': {'ca': '/home/site/wwwroot/BaltimoreCyberTrustRoot.crt.pem'}
+            'ssl': {'ca': '/site/cert/BaltimoreCyberTrustRoot.crt.pem'}
             },
     }
 }
