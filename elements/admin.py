@@ -366,6 +366,17 @@ class DataElementGoupAdmin(TranslatableAdmin,OverideExport):
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
     }
+
+    fieldsets = (
+        (' Data Elements Group Attributes',{
+                'fields': (
+                    'name', 'shortname','description',)
+            }),
+            ('Data Elements Allocation', {
+                'fields':('dataelement',)
+            }),
+    )
+
     field = ('name','shortname', 'description',) # used to create frameset sections on the data entry form
     list_display=['name','code','shortname', 'description',]
     filter_horizontal = ('dataelement',) # this should display an inline with multiselect

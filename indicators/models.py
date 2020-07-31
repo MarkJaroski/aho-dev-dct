@@ -377,7 +377,7 @@ class AhoDoamain_Lookup(models.Model):
 
 class aho_factsindicator_archive(models.Model):
     fact_id = models.AutoField(primary_key=True)  # Field name made lowercase.
-    uuid = uuid = models.CharField(unique=True,max_length=36, blank=False, null=False,
+    uuid =models.CharField(unique=True,max_length=36, blank=False, null=False,
         default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')
     indicator = models.ForeignKey('StgIndicator', models.PROTECT,blank=False,
         null=False, verbose_name = 'Indicator Name',)  # Field name made lowercase.

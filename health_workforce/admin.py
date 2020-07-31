@@ -122,7 +122,6 @@ class ResourceAdmin(TranslatableAdmin,ImportExportModelAdmin,
         )
         return [f for f in formats if f().can_export()]
 
-
      #This function is used to register permissions for approvals. See signals,py
     def get_actions(self, request):
         actions = super(ResourceAdmin, self).get_actions(request)

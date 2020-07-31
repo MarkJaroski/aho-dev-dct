@@ -132,7 +132,6 @@ class IndicatorAdmin(TranslatableAdmin,OverideExport): #add export action to fac
     list_per_page = 30 #limit records displayed on admin site to 30
     list_filter = (
         ('reference', RelatedOnlyDropdownFilter),
-        ('measuremethod', RelatedOnlyDropdownFilter),
     )
 
     class Media:
@@ -321,7 +320,7 @@ class IndicatorFactAdmin(OverideImportExport):
     fieldsets = ( # used to create frameset sections on the data entry form
         ('Indicator Details', {
                 'fields': ('indicator','location', 'categoryoption','datasource',
-                'valuetype')
+                'measuremethod')
             }),
             ('Reporting Period & Values', {
                 'fields': ('start_period','end_period','value_received','numerator_value',
@@ -392,7 +391,7 @@ class FactIndicatorInline(admin.TabularInline):
 
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
-    fields = ('indicator','location','datasource','valuetype','start_period',
+    fields = ('indicator','location','datasource','measuremethod','start_period',
         'end_period','categoryoption','value_received','numerator_value',
         'denominator_value','min_value','max_value','target_value','string_value',)
 

@@ -27,6 +27,10 @@ DATABASES = {
         'NAME': os.environ['DBNAME'],
         'HOST': os.environ['DBHOST'],
         'USER': os.environ['DBUSER'],
-        'PASSWORD': os.environ['DBPASS']
+        'PASSWORD': os.environ['DBPASS'],
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            'ssl': {'ca': '/sites/cert/BaltimoreCyberTrustRoot.crt.pem'}
+            },
     }
 }
