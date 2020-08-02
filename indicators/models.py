@@ -166,8 +166,6 @@ class FactDataIndicator(models.Model):
     # This field is used to lookup the type of data required such as text, integer or float
     measuremethod = models.ForeignKey(StgMeasuremethod, models.PROTECT,blank=True,
         null=True, verbose_name = 'Type of Measure')  # Field name made lowercase.
-    # valuetype = models.ForeignKey(StgValueDatatype, models.PROTECT,
-    #     null=False,blank=False,default=999,verbose_name = 'Data Type')  # Field name made lowercase.
     numerator_value = models.DecimalField(max_digits=20, decimal_places=2,
         blank=True, null=True, verbose_name = _('Numerator'))  # Field name made lowercase.
     denominator_value = models.DecimalField(max_digits=20,decimal_places=2,
@@ -245,28 +243,26 @@ class FactDataIndicator(models.Model):
                     'Data Integrity Problem! Minimum value cannot be greater \
                      that the nominal value')})
 
-        value_type= getattr( self.valuetype, 'code') #get value name of the value_type attribute
-
-        data_value = FactDataIndicator.value_received
-
-        if value_type =='AVT0001':
-            if self.value_received is not None and self.value_received !='':
-                data_value = int(self.value_received)
-            if not isinstance(data_value, int):
-                raise ValidationError({'value_received':_('The value provided must be \
-                    an integer')})
-        elif value_type =='AVT0002':
-            if self.value_received is not None and self.value_received !='':
-                data_value = round(float(self.value_received),2)
-        elif value_type =='AVT0003':
-            if self.value_received is not None and self.value_received !='':
-                data_value = None
-                raise ValidationError({'value_received':_('This value must be \
-                    left blank if comment is provided in place of values')})
-
-        if value_type =='AVT0003' and self.value_received is None:
-                raise ValidationError({'string_value':_('Please provide comments \
-                    for missing numeric indicator value')})
+        # data_value = FactDataIndicator.value_received
+        #
+        # if value_type =='AVT0001':
+        #     if self.value_received is not None and self.value_received !='':
+        #         data_value = int(self.value_received)
+        #     if not isinstance(data_value, int):
+        #         raise ValidationError({'value_received':_('The value provided must be \
+        #             an integer')})
+        # elif value_type =='AVT0002':
+        #     if self.value_received is not None and self.value_received !='':
+        #         data_value = round(float(self.value_received),2)
+        # elif value_type =='AVT0003':
+        #     if self.value_received is not None and self.value_received !='':
+        #         data_value = None
+        #         raise ValidationError({'value_received':_('This value must be \
+        #             left blank if comment is provided in place of values')})
+        #
+        # if value_type =='AVT0003' and self.value_received is None:
+        #         raise ValidationError({'string_value':_('Please provide comments \
+        #             for missing numeric indicator value')})
 
     """
     The purpose of this method is to concatenate the date that are entered as
@@ -290,7 +286,7 @@ class FactDataIndicator(models.Model):
         super(FactDataIndicator, self).save(*args, **kwargs)
 
 # These proxy classes are used to register menu in the admin for tabular entry
-class IndicatorProxy(StgIndicator):
+class IndicatorProxy(StgIndicator,TranslatableModel):
     """
     Creates permissions for proxy models which are not created automatically by
     'django.contrib.auth.management.create_permissions'.Since we can't rely on
@@ -344,6 +340,13 @@ class IndicatorProxy(StgIndicator):
         verbose_name_plural = '   Multi-records Grid'
         proxy = True
 
+    def get_language():
+        lang = _get_language()  # original get_language
+        if lang is None:  # Django >= 1.8
+            return settings.LANGUAGE_CODE
+        return lang
+
+
     """
     This def clean (self) method was contributed by Daniel Mbugua to resolve
     the issue of parent-child saving issue in the multi-records entry form.
@@ -386,8 +389,8 @@ class aho_factsindicator_archive(models.Model):
         verbose_name = 'Modality', default=99)  # Field name made lowercase.
     datasource = models.ForeignKey(StgDatasource, models.PROTECT,blank=False,
         null=False, verbose_name = 'Data Source')  # Field name made lowercase.
-    valuetype = models.ForeignKey(StgValueDatatype, models.PROTECT,
-        blank=False,verbose_name = 'Data Type')  # Field name made lowercase.
+    measuremethod = models.ForeignKey(StgMeasuremethod, models.PROTECT,blank=True,
+        null=True, verbose_name = 'Type of Measure')  # Field name made lowercase.
     numerator_value = models.DecimalField(max_digits=20, decimal_places=3,
         blank=True, null=True, verbose_name = 'Numerator')  # Field name made lowercase.
     value_received = models.DecimalField(max_digits=20,decimal_places=10,

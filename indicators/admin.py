@@ -2,7 +2,7 @@ from django.contrib import admin
 from django import forms
 from django.conf import settings # allow import of projects settings at the root
 from django.forms import BaseInlineFormSet
-from parler.admin import TranslatableAdmin
+from parler.admin import TranslatableAdmin,TranslatableStackedInline
 import data_wizard # Solution to data import madness that had refused to go
 from itertools import groupby #additional import for managing grouped dropdowm
 from indicators.serializers import FactDataIndicatorSerializer
@@ -396,12 +396,11 @@ class FactIndicatorInline(admin.TabularInline):
         'denominator_value','min_value','max_value','target_value','string_value',)
 
 
-@admin.register(IndicatorProxy)
-class IndicatorProxy(TranslatableAdmin):
+# # @admin.register(IndicatorProxy)
+class IndicatorProxyAdmin(OverideExport):
     #This method removes the add button on the admin interface
     def has_add_permission(self, request, obj=None):
         return False
-
     #resource_class = IndicatorResourceExport #added to customize fields displayed on the import window
     inlines = [FactIndicatorInline] #try tabular form
     readonly_fields = ('afrocode', 'name',) # Make it read-only for referential integrity constraunts
@@ -412,9 +411,11 @@ class IndicatorProxy(TranslatableAdmin):
     list_filter = (
         ('translations__name',DropdownFilter),
     )
+admin.site.register(IndicatorProxy, IndicatorProxyAdmin)
+
 
 @admin.register(aho_factsindicator_archive)
-class IndicatorFactArchiveAdmin(TranslatableAdmin,OverideExport):
+class IndicatorFactArchiveAdmin(OverideExport):
     def has_add_permission(self, request): #removes the add button because no data entry is needed
         return False
 
