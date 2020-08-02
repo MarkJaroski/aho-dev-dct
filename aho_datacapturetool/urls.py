@@ -68,7 +68,7 @@ urlpatterns = i18n_patterns ( # must be python immutable list () and not []
     path('api/swagger-docs/', schema_view),
     # Route that allows display of uploaded files when Debug=False in settings.py
     re_path(r'^media/(?P<path>.*)$', serve,{'document_root': settings.MEDIA_ROOT}),
-    prefix_default_language=False
+    prefix_default_language=False # Hide language code e.g. en-us on all url routes
 )
 
 # Routes for error handlers served by home view and htmls in templates/home/errors

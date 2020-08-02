@@ -340,13 +340,6 @@ class IndicatorProxy(StgIndicator):
         verbose_name_plural = '   Multi-records Grid'
         proxy = True
 
-    def get_language():
-        lang = _get_language()  # original get_language
-        if lang is None:  # Django >= 1.8
-            return settings.LANGUAGE_CODE
-        return lang
-
-
     """
     This def clean (self) method was contributed by Daniel Mbugua to resolve
     the issue of parent-child saving issue in the multi-records entry form.
