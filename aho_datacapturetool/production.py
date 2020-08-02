@@ -1,8 +1,9 @@
 from .settings import *
 
-DEBUG = False
+DEBUG = True
 # Configure default domain name
-ALLOWED_HOSTS = [os.environ['WEBSITE_SITE_NAME'] + '.azurewebsites.net', '127.0.0.1'] if 'WEBSITE_SITE_NAME' in os.environ else []
+ALLOWED_HOSTS = [os.environ['WEBSITE_SITE_NAME'] + '.azurewebsites.net',
+    '127.0.0.1'] if 'WEBSITE_SITE_NAME' in os.environ else []
 
 # WhiteNoise configuration
 MIDDLEWARE = [
@@ -30,7 +31,7 @@ DATABASES = {
         'PASSWORD': os.environ['DBPASS'],
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-            #'ssl': {'ca': '/home/site/cert/BaltimoreCyberTrustRoot.crt.pem'}
+            'ssl': {'ca': '/home/site/cert/BaltimoreCyberTrustRoot.crt.pem'}
             },
     }
 }
