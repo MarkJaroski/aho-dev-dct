@@ -209,7 +209,7 @@ class FactDataIndicator(models.Model):
         verbose_name_plural = '  Single-Record Form'
         ordering = ('indicator__name','location__name')
         unique_together = ('indicator', 'location', 'categoryoption','datasource',
-            'period',) #enforces concatenated unique constraint
+            'start_period','end_period') #enforces concatenated unique constraint
 
     def __str__(self):
          return str(self.indicator)
@@ -243,26 +243,6 @@ class FactDataIndicator(models.Model):
                     'Data Integrity Problem! Minimum value cannot be greater \
                      that the nominal value')})
 
-        # data_value = FactDataIndicator.value_received
-        #
-        # if value_type =='AVT0001':
-        #     if self.value_received is not None and self.value_received !='':
-        #         data_value = int(self.value_received)
-        #     if not isinstance(data_value, int):
-        #         raise ValidationError({'value_received':_('The value provided must be \
-        #             an integer')})
-        # elif value_type =='AVT0002':
-        #     if self.value_received is not None and self.value_received !='':
-        #         data_value = round(float(self.value_received),2)
-        # elif value_type =='AVT0003':
-        #     if self.value_received is not None and self.value_received !='':
-        #         data_value = None
-        #         raise ValidationError({'value_received':_('This value must be \
-        #             left blank if comment is provided in place of values')})
-        #
-        # if value_type =='AVT0003' and self.value_received is None:
-        #         raise ValidationError({'string_value':_('Please provide comments \
-        #             for missing numeric indicator value')})
 
     """
     The purpose of this method is to concatenate the date that are entered as
