@@ -39,7 +39,7 @@ api_patterns = [
     path('', include(('home.urls', 'home'), namespace='home')),
 ]
 
-urlpatterns += i18n_patterns ( # must be python immutable list () and not []
+urlpatterns = i18n_patterns ( # must be python immutable list () and not []
     path('', views.index, name='index'),
     path('admin/', admin.site.urls,name='dashboard'),
     path('accounts/login/', views.login_view, name='login'),
@@ -68,6 +68,7 @@ urlpatterns += i18n_patterns ( # must be python immutable list () and not []
     path('api/swagger-docs/', schema_view),
     # Route that allows display of uploaded files when Debug=False in settings.py
     re_path(r'^media/(?P<path>.*)$', serve,{'document_root': settings.MEDIA_ROOT}),
+    prefix_default_language=False
 )
 
 # Routes for error handlers served by home view and htmls in templates/home/errors
