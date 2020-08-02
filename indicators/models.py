@@ -286,7 +286,7 @@ class FactDataIndicator(models.Model):
         super(FactDataIndicator, self).save(*args, **kwargs)
 
 # These proxy classes are used to register menu in the admin for tabular entry
-class IndicatorProxy(StgIndicator,TranslatableModel):
+class IndicatorProxy(StgIndicator):
     """
     Creates permissions for proxy models which are not created automatically by
     'django.contrib.auth.management.create_permissions'.Since we can't rely on

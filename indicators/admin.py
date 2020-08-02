@@ -397,7 +397,7 @@ class FactIndicatorInline(admin.TabularInline):
 
 
 # # @admin.register(IndicatorProxy)
-class IndicatorProxyAdmin(OverideExport):
+class IndicatorProxyAdmin(TranslatableAdmin):
     #This method removes the add button on the admin interface
     def has_add_permission(self, request, obj=None):
         return False
