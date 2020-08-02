@@ -39,7 +39,7 @@ api_patterns = [
     path('', include(('home.urls', 'home'), namespace='home')),
 ]
 
-urlpatterns = i18n_patterns ( # must be python immutable list () and not []
+urlpatterns += i18n_patterns ( # must be python immutable list () and not []
     path('', views.index, name='index'),
     path('admin/', admin.site.urls,name='dashboard'),
     path('accounts/login/', views.login_view, name='login'),
