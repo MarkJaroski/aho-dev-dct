@@ -20,8 +20,8 @@ class StgIndicatorSerializer(TranslatableModelSerializer):
     class Meta:
         model = StgIndicator
         fields = [
-            'indicator_id','afrocode', 'gen_code','measuremethod',
-            'reference','translations'
+            'uuid','indicator_id','afrocode', 'gen_code','reference',
+            'translations'
         ]
 
 

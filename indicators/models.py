@@ -59,7 +59,7 @@ class StgIndicatorReference(TranslatableModel):
 
 class StgIndicator(TranslatableModel):
     indicator_id = models.AutoField(primary_key=True)  # Field name made lowercase.
-    uuid = uuid = models.CharField(_('Unique ID'),unique=True,max_length=36,
+    uuid =models.CharField(_('Unique ID'),unique=True,max_length=36,
         blank=False, null=False,default=uuid.uuid4,editable=False)
     translations = TranslatedFields(any_language=True,
         name = models.CharField(_('Indicator Name'),max_length=500,
