@@ -1,10 +1,9 @@
 """
 The two classes in this module overrides original Django User and Group classess.
 """
-
 from django.db import models
 from django.contrib.auth.models import Group, AbstractUser
-# from django.contrib.auth.models import AbstractUser
+from django.utils.translation import gettext_lazy as _ # The _ is alias for gettext
 from regions.models import StgLocation
 
 def make_choices(values):
@@ -17,13 +16,13 @@ This model class overrides the original Django user model.
 class CustomUser(AbstractUser):
     GENDER = ( 'Male','Female', 'Other')
     TITLE = ( 'Mr.','Ms.', 'Mrs.','Dr.', 'Prof.', 'Other')
-    title = models.CharField(max_length=45, choices=make_choices(TITLE),
+    title = models.CharField(_('title'),max_length=45, choices=make_choices(TITLE),
         default=GENDER[0])  # Field name made lowercase.
-    gender = models.CharField(max_length=45, choices=make_choices(GENDER),
+    gender = models.CharField(_('gender'),max_length=45, choices=make_choices(GENDER),
         default=GENDER[0])  # Field name made lowercase.
-    email = models.EmailField(unique=True,blank=False, null=False)
-    postcode = models.CharField(max_length=6)
-    username = models.CharField(blank=False, null=False, max_length=150)
+    email = models.EmailField(_('e-mail'),unique=True,blank=False, null=False)
+    postcode = models.CharField(_('postal code'),blank=True, null=True,max_length=6)
+    username = models.CharField(_('user name'),blank=False, null=False, max_length=150)
     location = models.ForeignKey(StgLocation, models.PROTECT,default=1,
         verbose_name = 'Location Name')  # Field name made lowercase.
     date_created = models.DateTimeField(blank=True, null=True, auto_now_add=True,
@@ -31,7 +30,7 @@ class CustomUser(AbstractUser):
     date_lastupdated = models.DateTimeField(blank=True, null=True, auto_now=True,
         verbose_name = 'Date Modified')
 
-    REQUIRED_FIELDS = ['postcode', 'username']
+    REQUIRED_FIELDS = ['location', 'username']
     USERNAME_FIELD = 'email' #can also be replaced using username as unique identifier but issue is controlling redundancy
 
     class Meta:
@@ -42,6 +41,7 @@ class CustomUser(AbstractUser):
 
     def __str__(self):
         return self.email
+
 
 """
 This model class overrides the original Django Users Group auth model.

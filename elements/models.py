@@ -1,5 +1,6 @@
 from django.db import models
 import uuid
+from django.conf import settings # for resolving translation issues
 from django.utils import timezone
 import datetime
 from regions.models import StgLocation
@@ -23,16 +24,16 @@ class StgDataElement(TranslatableModel):
         default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')  # Field name made lowercase.
     code = models.CharField( unique=True, max_length=45,blank=True, null=False)
     translations = TranslatedFields(
-        name = models.CharField(max_length=230, blank=False,null=False),  # Field name made lowercase.
-        shortname = models.CharField(_('Short name'), max_length=50),  # Field name made lowercase.
-        description = models.TextField(blank=True, null=True),  # Field name made lowercase.
+        name = models.CharField(_('name'),max_length=230, blank=False,null=False),  # Field name made lowercase.
+        shortname = models.CharField(_('short name'), max_length=50),  # Field name made lowercase.
+        description = models.TextField(_('Description'),blank=True, null=True),  # Field name made lowercase.
     )
-    aggregation_type = models.CharField(max_length=45, verbose_name = 'Aggregate Type',
+    aggregation_type = models.CharField(_('aggregate Type'),max_length=45,
         choices=make_choices(AGGREGATION_TYPE),default=AGGREGATION_TYPE[0])  # Field name made lowercase.
-    date_created = models.DateTimeField(blank=True, null=True, auto_now_add=True,
-        verbose_name = 'Date Created')
-    date_lastupdated = models.DateTimeField(blank=True, null=True, auto_now=True,
-        verbose_name = 'Date Modified')
+    date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
+        auto_now_add=True)
+    date_lastupdated = models.DateTimeField(_('Date Modified'),blank=True,
+        null=True, auto_now=True)
 
     class Meta:
         managed = True
@@ -41,8 +42,11 @@ class StgDataElement(TranslatableModel):
         verbose_name_plural = _('Data Elements')
         ordering = ('code',)
 
+    # This method makes it possible to enter multi-records in the Tabular form without
+    # returning the language code error! resolved on 10th August 2020
     def __str__(self):
-        return self.name
+        return self.safe_translation_getter(
+            'name',any_language=True,language_code=settings.LANGUAGE_CODE)
 
 
 class FactDataElement(models.Model):
@@ -56,33 +60,32 @@ class FactDataElement(models.Model):
     uuid = uuid = models.CharField(unique=True,max_length=36, blank=False, null=False,
         default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')  # Field name made lowercase.
     dataelement = models.ForeignKey('StgDataElement', models.PROTECT,
-        verbose_name = 'Data Element Name')  # Field name made lowercase.
+        verbose_name =_('Data Element'))  # Field name made lowercase.
     location = models.ForeignKey(StgLocation, models.PROTECT,verbose_name = 'Location',)  # Field name made lowercase.
     categoryoption = models.ForeignKey(StgCategoryoption, models.PROTECT,
-        verbose_name = 'Disaggregation', default = 999)  # disallow deletion of a related field
+        verbose_name =_('Disaggregation'), default = 999)  # disallow deletion of a related field
     # This field is used to lookup sources of data such as routine systems, census and surveys
     datasource = models.ForeignKey(StgDatasource, models.PROTECT,blank=False,
         null=False,verbose_name = 'Data Source', default = 4)  # Field name made lowercase.
     # This field is used to lookup the type of data required such as text, integer or float
     valuetype = models.ForeignKey(StgValueDatatype, models.PROTECT,
-        verbose_name = 'Data Type',  default = 1)  # Field name made lowercase.
-    value = models.DecimalField(max_digits=20, decimal_places=3,null=False,
-        blank=False, verbose_name = 'Value')  # Field name made lowercase.
-    target_value = models.DecimalField(max_digits=20,decimal_places=3,
-        blank=True, null=True,verbose_name = 'Target Value')  # Field name made lowercase.
-    start_year = models.IntegerField(null=False,blank=False,
-        default=datetime.date.today().year,verbose_name='Start Year')
-    end_year  = models.IntegerField(null=False,blank=False,
-        default=datetime.date.today().year,verbose_name='Ending Year',)
-    period = models.CharField(max_length=10,blank=True,
-        null=False, verbose_name = 'Period') #try to concatenate period field
-    comment = models.CharField(max_length=10,  choices= STATUS_CHOICES,
-        default=STATUS_CHOICES[0][0], verbose_name='Approval Status')  # Field name made lowercase.
-    date_created = models.DateTimeField(blank=True, null=True, auto_now_add=True,
-        verbose_name = 'Date Created')
-    date_lastupdated = models.DateTimeField(blank=True, null=True, auto_now=True,
-        verbose_name = 'Date Modified')
-
+        verbose_name=_('Value Type'),  default = 1)  # Field name made lowercase.
+    value = models.DecimalField(_('Data Value'),max_digits=20, decimal_places=3,
+        null=False,blank=False)
+    target_value = models.DecimalField(_('Target Value'),max_digits=20,
+        decimal_places=3,blank=True, null=True)  # Field name made lowercase.
+    start_year = models.IntegerField(_('Start Year'), null=False,blank=False,
+        default=datetime.date.today().year)
+    end_year  = models.IntegerField(_('Ending Year'),null=False,blank=False,
+        default=datetime.date.today().year)
+    period = models.CharField(_('Period'),max_length=10,blank=True,
+        null=False) #try to concatenate period field
+    comment = models.CharField(_('Status'),max_length=10,choices= STATUS_CHOICES,
+        default=STATUS_CHOICES[0][0])  # Field name made lowercase.
+    date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
+        auto_now_add=True,)
+    date_lastupdated = models.DateTimeField(_('Date Modified'),blank=True,
+        null=True, auto_now=True)
 
     class Meta:
         permissions = (
@@ -93,8 +96,8 @@ class FactDataElement(models.Model):
 
         managed = True
         db_table = 'fact_data_element'
-        verbose_name = 'Data Element'
-        verbose_name_plural = '  Single-Record Form'
+        verbose_name = _('Data Element')
+        verbose_name_plural = _('Single-Record Form')
         ordering = ('location', )
         unique_together = ('dataelement', 'location','datasource',
             'categoryoption','start_year','end_year')
@@ -160,31 +163,30 @@ class DataElementProxy(StgDataElement):
 
 class StgDataElementGroup(TranslatableModel):
     group_id = models.AutoField(primary_key=True)  # Field name made lowercase.
-    uuid = uuid = models.CharField(unique=True,max_length=36, blank=False, null=False,
-        default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')  # Field name made lowercase.
+    uuid = uuid = models.CharField(_('Unique ID'),unique=True,max_length=36,
+        blank=False, null=False,default=uuid.uuid4,editable=False)
     translations = TranslatedFields(
-        name = models.CharField(max_length=200, blank=False, null=False,
-            verbose_name = 'Group Name'),  # Field
-        shortname = models.CharField(unique=True, max_length=120, blank=False,
-            null=False, verbose_name = 'Short Name'),  # Field name made lowercase.
-        description = models.TextField(blank=False, null=False,
-            verbose_name ='Description' )  # Field name made lowercase.
+        name = models.CharField(_('Group Name'),max_length=200,
+            blank=False, null=False),  # Field
+        shortname = models.CharField(_('Short Name'),unique=True, max_length=120,
+            blank=False,null=False),
+        description = models.TextField(_('Description'),blank=False, null=False)
     )
-    code = models.CharField(unique=True, max_length=50, blank=True,
-        null=False, verbose_name = 'Group Code')  # Field name made lowercase.
+    code = models.CharField(_('Group Code'),unique=True, max_length=50,
+        blank=True,null=False)
     dataelement = models.ManyToManyField(StgDataElement,
         db_table='stg_data_element_membership',blank=True,verbose_name=_('Data Elements'))  # Field name made lowercase.
-    date_created = models.DateTimeField(blank=True, null=True, auto_now_add=True,
-        verbose_name = 'Date Created')
-    date_lastupdated = models.DateTimeField(blank=True, null=True, auto_now=True,
-        verbose_name = 'Date Modified')
+    date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
+        auto_now_add=True)
+    date_lastupdated = models.DateTimeField(_('Date Modified'),blank=True,
+        null=True, auto_now=True)
 
 
     class Meta:
         managed = True
         db_table = 'stg_data_element_group'
-        verbose_name = 'Element Group'
-        verbose_name_plural = ' Element Groups'
+        verbose_name = _('Element Group')
+        verbose_name_plural = _(' Element Groups')
         ordering = ('code',)
 
     def __str__(self):

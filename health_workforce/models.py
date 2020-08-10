@@ -25,8 +25,8 @@ multi-records entry form.My credits to Mr Mbugua of MSc DCT, UoN-Kenya
 class ResourceTypeProxy(StgResourceType):
     class Meta:
         proxy = True
-        verbose_name = 'Resource Type'
-        verbose_name_plural = ' Resource Types'
+        verbose_name = _('Resource Type')
+        verbose_name_plural = _('Resource Types')
 
     def clean(self):
         pass
@@ -34,8 +34,8 @@ class ResourceTypeProxy(StgResourceType):
 class HumanWorkforceResourceProxy(StgKnowledgeProduct):
     class Meta:
         proxy = True
-        verbose_name = 'Resource & Guide'
-        verbose_name_plural = ' Resources & Guides'
+        verbose_name = _('Resource/Guide')
+        verbose_name_plural = _('Resources/Guides')
 
     def clean(self):
         pass
@@ -45,28 +45,26 @@ class HumanWorkforceResourceProxy(StgKnowledgeProduct):
 class StgInstitutionType(TranslatableModel):
     FLAG = ('publications','health_workforce','general',)
     type_id = models.AutoField(primary_key=True)
-    uuid = uuid = models.CharField(unique=True,max_length=36,blank=False,null=False,
-        default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')
-    code = models.CharField(unique=True, max_length=50, blank=True,
-        null=True, verbose_name = 'Code')  # Field name made lowercase.
+    uuid = uuid = models.CharField(_('Unique ID'),unique=True,max_length=36,
+        blank=False,null=False,default=uuid.uuid4,editable=False)
+    code = models.CharField(_('Code'),unique=True, max_length=50, blank=True,
+        null=True)  # Field name made lowercase.
     translations = TranslatedFields(
-        name = models.CharField(max_length=230, blank=False, null=False,
-            verbose_name = 'Resource Type Name'),  # Field name made lowercase.
-        shortname = models.CharField(max_length=230, blank=True, null=True,
-            verbose_name = 'Short Name'),  # Field name made lowercase.
-        description = models.TextField(blank=True, null=True,
-            verbose_name = 'Description')  # Field name made lowercase.
+        name = models.CharField(_('Name'),max_length=230, blank=False, null=False),  # Field name made lowercase.
+        shortname = models.CharField(_('Short Name'),max_length=230, blank=True,
+            null=True),  # Field name made lowercase.
+        description = models.TextField(_('Brief Description'),blank=True, null=True)  # Field name made lowercase.
     )
-    date_created = models.DateTimeField(blank=True, null=True, auto_now_add=True,
-        verbose_name = 'Date Created')
-    date_lastupdated = models.DateTimeField(blank=True, null=True, auto_now=True,
-        verbose_name = 'Date Modified')
+    date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
+        auto_now_add=True)
+    date_lastupdated = models.DateTimeField(_('Date Modified'),blank=True,
+        null=True, auto_now=True)
 
     class Meta:
         managed = True
         db_table = 'stg_institution_type'
-        verbose_name = 'Institution Type'
-        verbose_name_plural = 'Institution Types'
+        verbose_name = _('Institution Type')
+        verbose_name_plural = _('Institution Types')
         ordering = ('code', )
 
     def __str__(self):
@@ -76,28 +74,27 @@ class StgInstitutionType(TranslatableModel):
 # New model to take care of resource types added 11/05/2019 courtesy of Gift
 class StgInstitutionProgrammes(TranslatableModel):
     course_id = models.AutoField(primary_key=True)
-    uuid = uuid = models.CharField(unique=True,max_length=36,blank=False,null=False,
-        default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')
-    code = models.CharField(unique=True, max_length=50, blank=True,
-        null=True, verbose_name = 'Code')  # Field name made lowercase.
+    uuid = uuid = models.CharField(_('Unique ID'),unique=True,max_length=36,
+        blank=False,null=False,default=uuid.uuid4,editable=False)
+    code = models.CharField(_('Code'),unique=True, max_length=50, blank=True,
+        null=True)  # Field name made lowercase.
     translations = TranslatedFields(
-        name = models.CharField(max_length=230, blank=False, null=False,
-            verbose_name = 'Resource Type Name'),  # Field name made lowercase.
-        shortname = models.CharField(max_length=230, blank=True, null=True,
-            verbose_name = 'Short Name'),  # Field name made lowercase.
-        description = models.TextField(blank=True, null=True,
-            verbose_name = 'Description')  # Field name made lowercase.
+        name = models.CharField(_('Type Name'),max_length=230, blank=False,
+            null=False),  # Field name made lowercase.
+        shortname = models.CharField(_('Short Name'),max_length=230, blank=True,
+            null=True),  # Field name made lowercase.
+        description = models.TextField(_('Brief Description'),blank=True, null=True)  # Field name made lowercase.
     )
-    date_created = models.DateTimeField(blank=True, null=True, auto_now_add=True,
-        verbose_name = 'Date Created')
-    date_lastupdated = models.DateTimeField(blank=True, null=True, auto_now=True,
-        verbose_name = 'Date Modified')
+    date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
+        auto_now_add=True)
+    date_lastupdated = models.DateTimeField(_('Date Modified'),blank=True,
+        null=True, auto_now=True)
 
     class Meta:
         managed = True
         db_table = 'stg_institution_programme'
-        verbose_name = ' Programme'
-        verbose_name_plural = 'Training Programmes'
+        verbose_name = _('Training Programme')
+        verbose_name_plural = _('Training Programmes')
         ordering = ('code', )
 
     def __str__(self):
@@ -114,53 +111,53 @@ class StgTrainingInstitution(TranslatableModel):
     phone_regex = RegexValidator(
     regex=r'^\+?1?\d{9,15}$', message="Phone Number format: '+999999999' maximum 15.")
     institution_id = models.AutoField(primary_key=True)
-    uuid = uuid = models.CharField(unique=True,max_length=36,blank=False,null=False,
-        default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')
+    uuid = uuid = models.CharField(_('Unique ID'),unique=True,max_length=36,
+        blank=False,null=False,default=uuid.uuid4,editable=False)
     programmes = models.ManyToManyField(StgInstitutionProgrammes,
         db_table='stg_institution_programs_lookup',blank=True,
-        verbose_name = 'Training Programmes')
+        verbose_name = _('Training Programmes'))
     translations = TranslatedFields(
-        name = models.CharField(max_length=230,blank=False, null=False,
-            verbose_name = 'Institution Name'),  # Field name made lowercase.
-        faculty =models.CharField(max_length=150, blank=True,null=True,
-                verbose_name = 'Faculty Name'),  # Field name made lowercase.
-        accreditation = models.CharField(max_length=50, choices= STATUS_CHOICES,
-            default=STATUS_CHOICES[0][0], verbose_name='Accreditation Status'),  # Field name made lowercase.
-        regulator = models.CharField(max_length=150, blank=True,
-                null=True,verbose_name = 'Regulatory Body'),  # Field name made lowercase. # Field name made lowercase.
-        accreditation_info = models.CharField(max_length=2000, blank=True,
-            verbose_name = 'Accreditation Details'),
-        language = models.CharField(max_length=50, blank=True,null=True,
-            verbose_name = 'Teaching Language'),
-        address = models.CharField(max_length=500,blank=True,null=True,
-            verbose_name = 'Contact Address/Person'),
-        posta = models.CharField(max_length=500,blank=True,null=True,
-            verbose_name = 'Postal Address'),  # Field name made lowercase.
-        email = models.EmailField(unique=True,max_length=250,blank=True,
-            null=True,verbose_name = 'Email Address'),  # Field name made lowercase.
+        name = models.CharField(_('Institution Name'),max_length=230,blank=False,
+            null=False),  # Field name made lowercase.
+        faculty =models.CharField(_('Faculty Name'),max_length=150,
+            blank=True,null=True),  # Field name made lowercase.
+        accreditation = models.CharField(_('Accreditation Status'),max_length=50,
+            choices= STATUS_CHOICES,default=STATUS_CHOICES[0][0]),
+        regulator = models.CharField(_('Regulatory Body'),max_length=150,
+            blank=True,null=True),
+        accreditation_info = models.CharField(_('Accreditation Details'),
+            max_length=2000, blank=True),
+        language = models.CharField(_('Teaching Language'),max_length=50,
+            blank=True,null=True),
+        address = models.CharField(_('Contact Person'),max_length=500,
+            blank=True,null=True),
+        posta = models.CharField(_('Post Address'),max_length=500,blank=True,
+            null=True),
+        email = models.EmailField(_('Email'),unique=True,max_length=250,blank=True,
+            null=True),  # Field name made lowercase.
         phone_number = models.CharField(_('Phone Number'),
             validators=[phone_regex], max_length=15, blank=True), # validators should be a list
-        url = models.URLField(blank=True, null=True, max_length=2083,
-            verbose_name = 'Web Address'),
+        url = models.URLField(_('Web Address'),blank=True, null=True,
+            max_length=2083),
         latitude = models.FloatField(blank=True, null=True),
         longitude = models.FloatField(blank=True, null=True),
     )
     code = models.CharField(unique=True, max_length=15, blank=True, null=False,
         verbose_name = 'Institution Code')  # Field name made lowercase.
     location = models.ForeignKey(StgLocation, models.PROTECT,blank=False,
-        null=False, verbose_name = 'Geographical Location', default='1')  # Field name made lowercase.
+        null=False, verbose_name = _('Location'), default='1')  # Field name made lowercase.
     type = models.ForeignKey(StgInstitutionType, models.PROTECT, blank=False,
-        null=False, verbose_name = 'Institution Type',default=6)  # Field name made lowercase.
-    date_created = models.DateTimeField(blank=True, null=True, auto_now_add=True,
-        verbose_name = 'Date Created')
-    date_lastupdated = models.DateTimeField(blank=True, null=True, auto_now=True,
-        verbose_name = 'Date Modified')
+        null=False, verbose_name = _('Institution Type'),default=6)  # Field name made lowercase.
+    date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
+        auto_now_add=True)
+    date_lastupdated = models.DateTimeField(_('Date Modified'),blank=True,
+        null=True, auto_now=True)
 
     class Meta:
         managed = True
         db_table = 'stg_traininginstitution'
-        verbose_name = 'Institution' # this is important in the display on change details and the add button
-        verbose_name_plural = 'Training Institutions'
+        verbose_name = _('Institution') # this is important in the display on change details and the add button
+        verbose_name_plural = _('Training Institutions')
         ordering = ['code',]
 
     def __str__(self):
@@ -189,33 +186,31 @@ class StgHealthCadre(TranslatableModel):
 
     )
     cadre_id = models.AutoField(primary_key=True)
-    uuid = uuid = models.CharField(unique=True,max_length=36,
-        blank=False,null=False, default=uuid.uuid4,editable=False,
-        verbose_name = 'Unique Universal ID')
+    uuid = uuid = models.CharField(_('Unique ID'),unique=True,max_length=36,
+        blank=False,null=False, default=uuid.uuid4,editable=False)
     code = models.CharField(unique=True, blank=True,null=False,
         max_length=45,verbose_name='ISCO-08 Code')
     parent = models.ForeignKey('self', models.PROTECT,blank=True, null=True,
-        verbose_name = 'Parent Group',default=1,)
+        verbose_name = _('Parent Cadre'),default=1,)
     translations = TranslatedFields(
-        name = models.CharField(max_length=230,blank=False, null=False,
-            verbose_name = 'Cadre Name'),  # Field name made lowercase.
-        shortname = models.CharField(max_length=230,blank=False, null=False,
-            verbose_name ='Short Name', default='Not Available'),  # Field name made lowercase.
-        academic = models.CharField(max_length=10, choices= STATUS_CHOICES,
-            default=STATUS_CHOICES[0][0],verbose_name = 'Qualification'),  # Field name made lowercase.
-        description = models.TextField(blank=True, null=True,
-            verbose_name = 'Description')  # Field name made lowercase.
+        name = models.CharField(_('Cadre Name'),max_length=230,blank=False,
+            null=False),  # Field name made lowercase.
+        shortname = models.CharField(_('Short Name'),max_length=230,blank=False,
+            null=False,default='Not Available'),  # Field name made lowercase.
+        academic = models.CharField(_('Academic Qualification'),max_length=10,
+            choices= STATUS_CHOICES,default=STATUS_CHOICES[0][0]),  # Field name made lowercase.
+        description = models.TextField(_('Brief Description'),blank=True, null=True)  # Field name made lowercase.
     )  # End of translatable fields
-    date_created = models.DateTimeField(blank=True, null=True, auto_now_add=True,
-        verbose_name = 'Date Created')
-    date_lastupdated = models.DateTimeField(blank=True, null=True, auto_now=True,
-        verbose_name = 'Date Modified')
+    date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
+        auto_now_add=True)
+    date_lastupdated = models.DateTimeField(_('Date Modified'),blank=True,
+        null=True, auto_now=True)
 
     class Meta:
         managed = True
         db_table = 'stg_health_cadre'
-        verbose_name = 'Health Cadre'
-        verbose_name_plural = ' Health Cadres'
+        verbose_name = _('Health Cadre')
+        verbose_name_plural = _('Health Cadres')
         ordering = ('code', )
 
     def __str__(self):
@@ -240,39 +235,38 @@ class StgHealthWorkforceFacts(models.Model):
     AGGREGATION_TYPE = ('Count','Sum','Average','Standard Deviation',
         'Variance', 'Min', 'max','None')
     fact_id = models.AutoField(primary_key=True)
-    uuid = uuid = models.CharField(unique=True,max_length=36,
-        blank=False,null=False, default=uuid.uuid4,editable=False,
-        verbose_name = 'Unique Universal ID')
+    uuid = uuid = models.CharField(_('Unique ID'),unique=True,max_length=36,
+        blank=False,null=False, default=uuid.uuid4,editable=False)
     cadre_id = models.ForeignKey(StgHealthCadre, models.PROTECT,
-        verbose_name = 'Occupation/Cadre',default = 1)  # disallow deletion of a related field
+        verbose_name = _('Occupation/Cadre'),default = 1)  # disallow deletion of a related field
     location = models.ForeignKey(StgLocation, models.PROTECT,
-        verbose_name = 'Geographical Location',default = 1)
+        verbose_name = _('Location'),default = 1)
     categoryoption = models.ForeignKey(StgCategoryoption, models.PROTECT,
-        verbose_name = 'Disaggregation Options')  # disallow deletion of a related field
+        verbose_name = _('Disaggregation Options'))  # disallow deletion of a related field
     datasource = models.ForeignKey(StgDatasource, models.PROTECT,blank=False,
-        null=False,verbose_name = 'Data Source', default = 1)  # Field name made lowercase.
+        null=False,verbose_name = _('Data Source'), default = 1)  # Field name made lowercase.
     measuremethod = models.ForeignKey(StgMeasuremethod, models.PROTECT,blank=True,
-        null=True, verbose_name = 'Type of Measure')  # Field name made lowercase.
-    value = DecimalField(max_digits=20,decimal_places=2,
-        blank=False, null=False, verbose_name = 'Data Value')  # Field name made lowercase.
-    start_year = models.IntegerField(null=False,blank=False,
-        default=datetime.date.today().year,verbose_name='Start Year')
-    end_year  = models.IntegerField(null=False,blank=False,
-        default=datetime.date.today().year,verbose_name='Ending Year',)
-    period = models.CharField(max_length=10,blank=True,
-        null=False, verbose_name = 'Period') #try to concatenate period field
-    status = models.CharField(max_length=10, choices= STATUS_CHOICES,
-        default=STATUS_CHOICES[0][0], verbose_name='Status')
-    date_created = models.DateTimeField(blank=True, null=True, auto_now_add=True,
-        verbose_name = 'Date Created')
-    date_lastupdated = models.DateTimeField(blank=True, null=True, auto_now=True,
-        verbose_name = 'Date Modified')
+        null=True, verbose_name = _('Measure Type'))  # Field name made lowercase.
+    value = DecimalField(_('Data Value'),max_digits=20,decimal_places=2,
+        blank=False, null=False)  # Field name made lowercase.
+    start_year = models.IntegerField(_('Starting Period'),null=False,blank=False,
+        default=datetime.date.today().year)
+    end_year  = models.IntegerField(_('Ending Period'),null=False,blank=False,
+        default=datetime.date.today().year)
+    period = models.CharField(_('Period'),max_length=10,blank=True,
+        null=False) #try to concatenate period field
+    status = models.CharField(_('Status'),max_length=10, choices= STATUS_CHOICES,
+        default=STATUS_CHOICES[0][0])
+    date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
+        auto_now_add=True)
+    date_lastupdated = models.DateTimeField(_('Date Modified'),blank=True,
+        null=True, auto_now=True)
 
     class Meta:
         managed = True
         db_table = 'fact_health_workforce'
-        verbose_name = 'Healthworkforce Data'
-        verbose_name_plural = '  Healthworkforce Data'
+        verbose_name = _('Healthworkforce Data')
+        verbose_name_plural = _('Healthworkforce Data')
         ordering = ('cadre_id', )
 
     def __str__(self):

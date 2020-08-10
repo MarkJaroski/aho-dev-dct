@@ -57,10 +57,10 @@ class FactDataIndicatorSerializer(ModelSerializer):
     class Meta:
         model = FactDataIndicator
         fields = [
-            'fact_id', 'indicator', 'location', 'location_name', 'numerator_value',
-            'categoryoption','datasource','valuetype','denominator_value','datasource',
+            'fact_id','indicator', 'location','location_name','numerator_value',
+            'categoryoption','datasource','measuremethod','denominator_value',
             'value_received','min_value','max_value','target_value','start_period',
-            'end_period', 'period','comment','string_value']
+            'end_period','period','comment','string_value']
 
         data_wizard = {
             'header_row': 0,

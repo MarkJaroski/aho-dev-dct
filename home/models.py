@@ -11,8 +11,8 @@ class StgCategoryParent(TranslatableModel):
     uuid = uuid = models.CharField(unique=True,max_length=36, blank=False, null=False,
         default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')  # Field name made lowercase.
     translations = TranslatedFields(
-        name = models.CharField(max_length=230, blank=False, null=False,
-            verbose_name = _('Category')),  # Field name made lowercase.
+        name = models.CharField(_('Category Name'),max_length=230, blank=False,
+            null=False),  # Field name made lowercase.
         shortname = models.CharField(max_length=50, blank=True, null=True,
             verbose_name = 'Short Name'),  # Field name made lowercase.
         description = models.TextField(blank=True, null=True)  # Field name made lowercase.
@@ -38,10 +38,10 @@ class StgCategoryoption(TranslatableModel):
     uuid = uuid = models.CharField(unique=True,max_length=36, blank=False, null=False,
         default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')  # Field name made lowercase.
     category = models.ForeignKey(StgCategoryParent, models.PROTECT,
-        verbose_name = 'Disaggregation Category')  # Field name made lowercase.
+        verbose_name = _('Disaggregation Category'))  # Field name made lowercase.
     translations = TranslatedFields(
         name = models.CharField(max_length=230, blank=False, null=False,
-            verbose_name = _('Modality Name')),  # Field name made lowercase.
+            verbose_name = _('Disaggregation Option')),  # Field name made lowercase.
         shortname = models.CharField(max_length=50, blank=True, null=True,
             verbose_name = _('Short Name')),  # Field name made lowercase.
         description = models.TextField(blank=True, null=True)  # Field name made lowercase.
@@ -64,11 +64,11 @@ class StgCategoryoption(TranslatableModel):
 
 class StgDatasource(TranslatableModel):
     LEVEL_CHOICES = ( #choices for approval of indicator data by authorized users
-        (1, _('Global')),
-        (2,_('Regional')),
-        (3,_('National')),
-        (4,_('Sub-national')),
-        (5,_('Independent'))
+        ('global', 'Global'),
+        ('regional','Regional'),
+        ('national','National'),
+        ('sub-national','Sub-national'),
+        ('unspecified','Non-specific')
     )
     datasource_id = models.AutoField(primary_key=True)  # Field name made lowercase.
     uuid = uuid = models.CharField(unique=True,max_length=36, blank=False, null=False,
@@ -78,7 +78,7 @@ class StgDatasource(TranslatableModel):
             verbose_name = 'Data Source'),  # Field name made lowercase.
         shortname = models.CharField(max_length=50, blank=True, null=True,
             verbose_name = 'Short Name'),  # Field name made lowercase.
-        level = models.CharField(max_length=2,blank=False, null=False,
+        level = models.CharField(max_length=20,blank=False, null=False,
             choices= LEVEL_CHOICES,verbose_name = 'Source Level',
             default=LEVEL_CHOICES[2][0],
             help_text="Level can be global, regional, national, subnational"),  # Field name made lowercase.
@@ -135,11 +135,11 @@ class StgValueDatatype(TranslatableModel):
 
 class StgMeasuremethod(TranslatableModel):
     measuremethod_id = models.AutoField(primary_key=True)
-    uuid = uuid = models.CharField(unique=True,max_length=36, blank=False, null=False,
-        default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')
+    uuid = uuid = models.CharField(_('Unique ID'),unique=True,max_length=36,
+        blank=False, null=False,default=uuid.uuid4,editable=False)
     translations = TranslatedFields(
         name = models.CharField(max_length=230, blank=False, null=False,
-            verbose_name = 'Name'),  # Field name made lowercase.
+            verbose_name = 'Measure Name'),  # Field name made lowercase.
         measure_value = models.DecimalField(max_digits=50, decimal_places=0,
             blank=True, null=True, verbose_name = 'Numeric Value'),  # Field name made lowercase.
         description = models.TextField(max_length=200, blank=True, null=True)
@@ -153,8 +153,8 @@ class StgMeasuremethod(TranslatableModel):
     class Meta:
         managed = True
         db_table = 'stg_measuremethod'
-        verbose_name = ' Measure Type'
-        verbose_name_plural = 'Measure Types'
+        verbose_name = _('Measure Type')
+        verbose_name_plural = _('Measure Types')
         #ordering = ('name', )
 
     def __str__(self):

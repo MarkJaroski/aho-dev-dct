@@ -14,22 +14,22 @@ def make_choices(values):
 class StgResourceType(TranslatableModel):
     FLAG = ('publications','health_workforce','general',)
     type_id = models.AutoField(primary_key=True)
-    uuid = uuid = models.CharField(unique=True,max_length=36,blank=False,null=False,
-        default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')
+    uuid = uuid = models.CharField(_('Unique ID'),unique=True,max_length=36,
+        blank=False,null=False,default=uuid.uuid4,editable=False)
     translations = TranslatedFields(
-        name = models.CharField(max_length=230, blank=False, null=False,
-            verbose_name = 'Resource Type Name'),  # Field name made lowercase.
-        categorization = models.CharField(max_length=50, choices=make_choices(FLAG),
-            default=FLAG[0],verbose_name = 'Category'),
-        description = models.TextField(blank=True, null=True,
-            verbose_name = 'Description')  # Field name made lowercase.
+        name = models.CharField(_('Type Name'),max_length=230, blank=False,
+            null=False),  # Field name made lowercase.
+        categorization = models.CharField(_('Resource Category'),max_length=50,
+            choices=make_choices(FLAG),default=FLAG[0] ),
+        description = models.TextField(_('Brief Description'),blank=True,
+            null=True)  # Field name made lowercase.
     )
-    code = models.CharField(unique=True, max_length=50, blank=True,
-        null=True, verbose_name = 'Code')  # Field name made lowercase.
-    date_created = models.DateTimeField(blank=True, null=True, auto_now_add=True,
-        verbose_name = 'Date Created')
-    date_lastupdated = models.DateTimeField(blank=True, null=True, auto_now=True,
-        verbose_name = 'Date Modified')
+    code = models.CharField(_('Code'),unique=True, max_length=50, blank=True,
+        null=True)  # Field name made lowercase.
+    date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
+        auto_now_add=True)
+    date_lastupdated = models.DateTimeField(_('Date Modified'),blank=True,
+        null=True, auto_now=True)
 
     class Meta:
         managed = True
@@ -65,39 +65,38 @@ class StgKnowledgeProduct(TranslatableModel):
         ('publication', 'Publication'),
     )
     product_id = models.AutoField(primary_key=True)
-    uuid = uuid = models.CharField(unique=True,max_length=36,blank=False,null=False,
-        default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')
+    uuid = uuid = models.CharField(_('Unique ID'),unique=True,max_length=36,
+        blank=False,null=False,default=uuid.uuid4,editable=False)
     type = models.ForeignKey(StgResourceType, models.PROTECT,blank=False,
         null=False,verbose_name = 'Resource Type')
     translations = TranslatedFields(
-        title = models.CharField(max_length=230,blank=False, null=False,
-            verbose_name = 'Title'),  # Field name made lowercase.
-        categorization = models.CharField(max_length=15,choices= BROAD_CATEGORY_CHOICES,
-            default=BROAD_CATEGORY_CHOICES[0][0],verbose_name='Categorization',
-            help_text="You must specify the published resource as a scienctific \
-            publication or a toolkit.Toolkit are resources like  M&E Guides "),  # Field name made lowercase.
-        description = models.TextField(blank=True, null=True),  # Field name made lowercase.
-        abstract = models.TextField(blank=True, null=True),  # Field name made lowercase.
-        author = models.CharField(max_length=200, blank=False, null=False,
-            verbose_name='Author/Owner'),  # Field name made lowercase.
-        year_published = models.IntegerField(default=datetime.now().year,
-            verbose_name='Year Published'),
+        title = models.CharField(_('Title'),max_length=230,blank=False, null=False),  # Field name made lowercase.
+        categorization = models.CharField(_('Resource Category'),max_length=15,
+            choices= BROAD_CATEGORY_CHOICES,default=BROAD_CATEGORY_CHOICES[0][0],
+            help_text=_("You must specify the published resource as a scienctific \
+            publication or a toolkit.Toolkit are resources like  M&E Guides ")),  # Field name made lowercase.
+        description = models.TextField(_('Brief Description'),blank=True, null=True),  # Field name made lowercase.
+        abstract = models.TextField(_('Abstract/Summary'),blank=True, null=True),  # Field name made lowercase.
+        author = models.CharField(_('Author/Owner'),max_length=200, blank=False,
+            null=False),  # Field name made lowercase.
+        year_published = models.IntegerField(_('Year Published'),
+            default=datetime.now().year),
 
     )  # End of translatable fields
-    internal_url = models.FileField (upload_to='media/files',
-        verbose_name = 'File', blank=True,)  # For uploading the resource into products repository.
-    external_url = models.CharField(blank=True, null=True, max_length=2083)
-    cover_image = models.ImageField(upload_to='media/images',
-            verbose_name = 'Image', blank=True,) #for thumbnail..requires pillow
-    location = models.ForeignKey(StgLocation, models.PROTECT, blank=False,
-        null=False,verbose_name = 'Publisher Location', default = 1)  # Field cannot be deleted without deleting its dependants
-    comment = models.CharField(max_length=10, choices= STATUS_CHOICES,
-        default=STATUS_CHOICES[0][0], verbose_name='Status')
     code = models.CharField(unique=True, blank=True,null=False,max_length=45)
-    date_created = models.DateTimeField(blank=True, null=True, auto_now_add=True,
-        verbose_name = 'Date Created')
-    date_lastupdated = models.DateTimeField(blank=True, null=True, auto_now=True,
-        verbose_name = 'Date Modified')
+    internal_url = models.FileField (_('File'),upload_to='media/files',
+        blank=True,)  # For uploading the resource into products repository.
+    external_url = models.CharField(blank=True, null=True, max_length=2083)
+    cover_image = models.ImageField(_('Cover Picture'),upload_to='media/images',
+        blank=True,) #for thumbnail..requires pillow
+    location = models.ForeignKey(StgLocation, models.PROTECT, blank=False,
+        null=False,verbose_name = _('Place'), default = 1)  # Field cannot be deleted without deleting its dependants
+    comment = models.CharField(_('Status'),max_length=10, choices= STATUS_CHOICES,
+        default=STATUS_CHOICES[0][0])
+    date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
+        auto_now_add=True)
+    date_lastupdated = models.DateTimeField(_('Date Modified'),blank=True,
+        null=True, auto_now=True)
 
     class Meta:
         permissions = (
@@ -107,8 +106,8 @@ class StgKnowledgeProduct(TranslatableModel):
         )
         managed = True
         db_table = 'stg_knowledge_product'
-        verbose_name = 'Knowledge Resource'
-        verbose_name_plural = '  Knowledge Resources'
+        verbose_name = _('Knowledge Resource')
+        verbose_name_plural = _('Knowledge Resources')
         ordering = ('code', )
         #unique_together = ('title','author','year_published',)
 
@@ -134,33 +133,33 @@ class StgKnowledgeProduct(TranslatableModel):
 
 class StgProductDomain(TranslatableModel):
     domain_id = models.AutoField(primary_key=True)
-    uuid = uuid = models.CharField(unique=True,max_length=36,blank=False,null=False,
-        default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')
+    uuid = uuid = models.CharField(_('Unique ID'),unique=True,max_length=36,
+        blank=False,null=False,default=uuid.uuid4,editable=False)
     translations = TranslatedFields(
-        name = models.CharField(max_length=230, blank=False, null=False,
-            verbose_name = 'Theme Name'),  # Field name made lowercase.
-        shortname = models.CharField(max_length=45,null=True,
-            verbose_name = 'Short Name',),  # Field name made lowercase.
-        description = models.TextField(blank=True, null=True),
-        level = models.IntegerField(default=1,verbose_name='Level')
+        name = models.CharField(_('Resource Theme'),max_length=230, blank=False,
+            null=False),
+        shortname = models.CharField(_('Short Name'),max_length=45,null=True),  # Field name made lowercase.
+        description = models.TextField(_('Brief Description'),blank=True,
+            null=True),
+        level = models.IntegerField(_('Theme level'),default=1)
         )
-    code = models.CharField(unique=True, max_length=50, blank=True,
-            null=True, verbose_name = 'Theme Code')  # Field name made lowercase.
+    code = models.CharField(_('Theme Code'),unique=True, max_length=50, blank=True,
+            null=True)  # Field name made lowercase.
     parent = models.ForeignKey('self',on_delete=models.CASCADE,
-        blank=True,null=True,verbose_name = 'Main Theme')  # Field name made lowercase.
+        blank=True,null=True,verbose_name = _('Parent Theme'))  # Field name made lowercase.
     publications = models.ManyToManyField(StgKnowledgeProduct,
         db_table='stg_product_domain_members',
-        blank=True,verbose_name = 'Resources')  # Field name made lowercase.
-    date_created = models.DateTimeField(blank=True, null=True, auto_now_add=True,
-        verbose_name = 'Date Created')
-    date_lastupdated = models.DateTimeField(blank=True, null=True, auto_now=True,
-        verbose_name = 'Date Modified')
+        blank=True,verbose_name = _('Knowledge Resources'))  # Field name made lowercase.
+    date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
+        auto_now_add=True)
+    date_lastupdated = models.DateTimeField(_('Date Modified'),blank=True,
+        null=True, auto_now=True)
 
     class Meta:
         managed = True # must be true to create the model table in mysql
         db_table = 'stg_publication_domain'
-        verbose_name = 'Resource Theme'
-        verbose_name_plural = ' Resource Themes'
+        verbose_name = _('Resource Theme')
+        verbose_name_plural = _('Resource Themes')
         ordering = ('code', )
 
     def __str__(self):

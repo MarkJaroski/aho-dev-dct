@@ -122,12 +122,12 @@ class LocationAdmin(TranslatableAdmin,OverideExport):
         if db_field.name == "locationlevel":
             if request.user.is_superuser or request.user.groups.filter(
                 name__icontains='Admins'):
-                kwargs["queryset"] = StgLocation.objects.filter(
-                locationlevel__translations__name__in =[
-                'Country','Regional','Global']).order_by('locationlevel',) #superuser can access all countries at level 2 in the database
+                kwargs["queryset"] = StgLocationLevel.objects.all().order_by(
+                    'translations__name',) #superuser can access all countries at level 2 in the database
             else:
-                kwargs["queryset"] = StgLocation.objects.filter(
-                    location_id=request.user.location_id) #permissions for user country filter---works as per Davy's request
+                kwargs["queryset"] = StgLocationLevel.objects.filter(
+                    translations__name__in =['Country']).order_by(
+                        'translations__name')
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     fieldsets = (

@@ -2,7 +2,7 @@ from django.contrib import admin
 from django import forms
 from django.conf import settings # allow import of projects settings at the root
 from django.forms import BaseInlineFormSet
-from parler.admin import TranslatableAdmin,TranslatableStackedInline
+from parler.admin import TranslatableAdmin,TranslatableStackedInline,TranslatableInlineModelAdmin
 import data_wizard # Solution to data import madness that had refused to go
 from itertools import groupby #additional import for managing grouped dropdowm
 from indicators.serializers import FactDataIndicatorSerializer
@@ -108,7 +108,10 @@ class IndicatorRefAdmin(TranslatableAdmin):
 
 
 @admin.register(StgIndicator)
-class IndicatorAdmin(TranslatableAdmin,OverideExport): #add export action to facilitate export od selected fields
+class IndicatorAdmin(TranslatableAdmin,OverideExport):
+    def sort_data(self, request):
+        language_code = settings.LANGUAGE_CODE
+        StgIndicator.objects.translated(language_code).order_by('translations__name')
     from django.db import models
     formfield_overrides = {
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
@@ -164,7 +167,7 @@ class IndicatorDomainAdmin(TranslatableAdmin,OverideExport):
     list_filter = (
         ('parent',RelatedOnlyDropdownFilter,),
         ('indicators',RelatedOnlyDropdownFilter,),# Added 16/12/2019 for M2M lookup
-        ('translations__level',DropdownFilter,),# Added 16/12/2019 for M2M lookup
+        ('level',DropdownFilter,),# Added 16/12/2019 for M2M lookup
     )
 
 class IndicatorProxyForm(forms.ModelForm):
@@ -191,8 +194,8 @@ class IndicatorProxyForm(forms.ModelForm):
         max_digits=20,decimal_places=2,required=False)
 
     class Meta:
-        fields = ('indicator','location', 'categoryoption','datasource','start_period',
-            'end_period','period','value_received')
+        fields = ('indicator','location', 'categoryoption','datasource',
+            'start_period','end_period','period','value_received')
         model = FactDataIndicator
 
     def clean(self):
@@ -212,10 +215,12 @@ class IndicatorProxyForm(forms.ModelForm):
         end_period = cleaned_data.get(end_year_field)
 
         # This construct modified on 26/03/2020 to allow new record entry
-        if indicator and location and categoryoption and start_period and end_period:
+        if indicator and location and categoryoption and datasource and \
+            start_period and end_period:
             if FactDataIndicator.objects.filter(indicator=indicator,
-                location=location,datasource=datasource,categoryoption=categoryoption,
-                start_period=start_period,end_period=end_period).exists():
+                location=location,datasource=datasource,
+                categoryoption=categoryoption,start_period=start_period,
+                end_period=end_period).exists():
                 """
                 pop(key) method removes the specified key and returns the
                 corresponding value. Returns error If key does not exist
@@ -342,6 +347,8 @@ class IndicatorFactAdmin(OverideImportExport):
         ('period',DropdownFilter),
         ('indicator', RelatedOnlyDropdownFilter,),
     )
+
+
 class LimitModelFormset(BaseInlineFormSet):
     ''' Base Inline formset to limit inline Model records'''
     def __init__(self, *args, **kwargs):
@@ -385,9 +392,10 @@ class FactIndicatorInline(admin.TabularInline):
                 #superuser can access all countries at level 2 in the database
                 kwargs["queryset"] = StgDatasource.objects.all()
             elif request.user.groups.filter(name__icontains='Admin'):
-                kwargs["queryset"] = StgDatasource.objects.exclude(datasource_id=1)
+                kwargs["queryset"] = StgDatasource.objects.all()
             else:
-                kwargs["queryset"] = StgDatasource.objects.filter(datasource_id=1)
+                kwargs["queryset"] = StgDatasource.objects.filter(
+                    datasource_id=1)
 
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
@@ -396,12 +404,34 @@ class FactIndicatorInline(admin.TabularInline):
         'denominator_value','min_value','max_value','target_value','string_value',)
 
 
-# # @admin.register(IndicatorProxy)
+@admin.register(IndicatorProxy)
 class IndicatorProxyAdmin(TranslatableAdmin):
     #This method removes the add button on the admin interface
     def has_add_permission(self, request, obj=None):
         return False
-    #resource_class = IndicatorResourceExport #added to customize fields displayed on the import window
+
+    def get_import_formats(self):  #This function limits the export format to only 3 types -CSV, XML and XLSX
+        """
+        This function returns available export formats.
+        """
+        formats = (
+              base_formats.CSV,
+              base_formats.XLS,
+              base_formats.XLSX,
+        )
+        return [f for f in formats if f().can_import()]
+
+    def get_export_formats(self):
+        """
+        This function returns available export formats.
+        """
+        formats = (
+              base_formats.CSV,
+              base_formats.XLS,
+              base_formats.XLSX,
+        )
+        return [f for f in formats if f().can_export()]
+
     inlines = [FactIndicatorInline] #try tabular form
     readonly_fields = ('afrocode', 'name',) # Make it read-only for referential integrity constraunts
     fields = ('afrocode', 'name')
@@ -411,7 +441,6 @@ class IndicatorProxyAdmin(TranslatableAdmin):
     list_filter = (
         ('translations__name',DropdownFilter),
     )
-admin.site.register(IndicatorProxy, IndicatorProxyAdmin)
 
 
 @admin.register(aho_factsindicator_archive)

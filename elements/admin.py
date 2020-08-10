@@ -130,32 +130,32 @@ class DataElementProxyForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
-
         dataelement_field = 'dataelement'
         dataelement = cleaned_data.get(dataelement_field)
-
         location_field = 'location'
         location = cleaned_data.get(location_field)
-
         categoryoption_field = 'categoryoption'
         categoryoption = cleaned_data.get(categoryoption_field)
-
+        datasource_field = 'datasource' #
+        datasource = cleaned_data.get(datasource_field)
         start_year_field = 'start_year'
         start_year = cleaned_data.get(start_year_field)
-
         end_year_field = 'end_year'
         end_year = cleaned_data.get(end_year_field)
 
-        if dataelement and location and categoryoption and start_year and end_year:
-            if FactDataElement.objects.filter(dataelement=dataelement,
-                location=location, categoryoption=categoryoption,
-                start_year=start_year,end_year=end_year).exists():
+        if dataelement and location and categoryoption and categoryoption \
+            and start_year and end_year:
+            if FactDataElement.objects.filter(
+                dataelement=dataelement,datasource=datasource,location=location,
+                categoryoption=categoryoption,start_year=start_year,
+                end_year=end_year).exists():
 
                 """ pop(key) method removes the specified key and returns the \
                 corresponding value. Returns error If key does not exist"""
                 cleaned_data.pop(dataelement_field)  # is also done by add_error
                 cleaned_data.pop(location_field)
                 cleaned_data.pop(categoryoption_field)
+                cleaned_data.pop(datasource_field) # added line on 21/02/2020
                 cleaned_data.pop(start_year_field)
                 cleaned_data.pop(end_year_field)
 
@@ -183,7 +183,8 @@ class DataElementFactAdmin(OverideImportExport,ImportExportActionModelAdmin):
     """
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        if request.user.is_superuser or request.user.groups.filter(name__icontains='Admins'):
+        if request.user.is_superuser or request.user.groups.filter(
+            name__icontains='Admins'):
             return qs #provide access to all instances/rows of fact data elements
         return qs.filter(location=request.user.location) #provide access to user's country instances of data elements
 
@@ -285,7 +286,7 @@ class LimitModelFormset(BaseInlineFormSet):
         super(LimitModelFormset, self).__init__(*args, **kwargs)
         instance = kwargs["instance"]
         self.queryset = FactDataElement.objects.filter(
-            dataelement_id=instance).order_by('-date_created')[:3]
+            dataelement_id=instance).order_by('-date_created')[:5]
 
 # Fact table as a tubular (not columnar) form for ease of entry as requested by Davy Liboko
 class FactElementInline(admin.TabularInline):

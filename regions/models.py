@@ -9,28 +9,28 @@ def make_choices(values):
     return [(v, v) for v in values]
 
 class StgLocationLevel(TranslatableModel):
-    LEVEL = ('level 1','Level 2','Level 3', 'Level 4', 'Level 5',)
+    LEVEL = ('level 1','Level 2','Level 3', 'Level 4', 'Level 5','Level 6','Level 7')
     locationlevel_id = models.AutoField(primary_key=True)
-    uuid = uuid = models.CharField(unique=True,max_length=36,blank=False,null=False,
-        default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')
+    uuid = uuid = models.CharField(_('Unique ID'),unique=True,max_length=36,
+        blank=False,null=False,default=uuid.uuid4,editable=False)
     translations = TranslatedFields(
-        type = models.CharField(max_length=50, choices=make_choices(LEVEL),
-            default=LEVEL[0],verbose_name = 'Location Level'),  # Field name made lowercase.
-        name = models.CharField(max_length=230, blank=False, null=False,
-            verbose_name = 'Level Name'),  # Field name made lowercase.
-        description = models.TextField(blank=True, null=True)  # Field name made lowercase.
+        type = models.CharField(_('Location Level'),max_length=50,
+            choices=make_choices(LEVEL),default=LEVEL[0]),  # Field name made lowercase.
+        name = models.CharField(_('Level Name'),max_length=230, blank=False,
+            null=False),  # Field name made lowercase.
+        description = models.TextField(_('Brief Description'),blank=True, null=True)  # Field name made lowercase.
     )
-    code = models.CharField(unique=True, max_length=50, blank=True, null=False)  # Field name made lowercase.
-    date_created = models.DateTimeField(blank=True, null=True, auto_now_add=True,
-        verbose_name = 'Date Created')
-    date_lastupdated = models.DateTimeField(blank=True, null=True, auto_now=True,
-        verbose_name = 'Date Modified')
+    code = models.CharField(unique=True, max_length=50, blank=True,null=False)  # Field name made lowercase.
+    date_created = models.DateTimeField(_('Date Created'),blank=True,null=True,
+        auto_now_add=True)
+    date_lastupdated = models.DateTimeField(_('Date Modified'),blank=True,
+        null=True, auto_now=True)
 
     class Meta:
         managed = True
         db_table = 'stg_location_level'
-        verbose_name = 'Location Level'
-        verbose_name_plural = 'Location Levels'
+        verbose_name = _('Location Level')
+        verbose_name_plural = _('Location Levels')
         ordering = ('code', )
 
     def __str__(self):
@@ -48,20 +48,20 @@ class StgLocationLevel(TranslatableModel):
 
 class StgWorldbankIncomegroups(TranslatableModel):
     wb_income_groupid = models.AutoField(primary_key=True)
-    uuid = uuid = models.CharField(unique=True,max_length=36,blank=False,null=False,
-        default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')
+    uuid = uuid = models.CharField(_('Unique ID'),unique=True,max_length=36,
+        blank=False,null=False,default=uuid.uuid4,editable=False)
     translations = TranslatedFields(
-        name = models.CharField(max_length=230, blank=False, null=False,
-            verbose_name = 'Income Group',),  # Field name made lowercase.
-        shortname = models.CharField(unique=True,max_length=50, blank=False,
-            null=False,verbose_name = 'Short Name'),  # Field name made lowercase.
-        description = models.TextField(blank=True, null=True)  # Field name made lowercase.
+        name = models.CharField(_('Income level'),max_length=230, blank=False,
+            null=False),  # Field name made lowercase.
+        shortname = models.CharField(_('Short Name'),unique=True,max_length=50,
+            blank=False,null=False),
+        description = models.TextField(_('Brief Description'),blank=True, null=True)  # Field name made lowercase.
     )
     code = models.CharField(max_length=50, unique=True,blank=True, null=False)  # Field name made lowercase.
-    date_created = models.DateTimeField(blank=True, null=True, auto_now_add=True,
-        verbose_name = 'Date Created')
-    date_lastupdated = models.DateTimeField(blank=True, null=True, auto_now=True,
-        verbose_name = 'Date Modified')
+    date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
+        auto_now_add=True)
+    date_lastupdated = models.DateTimeField(_('Date Modified'),blank=True,
+        null=True, auto_now=True)
 
     class Meta:
         managed = True
@@ -84,26 +84,26 @@ class StgWorldbankIncomegroups(TranslatableModel):
 
 class StgEconomicZones(TranslatableModel):
     economiczone_id = models.AutoField(primary_key=True)
-    uuid = uuid = models.CharField(unique=True,max_length=36,blank=False,null=False,
-        default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')
+    uuid = uuid = models.CharField(_('Unique ID'),unique=True,max_length=36,
+        blank=False,null=False,default=uuid.uuid4,editable=False)
     translations = TranslatedFields(
-    name = models.CharField(max_length=230,blank=False, null=False,
-        verbose_name = 'Economic Block'),
-    shortname = models.CharField(unique=True,max_length=50, blank=True, null=True,
-        verbose_name = 'Short Name'),  # Field name made lowercase.
+    name = models.CharField(_('Economic Zone'),max_length=230,blank=False,
+        null=False),
+    shortname = models.CharField(_('Short Name'),unique=True,max_length=50,
+        blank=True, null=True),  # Field name made lowercase.
     description = models.TextField(blank=True, null=True)  # Field name made lowercase.
     )
     code = models.CharField(max_length=50, unique=True, blank=True, null=False)
-    date_created = models.DateTimeField(blank=True, null=True, auto_now_add=True,
-        verbose_name = 'Date Created')
-    date_lastupdated = models.DateTimeField(blank=True, null=True, auto_now=True,
-        verbose_name = 'Date Modified')
+    date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
+        auto_now_add=True)
+    date_lastupdated = models.DateTimeField(_('Date Modified'),blank=True,
+        null=True, auto_now=True)
 
     class Meta:
         managed = True
         db_table = 'stg_economic_zones'
-        verbose_name = 'Economic Block'
-        verbose_name_plural = 'Economic Blocks'
+        verbose_name = _('Economic Block')
+        verbose_name_plural = _('Economic Blocks')
         ordering = ('code', )
 
     def __str__(self):
@@ -120,26 +120,26 @@ class StgEconomicZones(TranslatableModel):
 
 class StgSpecialcategorization(TranslatableModel):
     specialstates_id = models.AutoField(primary_key=True)
-    uuid = uuid = models.CharField(unique=True,max_length=36,blank=False,null=False,
-        default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')
+    uuid = uuid = models.CharField(_('Unique ID'),unique=True,max_length=36,
+        blank=False,null=False,default=uuid.uuid4,editable=False)
     translations = TranslatedFields(
-        name = models.CharField(max_length=230,blank=False, null=False,
-            verbose_name = 'State Category'),  # Field name made lowercase.
-        shortname = models.CharField(unique=True,max_length=50,blank=False,null=False,
-            verbose_name = 'Short Name'),  # Field name made lowercase.
-        description = models.TextField(blank=True, null=True)  # Field name made lowercase.
+        name = models.CharField(_('Categorization Name'),max_length=230,
+            blank=False, null=False),  # Field name made lowercase.
+        shortname = models.CharField(_('Short Name'),unique=True,max_length=50,
+            blank=False,null=False),  # Field name made lowercase.
+        description = models.TextField(_('Brief Description'),blank=True, null=True)  # Field name made lowercase.
     )
     code = models.CharField(max_length=50, unique=True, blank=True,null=False)
-    date_created = models.DateTimeField(blank=True, null=True, auto_now_add=True,
-        verbose_name = 'Date Created')
-    date_lastupdated = models.DateTimeField(blank=True, null=True, auto_now=True,
-        verbose_name = 'Date Modified')
+    date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
+        auto_now_add=True)
+    date_lastupdated = models.DateTimeField(_('Date Modified'),blank=True,
+        null=True, auto_now=True)
 
     class Meta:
         managed = True
         db_table = 'stg_specialcategorization'
-        verbose_name = 'State Category'
-        verbose_name_plural = 'State Categories'
+        verbose_name = _('Categorization')
+        verbose_name_plural = _('Special Categorizations')
         ordering = ('code', )
 
     def __str__(self):
@@ -157,46 +157,47 @@ class StgSpecialcategorization(TranslatableModel):
 
 class StgLocation(TranslatableModel):
     location_id = models.AutoField(primary_key=True)
-    uuid = uuid = models.CharField(unique=True,max_length=36,blank=False,null=False,
-        default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')
-    locationlevel = models.ForeignKey('StgLocationLevel', models.PROTECT,
-        verbose_name = 'Location Level',
-        help_text="You are not allowed to make changes to this Field because it \
-            is related to other Records")  # Field name made lowercase.
+    uuid = uuid = models.CharField(_('Unique ID'),unique=True,max_length=36,
+        blank=False,null=False,default=uuid.uuid4,editable=False)
+    locationlevel = models.ForeignKey(StgLocationLevel, models.PROTECT,
+        blank=False,verbose_name = _('Location Level'),
+        help_text=_("You are not allowed to make changes to this Field because it \
+            is related to other Records"))  # Field name made lowercase.
     translations = TranslatedFields(
-        name = models.CharField(max_length=230,blank=False, null=False,
-            verbose_name = 'Location Name'),  # Field name made lowercase.
-        description = models.TextField(blank=True, null=True),
+        name = models.CharField(_('Location Name'),max_length=230,blank=False,
+            null=False),  # Field name made lowercase.
+        description = models.TextField(_('Brief Description'),blank=True, null=True),
         latitude = models.FloatField(blank=True, null=True),
         longitude = models.FloatField(blank=True, null=True),
         cordinate = models.TextField(blank=True, null=True)
     )
-    iso_alpha = models.CharField(unique=True, max_length=15, blank=False,
-        null=False,verbose_name = 'Alpha Code')  # Field name made lowercase.
-    iso_number = models.CharField(unique=True, max_length=15, blank=False,
-        verbose_name = 'Numeric Code')
-    code = models.CharField(unique=True, max_length=15, blank=True, null=False,
-        verbose_name = 'Location Code')  # Field name made lowercase.
+    iso_alpha = models.CharField(_('Alpha Code'),unique=True,max_length=15,
+        blank=False,null=False)
+    iso_number = models.CharField(_('Numeric Code'),unique=True, max_length=15,
+        blank=False)
+    code = models.CharField(_('Unique Code'),unique=True, max_length=15,
+        blank=True, null=False)
     parent = models.ForeignKey('self', models.PROTECT,blank=True, null=True,
-        verbose_name = 'Parent Location',default=1,
-        help_text="You are not allowed to edit this field because it is related to other records")  # Field name made lowercase.
-    wb_income = models.ForeignKey('StgWorldbankIncomegroups', models.PROTECT,blank=False,
-        null=False, verbose_name = 'WB Income Group', default='99')  # Field name made lowercase.
+        verbose_name = _('Parent Location'),default=1,
+        help_text=_("You are not allowed to edit this field because it is \
+        related to other records"))
+    wb_income = models.ForeignKey(StgWorldbankIncomegroups, models.PROTECT,blank=False,
+        null=False, verbose_name = _('Income level'), default='99')  # Field name made lowercase.
     zone = models.ForeignKey(StgEconomicZones, models.PROTECT, blank=False,
-        null=False, verbose_name = 'Economic Block',default=6)  # Field name made lowercase.
-    special = models.ForeignKey('StgSpecialcategorization', models.PROTECT,
-        blank=False, null=False, verbose_name = 'Special Categorization',)  # Field name made lowercase.
-    date_created = models.DateTimeField(blank=True, null=True, auto_now_add=True,
-        verbose_name = 'Date Created')
-    date_lastupdated = models.DateTimeField(blank=True, null=True, auto_now=True,
-        verbose_name = 'Date Modified')
+        null=False, verbose_name = _('Economic Zone'),default=6)  # Field name made lowercase.
+    special = models.ForeignKey(StgSpecialcategorization, models.PROTECT,
+        blank=False, null=False, verbose_name = _('Special Categorization'))  # Field name made lowercase.
+    date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
+        auto_now_add=True)
+    date_lastupdated = models.DateTimeField(_('Date Modified'),blank=True,
+        null=True, auto_now=True)
 
     class Meta:
         managed = True
         db_table = 'stg_location'
-        verbose_name = 'Location' # this is important in the display on change details and the add button
-        verbose_name_plural = 'Locations'
-        ordering = ['code',]
+        verbose_name = _('Location') # this is important in the display on change details and the add button
+        verbose_name_plural = _('Locations')
+        ordering = ('code',)
 
     def __str__(self):
         return self.name #display the location name such as country
@@ -206,7 +207,7 @@ class StgLocation(TranslatableModel):
         if StgLocation.objects.filter(
             translations__name=self.name).count() and not self.location_id:
             raise ValidationError(
-                {'name':_('Location with the this name already exists')})
+                {'name':_('Location with similar name exists')})
 
     def save(self, *args, **kwargs):
         super(StgLocation, self).save(*args, **kwargs)

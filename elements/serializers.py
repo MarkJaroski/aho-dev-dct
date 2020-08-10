@@ -27,6 +27,6 @@ class FactDataElementSerializer(ModelSerializer):
     class Meta:
         model = FactDataElement
         fields = [
-            'fact_id', 'dataelement', 'location', 'categoryoption','datasource',
-            'valuetype','value', 'target_value', 'start_year', 'end_year', 'period',
+            'fact_id','dataelement','location','categoryoption','datasource',
+            'valuetype','value','target_value','start_year','end_year','period',
             'comment']
