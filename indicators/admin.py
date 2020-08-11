@@ -120,7 +120,7 @@ class IndicatorAdmin(TranslatableAdmin,OverideExport):
 
     fieldsets = (
         ('Primary Attributes', {
-                'fields': ('name','shortname', 'gen_code','definition','reference') #afrocode may be null
+                'fields': ('name','shortname','definition','reference') #afrocode may be null
             }),
             ('Secondary Attributes', {
                 'fields': ('numerator_description', 'denominator_description',
