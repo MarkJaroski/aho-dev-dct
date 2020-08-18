@@ -363,18 +363,15 @@ class StgRecurringEvent(TranslatableModel):
     message and wait until the user corrects the mistake.
     """
     def clean(self): # Don't allow end_year to be greater than the start_year.
-        if self.start_year<=1820 or self.start_year > datetime.date.today().year:
+        if self.start_year <= datetime.date.today().year:
             raise ValidationError({'start_year':_(
-                'Sorry! The year cannot be lower than Florence Nightingale \
-                birthday of 1820')})
-        elif self.end_year <=1820:
+                'Sorry! The start period year must be current or in future')})
+        elif self.end_year <= datetime.date.today().year:
             raise ValidationError({'end_year':_(
-                'Sorry! The year can be in future but cannot be lower than \
-                Florence Nightingale birthday of 1820')})
+                'Sorry! The start period year must be current or in future')})
         elif self.end_year < self.start_year and self.start_year is not None:
             raise ValidationError({'end_year':_(
-                'Sorry! End period cannot be lower than the start period. \
-                 Please make corrections')})
+                'Sorry! End period cannot be lower than start period!')})
 
     """
     The purpose of this method is to concatenate dates that  entered as
