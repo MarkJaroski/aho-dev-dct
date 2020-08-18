@@ -314,12 +314,11 @@ class StgRecurringEvent(TranslatableModel):
     event_id = models.AutoField(primary_key=True)
     uuid = uuid = models.CharField(_('Unique ID'),unique=True,max_length=36,
         blank=False,null=False, default=uuid.uuid4,editable=False)
-    code = models.CharField(unique=True, blank=True,null=False,
-        max_length=45,verbose_name='Event Code')
+    code = models.CharField(_('Event Code'),unique=True, blank=True,null=False,
+        max_length=45)
     cadre_id = models.ManyToManyField(StgHealthCadre,
         db_table='stg_recurring_event_lookup',blank=True,
         verbose_name = _('Target Focus'))
-
     location = models.ForeignKey(StgLocation, models.PROTECT,
         verbose_name = _('Event Location'),default = 1)
     translations = TranslatedFields(
@@ -354,6 +353,7 @@ class StgRecurringEvent(TranslatableModel):
         verbose_name = _('Recurring Event')
         verbose_name_plural = _('Recurring Events')
         ordering = ('event_id', )
+        unique_together = ('location','start_year','end_year')
 
     def __str__(self):
          return str(self.event_id)
@@ -391,3 +391,85 @@ class StgRecurringEvent(TranslatableModel):
     def save(self, *args, **kwargs):
         self.period = self.get_period()
         super(StgRecurringEvent,self).save(*args, **kwargs)
+
+
+class StgAnnouncements(TranslatableModel):
+    STATUS_CHOICES = ( #choices for approval of indicator data by authorized users
+        ('active', 'Open'),
+        ('inactive','Closed'),
+        ('suspended','Suspended'),
+    )
+    event_id = models.AutoField(primary_key=True)
+    uuid = uuid = models.CharField(_('Unique ID'),unique=True,max_length=36,
+        blank=False,null=False, default=uuid.uuid4,editable=False)
+    code = models.CharField(_('Code'),unique=True, blank=True,
+        null=False,max_length=45)
+    location = models.ForeignKey(StgLocation, models.PROTECT,
+        verbose_name = _('Location'),default = 1)
+    translations = TranslatedFields(
+        name = models.CharField(_('Announcment Title'),max_length=230,blank=False,
+            null=False,),  # Field name made lowercase.
+        shortname = models.CharField(_('Short Title'),max_length=230,blank=False,
+            null=False,),  # Field name made lowercase.
+        message = models.TextField(_('Message'),blank=True, null=True)
+    )  # End of translatable fields
+    internal_url = models.FileField (_('Upload File/Video(s)'),
+        upload_to='media/files/events',blank=True,)  # For uploading the resource
+    external_url = models.CharField(_('Web Link (URL)'), blank=True, null=True,
+        max_length=2083)
+    cover_image = models.ImageField(_('Upload Picture/Banner(s)'),
+        upload_to='media/images/events',blank=True,) #for thumbnail..requires pillow
+    start_year = models.IntegerField(_('Starting Period'),null=False,blank=False,
+        default=datetime.date.today().year)
+    end_year  = models.IntegerField(_('Ending Period'),null=False,blank=False,
+        default=datetime.date.today().year)
+    period = models.CharField(_('Period'),max_length=10,blank=True,
+        null=False) #try to concatenate period field
+    status = models.CharField(_('Status'),max_length=10, choices= STATUS_CHOICES,
+        default=STATUS_CHOICES[0][0])
+    date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
+        auto_now_add=True)
+    date_lastupdated = models.DateTimeField(_('Date Modified'),blank=True,
+        null=True, auto_now=True)
+
+    class Meta:
+        managed = True
+        db_table = 'stg_event_announcement'
+        verbose_name = _('Announcement')
+        verbose_name_plural = _('Announcements')
+        ordering = ('event_id', )
+        unique_together = ('location','start_year','end_year')
+
+    def __str__(self):
+         return str(self.event_id)
+    """
+    The purpose of this method is to compare the start_year to the end_year. If the
+    start_year is greater than the end_year athe model should show an inlines error
+    message and wait until the user corrects the mistake.
+    """
+    def clean(self): # Don't allow end_year to be greater than the start_year.
+        if self.start_year <= datetime.date.today().year:
+            raise ValidationError({'start_year':_(
+                'Sorry! The start period year must be current or in future')})
+        elif self.end_year <= datetime.date.today().year:
+            raise ValidationError({'end_year':_(
+                'Sorry! The start period year must be current or in future')})
+        elif self.end_year < self.start_year and self.start_year is not None:
+            raise ValidationError({'end_year':_(
+                'Sorry! End period cannot be lower than start period!')})
+
+    """
+    The purpose of this method is to concatenate dates that  entered as
+    start_year and end_year and save the concatenated string in the databasey
+    """
+    def get_period(self):
+        if self.period is None or (self.start_year and self.end_year):
+            if self.start_year == self.end_year:
+                period = int(self.start_year)
+            else:
+                period =str(int(self.start_year))+"-"+ str(int(self.end_year))
+        return period
+
+    def save(self, *args, **kwargs):
+        self.period = self.get_period()
+        super(StgAnnouncements,self).save(*args, **kwargs)
