@@ -318,7 +318,7 @@ class StgRecurringEvent(TranslatableModel):
         max_length=45,verbose_name='Event Code')
     cadre_id = models.ManyToManyField(StgHealthCadre,
         db_table='stg_event_audience_lookup',blank=True,
-        verbose_name = _('Target Audient(s)'))
+        verbose_name = _('Target Focus'))
 
     location = models.ForeignKey(StgLocation, models.PROTECT,
         verbose_name = _('Event Location'),default = 1)
