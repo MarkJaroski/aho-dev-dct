@@ -8,10 +8,10 @@ from django_admin_listfilter_dropdown.filters import (
     RelatedOnlyDropdownFilter) #custom
 from import_export.admin import (ImportExportModelAdmin, ExportMixin,
     ImportExportActionModelAdmin)
-from commoninfo.admin import OverideImportExport,OverideExport
+from commoninfo.admin import OverideImportExport,OverideExport,OverideImport
 from .models import (ResourceTypeProxy,HumanWorkforceResourceProxy,
     StgInstitutionType,StgTrainingInstitution,StgHealthWorkforceFacts,
-    StgHealthCadre,StgInstitutionProgrammes)
+    StgHealthCadre,StgInstitutionProgrammes,StgRecurringEvent)
 from facilities.models import (StgHealthFacility,)
 from regions.models import StgLocation
 
@@ -350,4 +350,76 @@ class HealthworforceFactsAdmin(ImportExportModelAdmin,ImportExportActionModelAdm
     exclude = ('date_created','date_lastupdated',)
     list_filter = (
         ('cadre_id',RelatedOnlyDropdownFilter),
+    )
+
+
+@admin.register(StgRecurringEvent)
+class RecurringEventsAdmin(TranslatableAdmin,ImportExportModelAdmin,OverideImport,
+        ImportExportActionModelAdmin):
+    from django.db import models
+    formfield_overrides = {
+        models.CharField: {'widget': TextInput(attrs={'size':'100'})},
+        models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
+    }
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser or request.user.groups.filter(pk=1):
+            # Provide access to all instances/rows of all location, i.e. all AFRO member states
+            return qs
+        return qs.filter(location_id=request.user.location_id)#provide user with specific country details!
+
+    #to make URl clickable, I changed show_url to just url in the list_display tuple
+    def show_external_url(self, obj):
+        return format_html("<a href='{url}'>{url}</a>", url=obj.external_url)
+
+    def show_url(self, obj):
+        return obj.url if obj.url else 'None'
+
+    show_external_url.allow_tags = True
+    show_external_url.short_description= 'Web Link (URL)'
+
+
+    """
+    Returns available export formats.
+    """
+    def get_import_formats(self):
+        formats = (
+              base_formats.CSV,
+              base_formats.XLS,
+              base_formats.XLSX,
+        )
+        return [f for f in formats if f().can_import()]
+
+    def get_export_formats(self):
+        """
+        Returns available export formats.
+        """
+        formats = (
+              base_formats.CSV,
+              base_formats.XLS,
+              base_formats.XLSX,
+        )
+        return [f for f in formats if f().can_export()]
+
+    fieldsets = (
+        ('Event Details', {
+                'fields':('name','shortname','theme','start_year',
+                'end_year','status') #afrocode may be null
+            }),
+            ('Target Audients and Location', {
+                'fields': ('location', 'cadre_id',),
+            }),
+            ('Files and Web Resources', {
+                'fields': ('internal_url','external_url','cover_image'),
+            }),
+        )
+    filter_horizontal = ['cadre_id'] # this should display multiselect boxes
+    list_display=['name','code','shortname','theme','period','internal_url',
+        'show_external_url']
+    list_display_links = ['name','code']
+    search_fields = ('name','theme','location__name',) #display search field
+    list_per_page = 30 #limit records displayed on admin site to 30
+    exclude = ('date_created','date_lastupdated','code',)
+    list_filter = (
+        ('location',RelatedOnlyDropdownFilter),
     )
