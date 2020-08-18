@@ -356,17 +356,17 @@ class StgRecurringEvent(TranslatableModel):
         unique_together = ('location','start_year','end_year')
 
     def __str__(self):
-         return str(self.event_id)
+         return str(self.name)
     """
     The purpose of this method is to compare the start_year to the end_year. If the
     start_year is greater than the end_year athe model should show an inlines error
     message and wait until the user corrects the mistake.
     """
     def clean(self): # Don't allow end_year to be greater than the start_year.
-        if self.start_year <= datetime.date.today().year:
+        if self.start_year < datetime.date.today().year:
             raise ValidationError({'start_year':_(
                 'Sorry! The start period year must be current or in future')})
-        elif self.end_year <= datetime.date.today().year:
+        elif self.end_year < datetime.date.today().year:
             raise ValidationError({'end_year':_(
                 'Sorry! The start period year must be current or in future')})
         elif self.end_year < self.start_year and self.start_year is not None:
@@ -438,17 +438,17 @@ class StgAnnouncements(TranslatableModel):
         unique_together = ('location','start_year','end_year')
 
     def __str__(self):
-         return str(self.event_id)
+         return str(self.name)
     """
     The purpose of this method is to compare the start_year to the end_year. If the
     start_year is greater than the end_year athe model should show an inlines error
     message and wait until the user corrects the mistake.
     """
     def clean(self): # Don't allow end_year to be greater than the start_year.
-        if self.start_year <= datetime.date.today().year:
+        if self.start_year < datetime.date.today().year:
             raise ValidationError({'start_year':_(
                 'Sorry! The start period year must be current or in future')})
-        elif self.end_year <= datetime.date.today().year:
+        elif self.end_year < datetime.date.today().year:
             raise ValidationError({'end_year':_(
                 'Sorry! The start period year must be current or in future')})
         elif self.end_year < self.start_year and self.start_year is not None:
