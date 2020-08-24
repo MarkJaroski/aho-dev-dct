@@ -35,9 +35,9 @@ class FacilityTypeAdmin(TranslatableAdmin):
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
     }
-    list_display=['code','name','description']
+    list_display=['name','code','shortname','description']
     list_display_links =('code', 'name',)
-    search_fields = ('code','name',) #display search field
+    search_fields = ('code','translations__name',) #display search field
     list_per_page = 30 #limit records displayed on admin site to 15
     exclude = ('date_created','date_lastupdated','code',)
 
@@ -49,9 +49,9 @@ class FacilityInfrastructure (TranslatableAdmin):
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
     }
-    list_display=['code','name','shortname','description']
+    list_display=['name','code','shortname','description']
     list_display_links =('code', 'name',)
-    search_fields = ('code','name',) #display search field
+    search_fields = ('code','translations__name',) #display search field
     list_per_page = 30 #limit records displayed on admin site to 15
     exclude = ('date_created','date_lastupdated','code',)
 
@@ -63,9 +63,9 @@ class FacilityOwdership (TranslatableAdmin):
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
     }
-    list_display=['code','name','location','shortname','description',]
+    list_display=['name','code','location','shortname','description',]
     list_display_links =('code', 'name',)
-    search_fields = ('code','name','shortname',) #display search field
+    search_fields = ('code','translations__name','translations__shortname',) #display search field
     list_per_page = 30 #limit records displayed on admin site to 15
     exclude = ('date_created','date_lastupdated','code',)
 
@@ -89,7 +89,7 @@ class ServiceDomainAdmin(TranslatableAdmin,OverideExport):
 
     list_display=['name','code','shortname','description','level']
     list_display_links =('code', 'name','shortname',)
-    search_fields = ('code','name',) #display search field
+    search_fields = ('translations__name','translations__shortname','code',) #display search field
 
     filter_horizontal = ('facilities',) # this should display an inline with multiselect
     exclude = ('date_created','date_lastupdated','code',)
@@ -152,10 +152,11 @@ class FacilityAdmin(TranslatableAdmin,ImportExportModelAdmin,OverideImport,
         )
     filter_horizontal = ['infrastructure'] # this should display an inline with multisele
     # To display the choice field values use the helper method get_foo_display where foo is the field name
-    list_display=['code','name','year_established','owner','type','url','address',
+    list_display=['name','code','year_established','owner','type','url','address',
         'email','phone_number']
     list_display_links = ['code','name',]
-    search_fields = ('name','type__name','location__name',) #display search field
+    search_fields = ('translations__name','type__translations__name',
+    'location__translations__name',) #display search field
     list_per_page = 30 #limit records displayed on admin site to 30
     exclude = ('date_created','date_lastupdated','code',)
     list_filter = (

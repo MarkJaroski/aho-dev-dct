@@ -138,11 +138,13 @@ class StgMeasuremethod(TranslatableModel):
     uuid = uuid = models.CharField(_('Unique ID'),unique=True,max_length=36,
         blank=False, null=False,default=uuid.uuid4,editable=False)
     translations = TranslatedFields(
-        name = models.CharField(max_length=230, blank=False, null=False,
-            verbose_name = 'Measure Name'),  # Field name made lowercase.
-        measure_value = models.DecimalField(max_digits=50, decimal_places=0,
-            blank=True, null=True, verbose_name = 'Numeric Value'),  # Field name made lowercase.
-        description = models.TextField(max_length=200, blank=True, null=True)
+        name = models.CharField(_('Measure Name'),max_length=230, blank=False,
+            null=False,help_text="Name can be indicator types like unit, \
+            Percentage, Per Thousand, Per Ten Thousand,Per Hundred Thousand etc"),  # Field name made lowercase.
+        measure_value = models.DecimalField(_('Ratio'),max_digits=50,
+            decimal_places=0,blank=True, null=True,help_text="Ratio can be \
+            factors like 1 for unit, 100, 1000,10000 or higher values"),
+        description = models.TextField(_('Description'),max_length=200, blank=True, null=True)
     )
     code = models.CharField(max_length=50,unique=True, blank=True, null=False)  # Field name made lowercase.
     date_created = models.DateTimeField(blank=True, null=True, auto_now_add=True,

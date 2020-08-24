@@ -102,7 +102,7 @@ class IndicatorRefAdmin(TranslatableAdmin):
         )
     list_display=['name','code','shortname','description',]
     list_display_links = ('code', 'name',)
-    search_fields = ('code','name',) #display search field
+    search_fields = ('code','translations__name','translations__shortname',) #display search field
     list_per_page = 30 #limit records displayed on admin site to 15
     exclude = ('date_created','date_lastupdated',)
 
@@ -131,7 +131,7 @@ class IndicatorAdmin(TranslatableAdmin,OverideExport):
     list_display=['name','afrocode','shortname','numerator_description',
         'denominator_description','reference',]
     list_display_links = ('afrocode', 'name',) #display as clickable link
-    search_fields = ('name', 'afrocode') #display search field
+    search_fields = ('translations__name','translations__shortname','afrocode') #display search field
     list_per_page = 30 #limit records displayed on admin site to 30
     list_filter = (
         ('reference', RelatedOnlyDropdownFilter),
@@ -160,7 +160,7 @@ class IndicatorDomainAdmin(TranslatableAdmin,OverideExport):
     resource_class = DomainResourceExport
     list_display=['name','code','parent','level']
     list_display_links = ('code', 'name',)
-    search_fields = ('name','shortname','code') #display search field
+    search_fields = ('translations__name','translations__shortname','code') #display search field
     list_per_page = 50 #limit records displayed on admin site to 15
     filter_horizontal = ('indicators',) # this should display  inline with multiselect
     exclude = ('date_created','date_lastupdated',)
@@ -328,15 +328,17 @@ class IndicatorFactAdmin(OverideImportExport):
                 'measuremethod')
             }),
             ('Reporting Period & Values', {
-                'fields': ('start_period','end_period','value_received','numerator_value',
-                'denominator_value','min_value','max_value','target_value','string_value',),
+                'fields': ('start_period','end_period','value_received',
+                'numerator_value','denominator_value','min_value','max_value',
+                'target_value','string_value',),
             }),
         )
     # The list display includes a callable get_afrocode that returns indicator code for display on admin pages
     list_display=['location', 'indicator',get_afrocode,'period','categoryoption',
         'value_received','datasource','get_comment_display',]
     list_display_links = ('location',get_afrocode, 'indicator',) #display as clickable link
-    search_fields = ('indicator__name', 'location__name','period','indicator__afrocode') #display search field
+    search_fields = ('indicator__translations__name', 'location__translations__name',
+        'period','indicator__afrocode') #display search field
     list_per_page = 30 #limit records displayed on admin site to 30
      #this field need to be controlled for data entry. Active for the approving authority
     readonly_fields=('comment',)
@@ -437,7 +439,7 @@ class IndicatorProxyAdmin(TranslatableAdmin):
     fields = ('afrocode', 'name')
     list_display=['name','afrocode','reference',]
     list_display_links=['afrocode', 'name']
-    search_fields = ('afrocode','name', 'shortname',) #display search field
+    search_fields = ('afrocode','translations__name', 'translations__shortname',) #display search field
     list_filter = (
         ('translations__name',DropdownFilter),
     )
@@ -467,8 +469,8 @@ class IndicatorFactArchiveAdmin(OverideExport):
     #resource_class = AchivedIndicatorResourceExport
     list_display=['location', 'indicator',get_afrocode,'period','categoryoption',
         'value_received','target_value','string_value','get_comment_display',]
-    search_fields = ('indicator__name', 'location__name','period',
-        'indicator__afrocode') #display search field
+    search_fields = ('indicator__translations__name', 'location__translations__name',
+        'period','indicator__afrocode') #display search field
     list_per_page = 50 #limit records displayed on admin site to 50
 
 
@@ -482,7 +484,7 @@ class NarrativeTypeAdmin(TranslatableAdmin,OverideExport):
     }
     list_display=['name','code','shortname','description',]
     list_display_links =('code','name',)
-    search_fields = ('code','name','shortname') #display search field
+    search_fields = ('code','translations__name','translations__shortname') #display search field
     list_per_page = 30 #limit records displayed on admin site to 15
     exclude = ('date_lastupdated','code',)
 
@@ -497,7 +499,8 @@ class AnalyticsNarrativeAdmin(OverideExport):
 
     list_display=['narrative_type','location','domain','narrative_text']
     list_display_links =('narrative_type','domain')
-    search_fields = ('code','location__name','domain__name') #display search field
+    search_fields = ('code','location__translations__name',
+        'domain__translations__name') #display search field
     list_per_page = 30 #limit records displayed on admin site to 15
     exclude = ('date_lastupdated','code',)
     list_filter = (
@@ -513,10 +516,10 @@ class IndicatorNarrativeAdmin(OverideExport):
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
     }
 
-    list_display=['code','narrative_type','location','indicator',
-    'narrative_text',]
+    list_display=['narrative_type','code','location','indicator','narrative_text',]
     list_display_links =('code',)
-    search_fields = ('code','location__name','indicator__name') #display search field
+    search_fields = ('code','location__translations__name',
+        'indicator__translations__name') #display search field
     list_per_page = 30 #limit records displayed on admin site to 15
     exclude = ('date_lastupdated','code',)
     list_filter = (

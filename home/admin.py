@@ -27,7 +27,7 @@ class DisaggregateCategoryAdmin(TranslatableAdmin,OverideExport):
     resource_class = DisaggregateCategoryExport #for export only
     list_display=['name','code','shortname','description',]
     list_display_links = ('code', 'name',)
-    search_fields = ('name', 'shortname','code',) #display search field
+    search_fields = ('translations__name', 'translations__shortname','code',) #display search field
     list_per_page = 15 #limit records displayed on admin site to 15
     exclude = ('date_created','date_lastupdated','code',)
 
@@ -46,7 +46,7 @@ class DisaggregationAdmin(TranslatableAdmin,OverideExport):
     resource_class = DisaggregateOptionExport #for export only
     list_display=['name','code','shortname','description','category',]
     list_display_links = ('code', 'name',)
-    search_fields = ('name',) #display search field
+    search_fields = ('translations__name', 'translations__shortname',) #display search field
     list_per_page = 15 #limit records displayed on admin site to 15
     exclude = ('date_created','date_lastupdated',)
     list_filter = (
@@ -65,7 +65,7 @@ class DatatypeAdmin(TranslatableAdmin,OverideExport):
     resource_class = DataTypeExport
     list_display=['code','name','description',]
     list_display_links = ('code', 'name',)
-    search_fields = ('name','code',) #display search field
+    search_fields = ('translations__name', 'translations__shortname','code',) #display search field
     list_per_page = 15 #limit records displayed on admin site to 15
     exclude = ('date_created','date_lastupdated','code',)
 
@@ -88,7 +88,7 @@ class DatasourceAdmin(TranslatableAdmin,OverideExport):
     resource_class = DataSourceExport #for export only
     list_display=['name','shortname','code','description','level']
     list_display_links = ('code', 'name',)
-    search_fields = ('code','name','level') #display search field
+    search_fields = ('translations__name', 'translations__shortname','code','translations__level') #display search field
     list_per_page = 15 #limit records displayed on admin site to 15
     exclude = ('date_created','date_lastupdated',)
 
@@ -102,9 +102,9 @@ class MeasuredAdmin(TranslatableAdmin,OverideExport):
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
     }
     resource_class = MeasureTypeExport
-    list_display=['code','name','measure_value','description',]
+    list_display=['name','code','measure_value','description',]
     list_display_links = ('code', 'name',)
-    search_fields = ('name',) #display search field
+    search_fields = ('translations__name','code',) #display search field
     list_per_page = 15 #limit records displayed on admin site to 15
     exclude = ('date_created','date_lastupdated','code',)
 

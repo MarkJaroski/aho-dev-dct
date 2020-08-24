@@ -37,9 +37,9 @@ class ResourceTypeAdmin(TranslatableAdmin):
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
     }
 
-    list_display=['code','name','description']
+    list_display=['name','code','description',]
     list_display_links =('code', 'name',)
-    search_fields = ('code','name',) #display search field
+    search_fields = ('code','translations__name',) #display search field
     list_per_page = 15 #limit records displayed on admin site to 15
     exclude = ('date_created','date_lastupdated','code',)
 
@@ -52,9 +52,9 @@ class InsitutionTypeAdmin(TranslatableAdmin):
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
     }
 
-    list_display=['code','name','shortname','description']
+    list_display=['name','code','shortname','description']
     list_display_links =('code', 'name','shortname')
-    search_fields = ('code','name','shortname') #display search field
+    search_fields = ('code','translations__name','translations__shortname') #display search field
     list_per_page = 30 #limit records displayed on admin site to 15
     exclude = ('date_created','date_lastupdated','code',)
 
@@ -67,9 +67,9 @@ class ProgrammesAdmin(TranslatableAdmin):
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
     }
 
-    list_display=['code','name','description']
+    list_display=['name','code','description']
     list_display_links =('code', 'name',)
-    search_fields = ('code','name',) #display search field
+    search_fields = ('code','translations__name',) #display search field
     list_per_page = 15 #limit records displayed on admin site to 15
     exclude = ('date_created','date_lastupdated','code',)
 
@@ -156,17 +156,17 @@ class ResourceAdmin(TranslatableAdmin,ImportExportModelAdmin,
            return obj.location.name
     get_location.short_description = 'Location'
 
-
     def get_type(obj):
            return obj.type.name
     get_type.short_description = 'Type'
 
     # To display the choice field values use the helper method get_foo_display where foo is the field name
-    list_display=['code','title','author',get_type,get_location,'year_published',
+    list_display=['title','code','author',get_type,get_location,'year_published',
         'internal_url','show_external_url','cover_image','get_comment_display']
     list_display_links = ['code','title',]
     readonly_fields = ('comment',)
-    search_fields = ('title','type__name','location__name',) #display search field
+    search_fields = ('translations__title','type__translations__name',
+        'location__translations__name',) #display search field
     list_per_page = 30 #limit records displayed on admin site to 30
     actions = [transition_to_pending,transition_to_approved,
         transition_to_rejected]
@@ -227,7 +227,8 @@ class TrainingInsitutionAdmin(TranslatableAdmin,OverideExport):
     filter_horizontal = ('programmes',) # this should display  inline with multiselect
     list_display=['name','type','code','location','url','email']
     list_display_links = ('code', 'name',) #display as clickable link
-    search_fields = ('code','name', 'type') #display search field
+    search_fields = ('location__translations__name','translations__name',
+        'type__translations__name') #display search field
     list_per_page = 30 #limit records displayed on admin site to 15
     exclude = ('date_created','date_lastupdated',)
     list_filter = (
@@ -257,9 +258,9 @@ class HealthCadreAdmin(TranslatableAdmin,OverideExport):
                     'name', 'shortname','code','description','academic','parent')
             }),
     )
-    list_display=['name','shortname','code','description','academic','parent']
+    list_display=['name','code','shortname','description','academic','parent']
     list_display_links = ('code', 'shortname','name',) #display as clickable link
-    search_fields = ('code','name', 'shortname','parent') #display search field
+    search_fields = ('code','translations__name', 'translations__shortname',) #display search field
     list_per_page = 30 #limit records displayed on admin site to 15
     exclude = ('date_created','date_lastupdated',)
     list_filter = (
@@ -343,9 +344,10 @@ class HealthworforceFactsAdmin(ImportExportModelAdmin,ImportExportActionModelAdm
             }),
     )
     actions =[transition_to_pending, transition_to_approved, transition_to_rejected]
-    list_display=['cadre_id','location','categoryoption','period','value','status']
+    list_display=['location','cadre_id','categoryoption','period','value','status']
     list_display_links = ('cadre_id', 'location',) #display as clickable link
-    search_fields = ('cadre_id','cadre_id', 'period') #display search field
+    search_fields = ('location__translations__name','cadre_id__translations__name',
+        'period') #display search field
     list_per_page = 30 #limit records displayed on admin site to 15
     exclude = ('date_created','date_lastupdated',)
     list_filter = (
@@ -449,7 +451,6 @@ class EventsAnnouncementAdmin(TranslatableAdmin,ImportExportModelAdmin,
 
     show_external_url.allow_tags = True
     show_external_url.short_description= 'Web Link (URL)'
-
 
     """
     Returns available export formats.

@@ -35,9 +35,9 @@ class RegionAdmin(TranslatableAdmin,OverideExport):
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
     }
     resource_class = LocationLevelResourceExport
-    list_display=['code','name','type','description',]
+    list_display=['name','code','type','description',]
     list_display_links = ('code', 'name',)
-    search_fields = ('code','name','type') #display search field
+    search_fields = ('code','translations__name','translations__type') #display search field
     list_per_page = 15 #limit records displayed on admin site to 15
     exclude = ('date_created','date_lastupdated','code',)
     list_filter = (
@@ -52,9 +52,9 @@ class EconomicBlocksAdmin(TranslatableAdmin,OverideExport):
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
     }
     resource_class = EconomicZoneResourceExport
-    list_display=['code','name','shortname','description',]
+    list_display=['name','code','shortname','description',]
     list_display_links = ('code', 'name',)
-    search_fields = ('name','shortname') #display search field
+    search_fields = ('translations__name','translations__shortname','code') #display search field
     list_per_page = 15 #limit records displayed on admin site to 15
     exclude = ('date_created','date_lastupdated','code')
 
@@ -67,9 +67,9 @@ class WBGroupsAdmin(TranslatableAdmin,OverideExport):
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
     }
     resource_class = IncomegroupsResourceExport
-    list_display=['code','name','shortname','description',]
+    list_display=['name','code','shortname','description',]
     list_display_links = ('code', 'name',)
-    search_fields = ('code','name',) #display search field
+    search_fields = ('code','translations__name','translations__shortname') #display search field
     list_per_page = 15 #limit records displayed on admin site to 15
     exclude = ('date_created','date_lastupdated','code',)
 
@@ -82,9 +82,9 @@ class SpecialStatesAdmin(TranslatableAdmin,OverideExport):
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
     }
     resource_class = SpecialcategorizationResourceExport
-    list_display=['code','name','shortname','description',]
+    list_display=['name','code','shortname','description',]
     list_display_links = ('code', 'name',)
-    search_fields = ('name','shortname',) #display search field
+    search_fields = ('translations__name','translations__shortname','code') #display search field
     list_per_page = 15 #limit records displayed on admin site to 15
     exclude = ('date_created','date_lastupdated','code')
 
@@ -144,9 +144,9 @@ class LocationAdmin(TranslatableAdmin,OverideExport):
         )
 
     resource_class = LocationResourceExport
-    list_display=['name','code','zone','special',]
+    list_display=['name','code','zone','special','parent']
     list_display_links = ('code', 'name',) #display as clickable link
-    search_fields = ('code','name', 'iso_alpha') #display search field
+    search_fields = ('translations__name','code',) #display search field
     list_per_page = 30 #limit records displayed on admin site to 15
     exclude = ('date_created','date_lastupdated',)
     list_filter = (

@@ -37,9 +37,9 @@ class ResourceTypeAdmin(TranslatableAdmin):
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
     }
 
-    list_display=['code','name','categorization','description']
+    list_display=['name','code','categorization','description']
     list_display_links =('code', 'name',)
-    search_fields = ('code','name',) #display search field
+    search_fields = ('translations__name','translations__categorization','code') #display search field
     list_per_page = 15 #limit records displayed on admin site to 15
     exclude = ('date_created','date_lastupdated','code',)
 
@@ -62,10 +62,10 @@ class ProductDomainAdmin(TranslatableAdmin,OverideExport):
         )
 
     list_display=['name','code','shortname','description','level']
-    list_display_links =('code', 'name',)
-    search_fields = ('code','name',) #display search field
+    list_display_links =('name','shortname','code',)
+    search_fields = ('translations__name','translations__shortname','code',) #display search field
 
-    filter_horizontal = ('publications',) # this should display an inline with multiselect
+    filter_horizontal = ('publications',) # should display multiselect records
 
     exclude = ('date_created','date_lastupdated','code',)
     list_per_page = 30 #limit records displayed on admin site to 15
@@ -173,7 +173,8 @@ class ProductAdmin(TranslatableAdmin,ImportExportModelAdmin,ImportExportActionMo
         'internal_url','show_external_url','cover_image','get_comment_display']
     list_display_links = ['code','title',]
     readonly_fields = ('comment',)
-    search_fields = ('title','type__name','location__name',) #display search field
+    search_fields = ('translations__title','type__translations__name',
+        'location__translations__name',) #display search field
     list_per_page = 30 #limit records displayed on admin site to 30
     actions = [transition_to_pending,transition_to_approved,
         transition_to_rejected]

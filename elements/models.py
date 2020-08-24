@@ -24,7 +24,7 @@ class StgDataElement(TranslatableModel):
         default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')  # Field name made lowercase.
     code = models.CharField( unique=True, max_length=45,blank=True, null=False)
     translations = TranslatedFields(
-        name = models.CharField(_('name'),max_length=230, blank=False,null=False),  # Field name made lowercase.
+        name = models.CharField(_('Data Element Name'),max_length=230, blank=False,null=False),  # Field name made lowercase.
         shortname = models.CharField(_('short name'), max_length=50),  # Field name made lowercase.
         description = models.TextField(_('Description'),blank=True, null=True),  # Field name made lowercase.
     )

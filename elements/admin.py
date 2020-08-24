@@ -109,7 +109,7 @@ class DataElementAdmin(TranslatableAdmin,OverideExport):
     list_display=['name','code','shortname','description',]
     list_display_links = ('code', 'name',)
 
-    search_fields = ('name','code','shortname',) #display search field
+    search_fields = ('translations__name', 'translations__shortname','code',) #display search field
     list_per_page = 30 #limit records displayed on admin site to 30
     exclude = ('date_created','date_lastupdated',)
 
@@ -268,7 +268,7 @@ class DataElementFactAdmin(OverideImportExport,ImportExportActionModelAdmin):
     list_display=['dataelement','location',get_afrocode,'categoryoption','period',
         'value','datasource','get_comment_display',]
     list_display_links = ('dataelement','location', get_afrocode,) #For making the code and name clickable
-    search_fields = ('dataelement__name','location__name','period','dataelement__code') #display search field
+    search_fields = ('dataelement__translations__name','location__translations__name','period','dataelement__code') #display search field
     list_per_page = 30 #limit records displayed on admin site to 30
     #this field need to be controlled for data entry. should only be active for the approving authority
     list_filter = (
@@ -318,8 +318,8 @@ class FactElementInline(admin.TabularInline):
                     location_id=request.user.location_id) #permissions for user country filter---works as per Davy's request
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
-    fields = ('dataelement','location','datasource', 'valuetype',
-        'categoryoption','start_year', 'end_year','value',)
+    fields = ('dataelement','location','datasource', 'valuetype','categoryoption',
+            'start_year', 'end_year','value',)
 
 
 @admin.register(DataElementProxy)
@@ -356,7 +356,7 @@ class DataElementProxyAdmin(TranslatableAdmin):
     fields = ('code', 'name')
     list_display=['name','code','description',]
     list_display_links = ('code', 'name',)
-    search_fields = ('code','name',) #display search field
+    search_fields = ('code','translations__name',) #display search field
     readonly_fields = ('code','name','description',)
 
 
@@ -378,7 +378,9 @@ class DataElementGoupAdmin(TranslatableAdmin,OverideExport):
             }),
     )
 
-    field = ('name','shortname', 'description',) # used to create frameset sections on the data entry form
+    field = ('name','code','shortname', 'description',) # used to create frameset sections on the data entry form
     list_display=['name','code','shortname', 'description',]
+    search_fields = ('code','translations__name',) #display search field
     filter_horizontal = ('dataelement',) # this should display an inline with multiselect
+
     exclude = ('code',)
