@@ -158,7 +158,7 @@ class IndicatorDomainAdmin(TranslatableAdmin,OverideExport):
             }),
         )
     resource_class = DomainResourceExport
-    list_display=['name','code','parent','level']
+    list_display=['name','code','level','parent',]
     list_display_links = ('code', 'name',)
     search_fields = ('translations__name','translations__shortname','code') #display search field
     list_per_page = 50 #limit records displayed on admin site to 15

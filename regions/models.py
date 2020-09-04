@@ -184,7 +184,7 @@ class StgLocation(TranslatableModel):
     wb_income = models.ForeignKey(StgWorldbankIncomegroups, models.PROTECT,blank=False,
         null=False, verbose_name = _('Income level'), default='99')  # Field name made lowercase.
     zone = models.ForeignKey(StgEconomicZones, models.PROTECT, blank=False,
-        null=False, verbose_name = _('Economic Zone'),default=6)  # Field name made lowercase.
+        null=False, verbose_name = _('Economic Block'),default=6)  # Field name made lowercase.
     special = models.ForeignKey(StgSpecialcategorization, models.PROTECT,
         blank=False, null=False, verbose_name = _('Special Categorization'))  # Field name made lowercase.
     date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,

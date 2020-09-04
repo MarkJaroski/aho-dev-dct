@@ -109,7 +109,15 @@ class StgIndicator(TranslatableModel):
 
 
 class StgIndicatorDomain(TranslatableModel):
-    LEVEL = ('level 1','Level 2','Level 3', 'Level 4', 'Level 5')
+    LEVEL = (
+    (1, 'level 1'),
+    (2, 'level 2'),
+    (3,'level 3'),
+    (4,'level 4'),
+    (5,'level 5'),
+    (6,'level 6'),
+    )
+
     domain_id = models.AutoField(primary_key=True)  # Field name made lowercase.
     uuid = uuid = models.CharField(_('Unique ID'),unique=True,max_length=36,
         blank=False, null=False,default=uuid.uuid4,editable=False)
@@ -121,8 +129,8 @@ class StgIndicatorDomain(TranslatableModel):
 
         description = models.TextField(_('Brief Description'),blank=True, null=True,)
     )
-    level =models.CharField(_('Theme Level'),max_length=50, choices=make_choices(LEVEL),
-            default=LEVEL[0])  # Field name made lowercase.SmallIntegerField
+    level =models.SmallIntegerField(_('Theme Level'),choices=LEVEL,
+        default=LEVEL[0][0])
     code = models.CharField(unique=True, max_length=45, blank=True,
         null=True, verbose_name = _('Code'))
     parent = models.ForeignKey('self', models.PROTECT, blank=True, null=True,

@@ -144,7 +144,7 @@ class LocationAdmin(TranslatableAdmin,OverideExport):
         )
 
     resource_class = LocationResourceExport
-    list_display=['name','code','zone','special','parent']
+    list_display=['name','code','parent','special','zone',]
     list_display_links = ('code', 'name',) #display as clickable link
     search_fields = ('translations__name','code',) #display search field
     list_per_page = 30 #limit records displayed on admin site to 15
