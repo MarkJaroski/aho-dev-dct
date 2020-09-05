@@ -34,10 +34,10 @@ class DisaggregateCategoryAdmin(TranslatableAdmin,OverideExport):
 
 @admin.register(StgCategoryoption)
 class DisaggregationAdmin(TranslatableAdmin,OverideExport):
-    menu_title = "Category Options"
+    menu_title = "Disaggregation Options"
     fieldsets = (
         ('Disaggregation Attributes', {
-                'fields': ('category', 'name','shortname',)
+                'fields': ('name','shortname','category',)
             }),
             ('Detailed Description', {
                 'fields': ('description',),

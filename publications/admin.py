@@ -4,7 +4,8 @@ from django.utils.html import format_html
 import data_wizard # Solution to data import madness that had refused to go
 from django.forms import TextInput,Textarea #customize textarea row and column size
 from import_export.formats import base_formats
-from .models import StgProductDomain,StgKnowledgeProduct,StgResourceType
+from .models import (StgProductDomain,StgKnowledgeProduct,StgResourceType,
+    StgResourceCategory)
 from commoninfo.admin import OverideImportExport,OverideExport
 # from publications.serializers import StgKnowledgeProductSerializer
 from regions.models import StgLocation
@@ -37,9 +38,25 @@ class ResourceTypeAdmin(TranslatableAdmin):
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
     }
 
-    list_display=['name','code','categorization','description']
+    list_display=['name','code','shortname','categorization','description']
     list_display_links =('code', 'name',)
-    search_fields = ('translations__name','translations__categorization','code') #display search field
+    search_fields = ('translations__name','translations__categorization',
+        'translations__shortname','code',) #display search field
+    list_per_page = 15 #limit records displayed on admin site to 15
+    exclude = ('date_created','date_lastupdated','code',)
+
+
+@admin.register(StgResourceCategory)
+class ResourceCategoryAdmin(TranslatableAdmin):
+    from django.db import models
+    formfield_overrides = {
+        models.CharField: {'widget': TextInput(attrs={'size':'100'})},
+        models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
+    }
+
+    list_display=['name','code','shortname','description']
+    list_display_links =('code', 'name',)
+    search_fields = ('translations__name','translations__shortname','code') #display search field
     list_per_page = 15 #limit records displayed on admin site to 15
     exclude = ('date_created','date_lastupdated','code',)
 

@@ -219,7 +219,7 @@ class FactDataIndicator(models.Model):
         managed = True
         db_table = 'fact_data_indicator'
         verbose_name = _('Indicator Record')
-        verbose_name_plural = _('Single-Record Form')
+        verbose_name_plural = _('Single-record Form')
         ordering = ('location__name',)
         unique_together = ('indicator', 'location', 'categoryoption','datasource',
             'start_period','end_period') #enforces concatenated unique constraint

@@ -10,7 +10,7 @@ from regions.models import StgLocation
 def make_choices(values):
     return [(v, v) for v in values]
 
-# New model to take care of resource types added 11/05/2019 courtesy of Gift
+# Model to take care of resource types added 11/05/2019 courtesy of Gift
 class StgResourceType(TranslatableModel):
     FLAG = ('publications','health_workforce','general',)
     type_id = models.AutoField(primary_key=True)
@@ -19,6 +19,8 @@ class StgResourceType(TranslatableModel):
     translations = TranslatedFields(
         name = models.CharField(_('Type Name'),max_length=230, blank=False,
             null=False),  # Field name made lowercase.
+        shortname = models.CharField(_('Short Name'),max_length=100, blank=True,
+            null=True),
         categorization = models.CharField(_('Resource Category'),max_length=50,
             choices=make_choices(FLAG),default=FLAG[0] ),
         description = models.TextField(_('Brief Description'),blank=True,
@@ -53,6 +55,48 @@ class StgResourceType(TranslatableModel):
         super(StgResourceType, self).save(*args, **kwargs)
 
 
+# New model to take care of resource types added 11/05/2019 courtesy of Gift
+class StgResourceCategory(TranslatableModel):
+    category_id = models.AutoField(primary_key=True)
+    uuid = uuid = models.CharField(_('Unique ID'),unique=True,max_length=36,
+        blank=False,null=False,default=uuid.uuid4,editable=False)
+    translations = TranslatedFields(
+        name = models.CharField(_('category Name'),max_length=230, blank=False,
+            null=False),  # Field name made lowercase.
+        shortname = models.CharField(_('Short Name'),max_length=100, blank=True,
+            null=True),
+        description = models.TextField(_('Brief Description'),blank=True,
+            null=True)  # Field name made lowercase.
+    )
+    code = models.CharField(_('Code'),unique=True, max_length=50, blank=True,
+        null=True)  # Field name made lowercase.
+    date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
+        auto_now_add=True)
+    date_lastupdated = models.DateTimeField(_('Date Modified'),blank=True,
+        null=True, auto_now=True)
+
+    class Meta:
+        managed = True
+        db_table = 'stg_resource_category'
+        verbose_name = 'Resource Category'
+        verbose_name_plural = 'Resource Categories'
+        ordering = ('code', )
+
+    def __str__(self):
+        return self.name #display the knowledge product category name
+
+
+    def clean(self):
+        if StgResourceCategory.objects.filter(
+            translations__name=self.name).count() and not self.type_id and not \
+                self.code:
+            raise ValidationError({'name':_('Resource category with the same \
+                name exists')})
+
+    def save(self, *args, **kwargs):
+        super(StgResourceCategory, self).save(*args, **kwargs)
+
+
 class StgKnowledgeProduct(TranslatableModel):
     STATUS_CHOICES = (
         ('pending', 'Pending'),
@@ -68,15 +112,13 @@ class StgKnowledgeProduct(TranslatableModel):
     uuid = uuid = models.CharField(_('Unique ID'),unique=True,max_length=36,
         blank=False,null=False,default=uuid.uuid4,editable=False)
     type = models.ForeignKey(StgResourceType, models.PROTECT,blank=False,
-        null=False,verbose_name = 'Resource Type')
+        null=False,verbose_name = _('Resource Type'))
+    categorization = models.ForeignKey(StgResourceCategory,models.PROTECT,
+        blank=False,verbose_name=_('Resource Category'),default = 1)
     translations = TranslatedFields(
-        title = models.CharField(_('Title'),max_length=230,blank=False, null=False),  # Field name made lowercase.
-        categorization = models.CharField(_('Resource Category'),max_length=15,
-            choices= BROAD_CATEGORY_CHOICES,default=BROAD_CATEGORY_CHOICES[0][0],
-            help_text=_("You must specify the published resource as a scienctific \
-            publication or a toolkit.Toolkit are resources like  M&E Guides ")),  # Field name made lowercase.
-        description = models.TextField(_('Brief Description'),blank=True, null=True),  # Field name made lowercase.
-        abstract = models.TextField(_('Abstract/Summary'),blank=True, null=True),  # Field name made lowercase.
+        title = models.CharField(_('Title'),max_length=230,blank=False, null=False),
+        description = models.TextField(_('Brief Description'),blank=True, null=True),
+        abstract = models.TextField(_('Abstract/Summary'),blank=True, null=True),
         author = models.CharField(_('Author/Owner'),max_length=200, blank=False,
             null=False),  # Field name made lowercase.
         year_published = models.IntegerField(_('Year Published'),
@@ -90,7 +132,7 @@ class StgKnowledgeProduct(TranslatableModel):
     cover_image = models.ImageField(_('Cover Picture'),upload_to='media/images',
         blank=True,) #for thumbnail..requires pillow
     location = models.ForeignKey(StgLocation, models.PROTECT, blank=False,
-        null=False,verbose_name = _('Place'), default = 1)  # Field cannot be deleted without deleting its dependants
+        null=False,verbose_name = _('Resource Location'), default = 1)  # Field cannot be deleted without deleting its dependants
     comment = models.CharField(_('Status'),max_length=10, choices= STATUS_CHOICES,
         default=STATUS_CHOICES[0][0])
     date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,

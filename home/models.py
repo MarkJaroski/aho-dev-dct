@@ -7,14 +7,14 @@ from django.core.exceptions import ValidationError
 
 class StgCategoryParent(TranslatableModel):
     """This model has stgcategory data"""
-    category_id = models.AutoField(primary_key=True, verbose_name = 'Category Name')  # Field name made lowercase.
-    uuid = uuid = models.CharField(unique=True,max_length=36, blank=False, null=False,
-        default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')  # Field name made lowercase.
+    category_id = models.AutoField(_('Category Name'),primary_key=True,)
+    uuid = uuid = models.CharField(_('Unique Universal ID'),unique=True,
+        max_length=36, blank=False, null=False,default=uuid.uuid4,editable=False,)
     translations = TranslatedFields(
         name = models.CharField(_('Category Name'),max_length=230, blank=False,
             null=False),  # Field name made lowercase.
-        shortname = models.CharField(max_length=50, blank=True, null=True,
-            verbose_name = 'Short Name'),  # Field name made lowercase.
+        shortname = models.CharField(_('Short Name'),max_length=50, blank=True,
+            null=True,),
         description = models.TextField(blank=True, null=True)  # Field name made lowercase.
     )
     code = models.CharField(unique=True, max_length=50, blank=True, null=True)
@@ -33,15 +33,16 @@ class StgCategoryParent(TranslatableModel):
     def __str__(self):
         return self.name #ddisplay disagregation Categories
 
+
 class StgCategoryoption(TranslatableModel):
     categoryoption_id = models.AutoField(primary_key=True)  # Field name made lowercase.
     uuid = uuid = models.CharField(unique=True,max_length=36, blank=False, null=False,
         default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')  # Field name made lowercase.
     category = models.ForeignKey(StgCategoryParent, models.PROTECT,
-        verbose_name = _('Disaggregation Category'))  # Field name made lowercase.
+        verbose_name = _('Category Name'))  # Field name made lowercase.
     translations = TranslatedFields(
         name = models.CharField(max_length=230, blank=False, null=False,
-            verbose_name = _('Disaggregation Option')),  # Field name made lowercase.
+            verbose_name = _('Modality Name')),  # Field name made lowercase.
         shortname = models.CharField(max_length=50, blank=True, null=True,
             verbose_name = _('Short Name')),  # Field name made lowercase.
         description = models.TextField(blank=True, null=True)  # Field name made lowercase.
