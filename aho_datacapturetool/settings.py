@@ -134,8 +134,8 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'aho_azure_database', #temporary
 		'HOST': 'localhost',
-		'USER': 'root',
-		'PASSWORD': '',
+		'USER': 'ahodbadmin',
+		'PASSWORD': 'Aho@1234',
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
             'ssl': {'ca': '/site/cert/BaltimoreCyberTrustRoot.crt.pem'}

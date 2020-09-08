@@ -38,10 +38,9 @@ class ResourceTypeAdmin(TranslatableAdmin):
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
     }
 
-    list_display=['name','code','shortname','categorization','description']
+    list_display=['name','code','shortname','description']
     list_display_links =('code', 'name',)
-    search_fields = ('translations__name','translations__categorization',
-        'translations__shortname','code',) #display search field
+    search_fields = ('translations__name','translations__shortname','code',) #display search field
     list_per_page = 15 #limit records displayed on admin site to 15
     exclude = ('date_created','date_lastupdated','code',)
 
@@ -61,40 +60,11 @@ class ResourceCategoryAdmin(TranslatableAdmin):
     exclude = ('date_created','date_lastupdated','code',)
 
 
-@admin.register(StgProductDomain)
-class ProductDomainAdmin(TranslatableAdmin,OverideExport):
-    from django.db import models
-    formfield_overrides = {
-        models.CharField: {'widget': TextInput(attrs={'size':'100'})},
-        models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
-    }
-
-    fieldsets = (
-        ('Resource Attributes', {
-                'fields':('name','shortname','description','parent',) #afrocode may be null
-            }),
-        ('Resource Publications', {
-                'fields':('publications',) #afrocode may be null
-            }),
-        )
-
-    list_display=['name','code','shortname','description','level']
-    list_display_links =('name','shortname','code',)
-    search_fields = ('translations__name','translations__shortname','code',) #display search field
-
-    filter_horizontal = ('publications',) # should display multiselect records
-
-    exclude = ('date_created','date_lastupdated','code',)
-    list_per_page = 30 #limit records displayed on admin site to 15
-    list_filter = (
-        ('parent',RelatedOnlyDropdownFilter),
-        ('publications',RelatedOnlyDropdownFilter,),# Added 16/12/2019 for M2M lookup
-    )
-
 # data_wizard.register(StgKnowledgeProduct)
 #     "Import Knowledge Resource List",StgKnowledgeProductSerializer)
 @admin.register(StgKnowledgeProduct)
-class ProductAdmin(TranslatableAdmin,ImportExportModelAdmin,ImportExportActionModelAdmin):
+class ProductAdmin(TranslatableAdmin,ImportExportModelAdmin,
+    ImportExportActionModelAdmin):
     from django.db import models
     formfield_overrides = {
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
@@ -199,4 +169,35 @@ class ProductAdmin(TranslatableAdmin,ImportExportModelAdmin,ImportExportActionMo
     list_filter = (
         ('location',RelatedOnlyDropdownFilter),
         ('type',RelatedOnlyDropdownFilter),
+    )
+
+
+@admin.register(StgProductDomain)
+class ProductDomainAdmin(TranslatableAdmin,OverideExport):
+    from django.db import models
+    formfield_overrides = {
+        models.CharField: {'widget': TextInput(attrs={'size':'100'})},
+        models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
+    }
+
+    fieldsets = (
+        ('Resource Attributes', {
+                'fields':('name','shortname','description','parent','level') #afrocode may be null
+            }),
+        ('Resource Publications', {
+                'fields':('publications',) #afrocode may be null
+            }),
+        )
+
+    list_display=['name','code','name','shortname','parent','level']
+    list_display_links =('name','shortname','code',)
+    search_fields = ('translations__name','translations__shortname','code',) #display search field
+
+    filter_horizontal = ('publications',) # should display multiselect records
+
+    exclude = ('date_created','date_lastupdated','code',)
+    list_per_page = 30 #limit records displayed on admin site to 15
+    list_filter = (
+        ('parent',RelatedOnlyDropdownFilter),
+        ('publications',RelatedOnlyDropdownFilter,),# Added 16/12/2019 for M2M lookup
     )

@@ -12,7 +12,6 @@ def make_choices(values):
 
 # Model to take care of resource types added 11/05/2019 courtesy of Gift
 class StgResourceType(TranslatableModel):
-    FLAG = ('publications','health_workforce','general',)
     type_id = models.AutoField(primary_key=True)
     uuid = uuid = models.CharField(_('Unique ID'),unique=True,max_length=36,
         blank=False,null=False,default=uuid.uuid4,editable=False)
@@ -21,8 +20,6 @@ class StgResourceType(TranslatableModel):
             null=False),  # Field name made lowercase.
         shortname = models.CharField(_('Short Name'),max_length=100, blank=True,
             null=True),
-        categorization = models.CharField(_('Resource Category'),max_length=50,
-            choices=make_choices(FLAG),default=FLAG[0] ),
         description = models.TextField(_('Brief Description'),blank=True,
             null=True)  # Field name made lowercase.
     )
@@ -174,6 +171,14 @@ class StgKnowledgeProduct(TranslatableModel):
 
 
 class StgProductDomain(TranslatableModel):
+    LEVEL = (
+    (1, 'level 1'),
+    (2, 'level 2'),
+    (3,'level 3'),
+    (4,'level 4'),
+    (5,'level 5'),
+    (6,'level 6'),
+    )
     domain_id = models.AutoField(primary_key=True)
     uuid = uuid = models.CharField(_('Unique ID'),unique=True,max_length=36,
         blank=False,null=False,default=uuid.uuid4,editable=False)
@@ -183,7 +188,8 @@ class StgProductDomain(TranslatableModel):
         shortname = models.CharField(_('Short Name'),max_length=45,null=True),  # Field name made lowercase.
         description = models.TextField(_('Brief Description'),blank=True,
             null=True),
-        level = models.IntegerField(_('Theme level'),default=1)
+        level =models.SmallIntegerField(_('Theme Level'),choices=LEVEL,
+            default=LEVEL[0][0])
         )
     code = models.CharField(_('Theme Code'),unique=True, max_length=50, blank=True,
             null=True)  # Field name made lowercase.
@@ -191,7 +197,7 @@ class StgProductDomain(TranslatableModel):
         blank=True,null=True,verbose_name = _('Parent Theme'))  # Field name made lowercase.
     publications = models.ManyToManyField(StgKnowledgeProduct,
         db_table='stg_product_domain_members',
-        blank=True,verbose_name = _('Knowledge Resources'))  # Field name made lowercase.
+        blank=True,verbose_name = _('Resources'))  # Field name made lowercase.
     date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
         auto_now_add=True)
     date_lastupdated = models.DateTimeField(_('Date Modified'),blank=True,
