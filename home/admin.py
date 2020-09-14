@@ -63,7 +63,7 @@ class DatatypeAdmin(TranslatableAdmin,OverideExport):
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
     }
     resource_class = DataTypeExport
-    list_display=['code','name','description',]
+    list_display=['name','code','description',]
     list_display_links = ('code', 'name',)
     search_fields = ('translations__name', 'translations__shortname','code',) #display search field
     list_per_page = 15 #limit records displayed on admin site to 15

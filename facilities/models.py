@@ -36,7 +36,7 @@ class StgFacilityType(TranslatableModel):
         db_table = 'stg_facility_type'
         verbose_name = _('Facility Type')
         verbose_name_plural = _('Facility Types')
-        ordering = ('code', )
+        ordering = ('translations__name',)
 
     def __str__(self):
         return self.name #display the knowledge product category name
@@ -77,7 +77,7 @@ class StgFacilityInfrastructure(TranslatableModel):
         db_table = 'stg_facility_infrastructure'
         verbose_name = _('Infratsrucrure')
         verbose_name_plural = _('Health Infrastructures')
-        ordering = ('code', )
+        ordering = ('translations__name',)
 
     def __str__(self):
         return self.name #display the knowledge product category name
@@ -119,7 +119,7 @@ class StgFacilityOwnership(TranslatableModel):
         db_table = 'stg_facility_owner'
         verbose_name = _('Facility Owner')
         verbose_name_plural = _('Facility Owners')
-        ordering = ('code', )
+        ordering = ('translations__name',)
 
     def __str__(self):
         return self.name #display the knowledge product category name
@@ -189,7 +189,7 @@ class StgHealthFacility(TranslatableModel):
         db_table = 'stg_health_facility'
         verbose_name = _('Health Facility')
         verbose_name_plural = _('Health Facilities')
-        ordering = ('code', )
+        ordering = ('translations__name',)
 
     def __str__(self):
         return self.name #display the data element name
@@ -241,7 +241,7 @@ class StgServiceDomain(TranslatableModel):
         db_table = 'stg_service_domain'
         verbose_name = _('Service Domain')
         verbose_name_plural = _('Service Domains')
-        ordering = ('code', )
+        ordering = ('translations__name',)
 
     def __str__(self):
         return self.name #display the knowledge product category name

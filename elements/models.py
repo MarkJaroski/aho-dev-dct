@@ -40,7 +40,7 @@ class StgDataElement(TranslatableModel):
         db_table = 'stg_data_element'
         verbose_name = _("Element")
         verbose_name_plural = _('Data Elements')
-        ordering = ('code',)
+        ordering = ('translations__name',)
 
     # This method makes it possible to enter multi-records in the Tabular form without
     # returning the language code error! resolved on 10th August 2020
@@ -187,7 +187,7 @@ class StgDataElementGroup(TranslatableModel):
         db_table = 'stg_data_element_group'
         verbose_name = _('Element Group')
         verbose_name_plural = _(' Element Groups')
-        ordering = ('code',)
+        ordering = ('translations__name',)
 
     def __str__(self):
         return str(self.name)

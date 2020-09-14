@@ -195,7 +195,8 @@ class IndicatorProxyForm(forms.ModelForm):
 
     class Meta:
         fields = ('indicator','location', 'categoryoption','datasource',
-            'measuremethod','start_period','end_period','period','value_received')
+            'measuremethod','start_period','end_period','period',
+            'value_received','string_value')
         model = FactDataIndicator
 
     def clean(self):
@@ -338,8 +339,8 @@ class IndicatorFactAdmin(OverideImportExport):
             }),
         )
     # The list display includes a callable get_afrocode that returns indicator code for display on admin pages
-    list_display=['location', 'indicator',get_afrocode,'period','categoryoption',
-        'value_received','datasource','get_comment_display',]
+    list_display=['indicator','location', get_afrocode,'period','categoryoption',
+        'value_received','string_value','datasource','get_comment_display',]
     list_display_links = ('location',get_afrocode, 'indicator',) #display as clickable link
     search_fields = ('indicator__translations__name', 'location__translations__name',
         'period','indicator__afrocode') #display search field

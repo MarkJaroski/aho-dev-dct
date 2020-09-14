@@ -156,7 +156,7 @@ class ProductAdmin(TranslatableAdmin,ImportExportModelAdmin,
     get_type.short_description = 'Type'
 
     # To display the choice field values use the helper method get_foo_display where foo is the field name
-    list_display=['code','title','author','year_published',get_type,get_location,
+    list_display=['title','code',get_type,'author','year_published',get_location,
         'internal_url','show_external_url','cover_image','get_comment_display']
     list_display_links = ['code','title',]
     readonly_fields = ('comment',)
@@ -189,7 +189,7 @@ class ProductDomainAdmin(TranslatableAdmin,OverideExport):
             }),
         )
 
-    list_display=['name','code','name','shortname','parent','level']
+    list_display=['name','code','shortname','parent','level']
     list_display_links =('name','shortname','code',)
     search_fields = ('translations__name','translations__shortname','code',) #display search field
 

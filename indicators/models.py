@@ -43,7 +43,7 @@ class StgIndicatorReference(TranslatableModel):
         db_table = 'stg_indicator_reference'
         verbose_name = _('Indicator Reference')
         verbose_name_plural = _('Indicator References')
-        ordering = ('code', )
+        ordering = ('translations__name',)
 
     def __str__(self):
         return self.name #display the data source name
@@ -91,6 +91,7 @@ class StgIndicator(TranslatableModel):
         db_table = 'stg_indicator'
         verbose_name = _('Indicator')
         verbose_name_plural = _('Indicators')
+        ordering = ('translations__name',)
 
     # This method makes it possible to enter multi-records in the Tabular form
     # without returning the language code error! resolved on 10th August 2020
@@ -149,7 +150,7 @@ class StgIndicatorDomain(TranslatableModel):
         db_table = 'stg_indicator_domain'
         verbose_name = _('Indicator Theme')
         verbose_name_plural = _('Indicator Themes')
-        ordering = ('code', )
+        ordering = ('translations__name',)
 
     def __str__(self):
         return self.name #ddisplay disagregation options
@@ -186,7 +187,7 @@ class FactDataIndicator(models.Model):
     denominator_value = models.DecimalField(_('Denominator Value'),max_digits=20,
         decimal_places=2,blank=True, null=True)  # Field name made lowercase.
     value_received = DecimalField(_('Data Value'),max_digits=20,decimal_places=2,
-        blank=True)  # Field name made lowercase.
+        blank=True,null=True)  # Field name made lowercase.
     min_value = models.DecimalField(_('Minimum Value'),max_digits=20,
         decimal_places=2,blank=True, null=True)  # Field name made lowercase.
     max_value = models.DecimalField(_('Maximum Value'),max_digits=20,
@@ -203,7 +204,7 @@ class FactDataIndicator(models.Model):
     period = models.CharField(_('Period'),max_length=25,blank=True,null=False) #try to concatenate period field
     comment = models.CharField(_('Status'),max_length=10, choices= STATUS_CHOICES,
         default=STATUS_CHOICES[0][0])  # Field name made lowercase.
-    string_value= models.CharField(_('Comments'),max_length=500,blank=True,null=True) # davy's request as of 30/4/2019
+    string_value= models.CharField(_('String Value'),max_length=500,blank=True,null=True) # davy's request as of 30/4/2019
     date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
         auto_now_add=True)
     date_lastupdated = models.DateTimeField(_('Date Modified'),blank=True,
@@ -328,10 +329,11 @@ class IndicatorProxy(StgIndicator):
         models.signals.post_migrate.disconnect(update_contenttypes)
 
     class Meta:
+        proxy = True
         managed = False
         verbose_name = 'Data Grid Form'
         verbose_name_plural = '   Multi-records Grid'
-        proxy = True
+
 
     """
     This def clean (self) method was contributed by Daniel Mbugua to resolve
@@ -407,7 +409,7 @@ class aho_factsindicator_archive(models.Model):
         db_table = 'aho_factsindicator_archive'
         verbose_name = _('Archive')
         verbose_name_plural = _('Indicators Archive')
-        ordering = ('location__name',)
+        ordering = ('indicator__name','location__name',)
 
     def __str__(self):
          return str(self.indicator)
@@ -435,7 +437,7 @@ class StgNarrative_Type(TranslatableModel):
         db_table = 'stg_narrative_type'
         verbose_name = _('Narrative Type')
         verbose_name_plural = _('Narrative Types')
-        ordering = ('code',)
+        ordering = ('translations__name',)
 
     def __str__(self):
         return self.name #display the knowledge product category name

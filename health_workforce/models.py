@@ -65,7 +65,7 @@ class StgInstitutionType(TranslatableModel):
         db_table = 'stg_institution_type'
         verbose_name = _('Institution Type')
         verbose_name_plural = _('Institution Types')
-        ordering = ('code', )
+        ordering = ('translations__name',)
 
     def __str__(self):
         return self.name #display the knowledge product category name
@@ -95,7 +95,7 @@ class StgInstitutionProgrammes(TranslatableModel):
         db_table = 'stg_institution_programme'
         verbose_name = _('Training Programme')
         verbose_name_plural = _('Training Programmes')
-        ordering = ('code', )
+        ordering = ('translations__name',)
 
     def __str__(self):
         return self.name #display the knowledge product category name
@@ -158,7 +158,7 @@ class StgTrainingInstitution(TranslatableModel):
         db_table = 'stg_traininginstitution'
         verbose_name = _('Institution') # this is important in the display on change details and the add button
         verbose_name_plural = _('Training Institutions')
-        ordering = ['code',]
+        ordering = ('translations__name',)
 
     def __str__(self):
         return self.name #display the location name such as country
@@ -210,7 +210,7 @@ class StgHealthCadre(TranslatableModel):
         db_table = 'stg_health_cadre'
         verbose_name = _('Health Cadre')
         verbose_name_plural = _('Health Cadres')
-        ordering = ('code', )
+        ordering = ('translations__name',)
 
     def __str__(self):
         return self.name #display the data element name
@@ -352,8 +352,8 @@ class StgRecurringEvent(TranslatableModel):
         db_table = 'stg_recurring_event'
         verbose_name = _('Recurring Event')
         verbose_name_plural = _('Recurring Events')
-        ordering = ('event_id', )
         unique_together = ('location','start_year','end_year')
+        ordering = ('translations__name',)
 
     def __str__(self):
          return str(self.name)
@@ -434,8 +434,8 @@ class StgAnnouncements(TranslatableModel):
         db_table = 'stg_event_announcement'
         verbose_name = _('Announcement')
         verbose_name_plural = _('Announcements')
-        ordering = ('event_id', )
         unique_together = ('location','start_year','end_year')
+        ordering = ('translations__name',)
 
     def __str__(self):
          return str(self.name)

@@ -35,7 +35,7 @@ class StgResourceType(TranslatableModel):
         db_table = 'stg_resource_type'
         verbose_name = 'Resource Type'
         verbose_name_plural = 'Resource Types'
-        ordering = ('code', )
+        ordering = ('translations__name',)
 
     def __str__(self):
         return self.name #display the knowledge product category name
@@ -77,7 +77,7 @@ class StgResourceCategory(TranslatableModel):
         db_table = 'stg_resource_category'
         verbose_name = 'Resource Category'
         verbose_name_plural = 'Resource Categories'
-        ordering = ('code', )
+        ordering = ('translations__name',)
 
     def __str__(self):
         return self.name #display the knowledge product category name
@@ -147,8 +147,7 @@ class StgKnowledgeProduct(TranslatableModel):
         db_table = 'stg_knowledge_product'
         verbose_name = _('Knowledge Resource')
         verbose_name_plural = _('Knowledge Resources')
-        ordering = ('code', )
-        #unique_together = ('title','author','year_published',)
+        ordering = ('translations__title',)
 
     def __str__(self):
         return self.title #display the data element name
@@ -208,7 +207,7 @@ class StgProductDomain(TranslatableModel):
         db_table = 'stg_publication_domain'
         verbose_name = _('Resource Theme')
         verbose_name_plural = _('Resource Themes')
-        ordering = ('code', )
+        ordering = ('translations__name',)
 
     def __str__(self):
         return self.name #display the knowledge product category name

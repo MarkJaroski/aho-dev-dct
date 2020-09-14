@@ -31,7 +31,7 @@ class StgLocationLevel(TranslatableModel):
         db_table = 'stg_location_level'
         verbose_name = _('Location Level')
         verbose_name_plural = _('Location Levels')
-        ordering = ('code', )
+        ordering = ('translations__name',)
 
     def __str__(self):
         return self.name #display only the level name
@@ -68,7 +68,7 @@ class StgWorldbankIncomegroups(TranslatableModel):
         db_table = 'stg_worldbank_incomegroups'
         verbose_name = _('Income Group')
         verbose_name_plural = 'Income Groups'
-        ordering = ('code', )
+        ordering = ('translations__name',)
 
     def __str__(self):
         return self.name #display only the level name
@@ -104,7 +104,7 @@ class StgEconomicZones(TranslatableModel):
         db_table = 'stg_economic_zones'
         verbose_name = _('Economic Block')
         verbose_name_plural = _('Economic Blocks')
-        ordering = ('code', )
+        ordering = ('translations__name',)
 
     def __str__(self):
         return self.name #display the data source name
@@ -140,7 +140,7 @@ class StgSpecialcategorization(TranslatableModel):
         db_table = 'stg_specialcategorization'
         verbose_name = _('Categorization')
         verbose_name_plural = _('Special Categorizations')
-        ordering = ('code', )
+        ordering = ('translations__name',)
 
     def __str__(self):
         return self.name #display only the level name
@@ -197,7 +197,7 @@ class StgLocation(TranslatableModel):
         db_table = 'stg_location'
         verbose_name = _('Location') # this is important in the display on change details and the add button
         verbose_name_plural = _('Locations')
-        ordering = ('code',)
+        ordering = ('translations__name',)
 
     def __str__(self):
         return self.name #display the location name such as country
