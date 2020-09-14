@@ -195,7 +195,7 @@ class IndicatorProxyForm(forms.ModelForm):
 
     class Meta:
         fields = ('indicator','location', 'categoryoption','datasource',
-            'start_period','end_period','period','value_received')
+            'measuremethod','start_period','end_period','period','value_received')
         model = FactDataIndicator
 
     def clean(self):
@@ -209,6 +209,10 @@ class IndicatorProxyForm(forms.ModelForm):
         #This attribute was added after getting error- location cannot be null
         datasource_field = 'datasource' #
         datasource = cleaned_data.get(datasource_field)
+
+        datasource_field = 'measuremethod' #
+        measuremethod = cleaned_data.get(measuremethod_field)
+
         start_year_field = 'start_period'
         start_period = cleaned_data.get(start_year_field)
         end_year_field = 'end_period'
@@ -229,6 +233,7 @@ class IndicatorProxyForm(forms.ModelForm):
                 cleaned_data.pop(location_field)
                 cleaned_data.pop(categoryoption_field)
                 cleaned_data.pop(datasource_field) # added line on 21/02/2020
+                cleaned_data.pop(measuremethod_field)
                 cleaned_data.pop(start_year_field)
                 cleaned_data.pop(end_year_field)
 
@@ -241,8 +246,7 @@ class IndicatorProxyForm(forms.ModelForm):
 
 
 # Register fact_data serializer to allow import os semi-structured data Excel/CSV
-data_wizard.register(
-    "Import Indicator Data Records",FactDataIndicatorSerializer)
+data_wizard.register(FactDataIndicator)
 @admin.register(FactDataIndicator)
 class IndicatorFactAdmin(OverideImportExport):
     form = IndicatorProxyForm #overrides the default django model form

@@ -167,8 +167,7 @@ class DataElementProxyForm(forms.ModelForm):
         return cleaned_data
 
 # Register fact_data indicator to allow wizard driven import
-data_wizard.register(
-    "Import Data Element Records",FactDataElementSerializer)
+data_wizard.register(FactDataElement)
 @admin.register(FactDataElement)
 class DataElementFactAdmin(OverideImportExport,ImportExportActionModelAdmin):
     form = DataElementProxyForm #overrides the default django form

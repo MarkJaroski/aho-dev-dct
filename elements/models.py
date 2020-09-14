@@ -96,7 +96,7 @@ class FactDataElement(models.Model):
 
         managed = True
         db_table = 'fact_data_element'
-        verbose_name = _('Data Element')
+        verbose_name = _('Raw Data Element')
         verbose_name_plural = _('Single-Record Form')
         ordering = ('location', )
         unique_together = ('dataelement', 'location','datasource',

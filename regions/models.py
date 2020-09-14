@@ -202,6 +202,7 @@ class StgLocation(TranslatableModel):
     def __str__(self):
         return self.name #display the location name such as country
 
+
     # This function makes sure the location name is unique instead of enforcing unque constraint on DB
     def clean(self): # Don't allow end_period to be greater than the start_period.
         if StgLocation.objects.filter(
