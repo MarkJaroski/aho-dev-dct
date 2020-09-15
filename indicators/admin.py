@@ -181,7 +181,7 @@ class IndicatorProxyForm(forms.ModelForm):
     decimal places. The RoundingDecimalFormField is in serializer.py
     '''
     value_received = RoundingDecimalFormField(
-        max_digits=20,decimal_places=2,required=True)
+        max_digits=20,decimal_places=2,required=False)#changed to false 15/09/20
     min_value = RoundingDecimalFormField(
         max_digits=20,decimal_places=2,required=False)
     max_value = RoundingDecimalFormField(
@@ -211,7 +211,7 @@ class IndicatorProxyForm(forms.ModelForm):
         datasource_field = 'datasource' #
         datasource = cleaned_data.get(datasource_field)
 
-        datasource_field = 'measuremethod' #
+        measuremethod_field = 'measuremethod' #
         measuremethod = cleaned_data.get(measuremethod_field)
 
         start_year_field = 'start_period'

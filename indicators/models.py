@@ -186,7 +186,7 @@ class FactDataIndicator(models.Model):
         decimal_places=2,blank=True, null=True)
     denominator_value = models.DecimalField(_('Denominator Value'),max_digits=20,
         decimal_places=2,blank=True, null=True)  # Field name made lowercase.
-    value_received = DecimalField(_('Data Value'),max_digits=20,decimal_places=2,
+    value_received = DecimalField(_('Numeric Value'),max_digits=20,decimal_places=2,
         blank=True,null=True)  # Field name made lowercase.
     min_value = models.DecimalField(_('Minimum Value'),max_digits=20,
         decimal_places=2,blank=True, null=True)  # Field name made lowercase.
@@ -204,7 +204,8 @@ class FactDataIndicator(models.Model):
     period = models.CharField(_('Period'),max_length=25,blank=True,null=False) #try to concatenate period field
     comment = models.CharField(_('Status'),max_length=10, choices= STATUS_CHOICES,
         default=STATUS_CHOICES[0][0])  # Field name made lowercase.
-    string_value= models.CharField(_('String Value'),max_length=500,blank=True,null=True) # davy's request as of 30/4/2019
+    string_value= models.CharField(_('String Value'),max_length=500,blank=True,
+        null=True,default='nul') # davy's request as of 30/4/2019
     date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
         auto_now_add=True)
     date_lastupdated = models.DateTimeField(_('Date Modified'),blank=True,
@@ -256,7 +257,10 @@ class FactDataIndicator(models.Model):
                 raise ValidationError({'min_value':_(
                     'Data Integrity Problem! Minimum value cannot be greater \
                      that the nominal value')})
-
+        if self.value_received is None and self.string_value is None:
+            raise ValidationError({'value_received':_(
+                'Data Entry Problem! Both numeric and string values cannot\
+                 be empty. Please supply data to both or either!')})
 
     """
     The purpose of this method is to concatenate the date that are entered as
@@ -402,7 +406,7 @@ class aho_factsindicator_archive(models.Model):
     comment = models.CharField(_('Status'),max_length=10,choices= STATUS_CHOICES,
         default=STATUS_CHOICES[0][0])
     string_value=models.CharField(_('Comments'),max_length=500,blank=True,
-        null=True) # davy's request as of 30/4/2019
+        null=True,default='nul') # davy's request as of 30/4/2019
 
     class Meta:
         managed = False
