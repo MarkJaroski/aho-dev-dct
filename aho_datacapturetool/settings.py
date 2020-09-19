@@ -31,6 +31,7 @@ ALLOWED_HOSTS = ['localhost','127.0.0.1','af-aho-datacapturetool.azurewebsites.n
 # Application definition
 INSTALLED_APPS = [
     'admin_menu',
+    'admin_reorder',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -107,6 +108,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'admin_reorder.middleware.ModelAdminReorder', # added
 ]
 
 ROOT_URLCONF = 'aho_datacapturetool.urls'
@@ -223,3 +225,38 @@ ADMIN_STYLE = {
     'logo-width': 'auto',
     'logo-height': '35px'
 }
+
+
+ADMIN_REORDER = (
+    # Cross-linked models
+    {'app': 'home', 'models': ('home.StgDatasource','home.StgCategoryoption',
+    'home.StgCategoryParent','home.StgMeasuremethod','home.StgValueDatatype')},
+
+    {'app': 'indicators', 'models': ('indicators.FactDataIndicator',
+    'indicators.IndicatorProxy','indicators.StgIndicator','indicators.StgIndicatorDomain',
+    'indicators.StgIndicatorReference','indicators.aho_factsindicator_archive',
+    'indicators.StgIndicatorNarrative','indicators.StgAnalyticsNarrative',
+    'indicators.StgNarrative_Type','indicators.AhoDoamain_Lookup',)},
+
+    {'app': 'publications', 'models': ('publications.StgKnowledgeProduct',
+    'publications.StgProductDomain','publications.StgResourceCategory',
+    'publications.StgResourceType')},
+
+    {'app': 'facilities', 'models': ('facilities.StgHealthFacility',
+    'facilities.StgFacilityType','facilities.StgFacilityOwnership',
+    'facilities.StgFacilityInfrastructure','facilities.StgServiceDomain')},
+
+    {'app': 'health_workforce', 'models': ('health_workforce.StgHealthWorkforceFacts',
+    'health_workforce.StgHealthCadre','health_workforce.StgTrainingInstitution',
+    'health_workforce.StgInstitutionType','health_workforce.StgInstitutionProgrammes',
+    'health_workforce.StgAnnouncements','health_workforce.StgRecurringEvent',
+    'health_workforce.ResourceTypeProxy','health_workforce.HumanWorkforceResourceProxy')},
+
+    {'app': 'elements', 'models': ('elements.FactDataElement','elements.DataElementProxy',
+    'elements.StgDataElement','elements.StgDataElementGroup')},
+
+    {'app': 'regions', 'models': ('regions.StgLocation','regions.StgLocationLevel',
+    'regions.StgEconomicZones','regions.StgWorldbankIncomegroups',
+    'regions.StgSpecialcategorization')},
+
+)

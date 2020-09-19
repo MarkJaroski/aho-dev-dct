@@ -30,6 +30,7 @@ def transition_to_rejected (modeladmin, request, queryset):
     queryset.update (comment = 'rejected')
 transition_to_rejected.short_description = "Mark selected as Rejected"
 
+
 @admin.register(StgResourceType)
 class ResourceTypeAdmin(TranslatableAdmin):
     from django.db import models

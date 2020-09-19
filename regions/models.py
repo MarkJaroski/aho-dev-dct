@@ -30,7 +30,7 @@ class StgLocationLevel(TranslatableModel):
         managed = True
         db_table = 'stg_location_level'
         verbose_name = _('Location Level')
-        verbose_name_plural = _('Location Levels')
+        verbose_name_plural = _('  Location Levels')
         ordering = ('translations__name',)
 
     def __str__(self):
@@ -196,7 +196,7 @@ class StgLocation(TranslatableModel):
         managed = True
         db_table = 'stg_location'
         verbose_name = _('Location') # this is important in the display on change details and the add button
-        verbose_name_plural = _('Locations')
+        verbose_name_plural = _('   Locations')
         ordering = ('translations__name',)
 
     def __str__(self):

@@ -64,7 +64,7 @@ class StgInstitutionType(TranslatableModel):
         managed = True
         db_table = 'stg_institution_type'
         verbose_name = _('Institution Type')
-        verbose_name_plural = _('Institution Types')
+        verbose_name_plural = _(' Institution Types')
         ordering = ('translations__name',)
 
     def __str__(self):
@@ -94,7 +94,7 @@ class StgInstitutionProgrammes(TranslatableModel):
         managed = True
         db_table = 'stg_institution_programme'
         verbose_name = _('Training Programme')
-        verbose_name_plural = _('Training Programmes')
+        verbose_name_plural = _(' Training Programmes')
         ordering = ('translations__name',)
 
     def __str__(self):
@@ -157,7 +157,7 @@ class StgTrainingInstitution(TranslatableModel):
         managed = True
         db_table = 'stg_traininginstitution'
         verbose_name = _('Institution') # this is important in the display on change details and the add button
-        verbose_name_plural = _('Training Institutions')
+        verbose_name_plural = _('  Training Institutions')
         ordering = ('translations__name',)
 
     def __str__(self):
@@ -209,7 +209,7 @@ class StgHealthCadre(TranslatableModel):
         managed = True
         db_table = 'stg_health_cadre'
         verbose_name = _('Health Cadre')
-        verbose_name_plural = _('Health Cadres')
+        verbose_name_plural = _('   Health Cadres')
         ordering = ('translations__name',)
 
     def __str__(self):
@@ -265,7 +265,7 @@ class StgHealthWorkforceFacts(models.Model):
         managed = True
         db_table = 'fact_health_workforce'
         verbose_name = _('Healthworkforce Data')
-        verbose_name_plural = _('Healthworkforce Data')
+        verbose_name_plural = _('    Healthworkforce Data')
         ordering = ('cadre_id', )
 
     def __str__(self):
@@ -350,8 +350,8 @@ class StgRecurringEvent(TranslatableModel):
     class Meta:
         managed = True
         db_table = 'stg_recurring_event'
-        verbose_name = _('Recurring Event')
-        verbose_name_plural = _('Recurring Events')
+        verbose_name = _('Nursing & Midwifery')
+        verbose_name_plural = _('Nursing and Midwifery')
         unique_together = ('location','start_year','end_year')
         ordering = ('translations__name',)
 

@@ -96,8 +96,8 @@ class FactDataElement(models.Model):
 
         managed = True
         db_table = 'fact_data_element'
-        verbose_name = _('Raw Data Element')
-        verbose_name_plural = _('Single-Record Form')
+        verbose_name = _('Data Element')
+        verbose_name_plural = _('   Single-Record Form')
         ordering = ('location', )
         unique_together = ('dataelement', 'location','datasource',
             'categoryoption','start_year','end_year')
@@ -155,7 +155,7 @@ class DataElementProxy(StgDataElement):
     class Meta:
         proxy = True
         verbose_name = 'Multi_Records Form'
-        verbose_name_plural = ' Multi_Records Form'
+        verbose_name_plural = '  Multi_Records Form'
 
     def clean(self):
         pass
@@ -186,7 +186,7 @@ class StgDataElementGroup(TranslatableModel):
         managed = True
         db_table = 'stg_data_element_group'
         verbose_name = _('Element Group')
-        verbose_name_plural = _(' Element Groups')
+        verbose_name_plural = _('Element Groups')
         ordering = ('translations__name',)
 
     def __str__(self):

@@ -27,7 +27,7 @@ class StgCategoryParent(TranslatableModel):
         managed = True
         db_table = 'stg_category_parent'
         verbose_name = _('Disaggregation Category')
-        verbose_name_plural = _('Disaggregation Categories')
+        verbose_name_plural = _('  Disaggregation Categories')
         ordering = ('translations__name',)
 
     def __str__(self):
@@ -57,7 +57,7 @@ class StgCategoryoption(TranslatableModel):
         managed = True
         db_table = 'stg_categoryoption'
         verbose_name = _('Disaggregation Option')
-        verbose_name_plural = _('Disaggregation Options')
+        verbose_name_plural = _('   Disaggregation Options')
         ordering = ('translations__name',)
 
     def __str__(self):
@@ -96,7 +96,7 @@ class StgDatasource(TranslatableModel):
         managed = True
         db_table = 'stg_datasource'
         verbose_name = 'Data Source'
-        verbose_name_plural = 'Data Sources'
+        verbose_name_plural = '    Data Sources'
         ordering = ('translations__name',)
 
     def __str__(self):
@@ -157,7 +157,7 @@ class StgMeasuremethod(TranslatableModel):
         managed = True
         db_table = 'stg_measuremethod'
         verbose_name = _('Measure Type')
-        verbose_name_plural = _('Measure Types')
+        verbose_name_plural = _(' Measure Types')
         ordering = ('translations__name',)
 
     def __str__(self):

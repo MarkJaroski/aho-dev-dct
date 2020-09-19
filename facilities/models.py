@@ -35,7 +35,7 @@ class StgFacilityType(TranslatableModel):
         managed = True
         db_table = 'stg_facility_type'
         verbose_name = _('Facility Type')
-        verbose_name_plural = _('Facility Types')
+        verbose_name_plural = _('  Facility Types')
         ordering = ('translations__name',)
 
     def __str__(self):
@@ -118,7 +118,7 @@ class StgFacilityOwnership(TranslatableModel):
         managed = True
         db_table = 'stg_facility_owner'
         verbose_name = _('Facility Owner')
-        verbose_name_plural = _('Facility Owners')
+        verbose_name_plural = _(' Facility Owners')
         ordering = ('translations__name',)
 
     def __str__(self):
@@ -188,7 +188,7 @@ class StgHealthFacility(TranslatableModel):
         managed = True
         db_table = 'stg_health_facility'
         verbose_name = _('Health Facility')
-        verbose_name_plural = _('Health Facilities')
+        verbose_name_plural = _('   Health Facilities')
         ordering = ('translations__name',)
 
     def __str__(self):

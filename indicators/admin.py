@@ -265,7 +265,7 @@ class IndicatorFactAdmin(OverideImportExport):
         #This works like charm!! only superusers and AFRO admin staff are allowed to view all countries and data
         if request.user.is_superuser or request.user.groups.filter(
             name__icontains='Admins'):
-            return qs #provide access to all instances/rows of fact data indicators
+            return qs #provide access to all instances of fact data indicators
         return qs.filter(location=request.user.location)  #provide access to user's country indicator instances
 
     """
@@ -332,7 +332,7 @@ class IndicatorFactAdmin(OverideImportExport):
                 'fields': ('indicator','location', 'categoryoption','datasource',
                 'measuremethod')
             }),
-            ('Reporting Period & Values', {
+            ('Reporting Period & Data Values', {
                 'fields': ('start_period','end_period','value_received',
                 'numerator_value','denominator_value','min_value','max_value',
                 'target_value','string_value',),
@@ -396,7 +396,6 @@ class FactIndicatorInline(admin.TabularInline):
     # This is a new construct created upon request by Davy to restrict data source access
         if db_field.name == "datasource":# Restricted data source implememnted on 20/03/2020
             if request.user.is_superuser:
-                #superuser can access all countries at level 2 in the database
                 kwargs["queryset"] = StgDatasource.objects.all()
             elif request.user.groups.filter(name__icontains='Admin'):
                 kwargs["queryset"] = StgDatasource.objects.all()

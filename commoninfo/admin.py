@@ -12,7 +12,7 @@ from import_export.formats import base_formats
 # Customize the site admin header for login, title bar, and data admin form section.
 class AdminSite(AdminSite):
     site_header = 'African Health Observatory' #also shown on login form
-    site_title = 'Online AHO Data Capture and Admin Tool' #shown on the title bar
+    site_title = 'AHO Data Capture and Admin Tool' #shown on the title bar
     index_title = 'African Health Observatory Data Management' #shown in the content section
 
 # #Import this method and do nothing to it. It is required by get_app_list()!!
@@ -82,11 +82,11 @@ def get_app_list(context, order=True):
     ordering = {
     'Home':1,
     'Indicators':2,
-    'Elements':3,
-    'Publications':4,
-    'Regions':5,
-    'Facilities':6,
-    'Health_Workforce':7,
+    'Publications':3,
+    'Facilities':4,
+    'Health_Workforce':5,
+    'Elements':6,
+    'Regions':7,
     'Sources':8,
     'Data_Wizard':9,
     'Authentication':10

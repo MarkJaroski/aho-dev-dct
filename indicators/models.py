@@ -90,7 +90,7 @@ class StgIndicator(TranslatableModel):
         managed = True
         db_table = 'stg_indicator'
         verbose_name = _('Indicator')
-        verbose_name_plural = _('Indicators')
+        verbose_name_plural = _('  Indicators')
         ordering = ('translations__name',)
 
     # This method makes it possible to enter multi-records in the Tabular form
@@ -149,7 +149,7 @@ class StgIndicatorDomain(TranslatableModel):
         managed = True
         db_table = 'stg_indicator_domain'
         verbose_name = _('Indicator Theme')
-        verbose_name_plural = _('Indicator Themes')
+        verbose_name_plural = _(' Indicator Themes')
         ordering = ('translations__name',)
 
     def __str__(self):
@@ -201,7 +201,7 @@ class FactDataIndicator(models.Model):
         default=datetime.date.today().year, #extract current date year value only
         help_text=_("This marks the end of reporting. The value must be current \
             year or greater than the start year"))
-    period = models.CharField(_('Period'),max_length=25,blank=True,null=False) #try to concatenate period field
+    period = models.CharField(_('Period'),max_length=25,blank=True,null=False)
     comment = models.CharField(_('Status'),max_length=10, choices= STATUS_CHOICES,
         default=STATUS_CHOICES[0][0])  # Field name made lowercase.
     string_value= models.CharField(_('String Value'),max_length=500,blank=True,
@@ -219,12 +219,13 @@ class FactDataIndicator(models.Model):
         )
 
         managed = True
-        db_table = 'fact_data_indicator'
-        verbose_name = _('Indicator Data Record')
-        verbose_name_plural = _('Single-record Form')
-        ordering = ('location__name',)
         unique_together = ('indicator', 'location', 'categoryoption','datasource',
             'start_period','end_period') #enforces concatenated unique constraint
+        db_table = 'fact_data_indicator'
+        verbose_name = _('Indicator Data Record')
+        verbose_name_plural = _('    Single-record Form')
+        ordering = ('indicator__name','location__name',)
+
 
     def __str__(self):
          return str(self.indicator)
@@ -338,7 +339,6 @@ class IndicatorProxy(StgIndicator):
         verbose_name = 'Data Grid Form'
         verbose_name_plural = '   Multi-records Grid'
 
-
     """
     This def clean (self) method was contributed by Daniel Mbugua to resolve
     the issue of parent-child saving issue in the multi-records entry form.
@@ -411,7 +411,7 @@ class aho_factsindicator_archive(models.Model):
     class Meta:
         managed = False
         db_table = 'aho_factsindicator_archive'
-        verbose_name = _('Archive')
+        verbose_name = _('Indicator Archive')
         verbose_name_plural = _('Indicators Archive')
         ordering = ('indicator__name','location__name',)
 

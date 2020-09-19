@@ -76,7 +76,7 @@ class StgResourceCategory(TranslatableModel):
         managed = True
         db_table = 'stg_resource_category'
         verbose_name = 'Resource Category'
-        verbose_name_plural = 'Resource Categories'
+        verbose_name_plural = ' Resource Categories'
         ordering = ('translations__name',)
 
     def __str__(self):
@@ -85,7 +85,7 @@ class StgResourceCategory(TranslatableModel):
 
     def clean(self):
         if StgResourceCategory.objects.filter(
-            translations__name=self.name).count() and not self.type_id and not \
+            translations__name=self.name).count() and not self.category_id and not \
                 self.code:
             raise ValidationError({'name':_('Resource category with the same \
                 name exists')})
@@ -146,7 +146,7 @@ class StgKnowledgeProduct(TranslatableModel):
         managed = True
         db_table = 'stg_knowledge_product'
         verbose_name = _('Knowledge Resource')
-        verbose_name_plural = _('Knowledge Resources')
+        verbose_name_plural = _('   Knowledge Resources')
         ordering = ('translations__title',)
 
     def __str__(self):
@@ -206,7 +206,7 @@ class StgProductDomain(TranslatableModel):
         managed = True # must be true to create the model table in mysql
         db_table = 'stg_publication_domain'
         verbose_name = _('Resource Theme')
-        verbose_name_plural = _('Resource Themes')
+        verbose_name_plural = _('  Resource Themes')
         ordering = ('translations__name',)
 
     def __str__(self):
