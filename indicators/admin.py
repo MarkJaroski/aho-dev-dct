@@ -132,7 +132,7 @@ class IndicatorAdmin(TranslatableAdmin,OverideExport):
         'denominator_description','reference',]
     list_display_links = ('afrocode', 'name',) #display as clickable link
     search_fields = ('translations__name','translations__shortname','afrocode') #display search field
-    list_per_page = 30 #limit records displayed on admin site to 30
+    list_per_page = 50 #limit records displayed on admin site to 30
     list_filter = (
         ('reference', RelatedOnlyDropdownFilter),
     )
@@ -172,7 +172,6 @@ class IndicatorDomainAdmin(TranslatableAdmin,OverideExport):
 
 class IndicatorProxyForm(forms.ModelForm):
     categoryoption = GroupedModelChoiceField(group_by_field='category',
-    # This queryset was modified by Daniel to order the grouped list by  date created
         queryset=StgCategoryoption.objects.all().order_by('category__category_id'),
     )
 
@@ -210,10 +209,8 @@ class IndicatorProxyForm(forms.ModelForm):
         #This attribute was added after getting error- location cannot be null
         datasource_field = 'datasource' #
         datasource = cleaned_data.get(datasource_field)
-
         measuremethod_field = 'measuremethod' #
         measuremethod = cleaned_data.get(measuremethod_field)
-
         start_year_field = 'start_period'
         start_period = cleaned_data.get(start_year_field)
         end_year_field = 'end_period'
@@ -264,7 +261,8 @@ class IndicatorFactAdmin(OverideImportExport):
         qs = super().get_queryset(request)
         #This works like charm!! only superusers and AFRO admin staff are allowed to view all countries and data
         if request.user.is_superuser or request.user.groups.filter(
-            name__icontains='Admins'):
+            name__icontains='Admin') or request.user.location.filter(
+            name__icontains='Regional Office'):
             return qs #provide access to all instances of fact data indicators
         return qs.filter(location=request.user.location)  #provide access to user's country indicator instances
 
@@ -285,7 +283,8 @@ class IndicatorFactAdmin(OverideImportExport):
                 # Looks up for the traslated location level name in related table
                 locationlevel__translations__name__in =['Global','Regional','Country']).order_by(
                     'locationlevel', 'location_id') #superuser can access all countries at level 2 in the database
-            elif request.user.groups.filter(name__icontains='Admin'):
+            elif request.user.groups.filter(name__icontains='Admin') or request.user.location.filter(
+                name__icontains='Regional Office'):
                 kwargs["queryset"] = StgLocation.objects.filter(
                 locationlevel__translations__name__in =['Regional','Country']).order_by(
                     'locationlevel', 'location_id')
@@ -297,7 +296,8 @@ class IndicatorFactAdmin(OverideImportExport):
         if db_field.name == "datasource":
             if request.user.is_superuser:
                 kwargs["queryset"] = StgDatasource.objects.all()
-            elif request.user.groups.filter(name__icontains='Admin'):
+            elif request.user.groups.filter(name__icontains='Admin') or request.user.location.filter(
+                name__icontains='Regional Office'):
                 kwargs["queryset"] = StgDatasource.objects.exclude(
                 pk__gte=1) # Admin user can only access data from countries
             else:
@@ -350,9 +350,10 @@ class IndicatorFactAdmin(OverideImportExport):
     actions =[transition_to_pending, transition_to_approved, transition_to_rejected]
     list_filter = (
         ('location', RelatedOnlyDropdownFilter,),
-        ('categoryoption', RelatedOnlyDropdownFilter,),
-        ('period',DropdownFilter),
         ('indicator', RelatedOnlyDropdownFilter,),
+        ('period',DropdownFilter),
+        ('categoryoption', RelatedOnlyDropdownFilter,),
+        ('comment',DropdownFilter),
     )
 
 
@@ -385,7 +386,8 @@ class FactIndicatorInline(admin.TabularInline):
                 # Looks up for the traslated location level name in related table
                 locationlevel__translations__name__in =['Global','Regional','Country']).order_by(
                     'locationlevel', 'location_id') #superuser can access all countries at level 2 in the database
-            elif request.user.groups.filter(name__icontains='Admin'):
+            elif request.user.groups.filter(name__icontains='Admin') or request.user.location.filter(
+                name__icontains='Regional Office'):
                 kwargs["queryset"] = StgLocation.objects.filter(
                 locationlevel__translations__name__in =['Regional','Country']).order_by(
                     'locationlevel', 'location_id')
@@ -397,7 +399,8 @@ class FactIndicatorInline(admin.TabularInline):
         if db_field.name == "datasource":# Restricted data source implememnted on 20/03/2020
             if request.user.is_superuser:
                 kwargs["queryset"] = StgDatasource.objects.all()
-            elif request.user.groups.filter(name__icontains='Admin'):
+            elif request.user.groups.filter(name__icontains='Admin') or request.user.location.filter(
+                name__icontains='Regional Office'):
                 kwargs["queryset"] = StgDatasource.objects.all()
             else:
                 kwargs["queryset"] = StgDatasource.objects.filter(
@@ -466,7 +469,8 @@ class IndicatorFactArchiveAdmin(OverideExport):
         qs = super().get_queryset(request)
         # Only superusers and admin are allowed to view all countries data
         if request.user.is_superuser or request.user.groups.filter(
-            name__icontains='Admins'):
+            name__icontains='Admin') or request.user.location.filter(
+            name__icontains='Regional Office'):
             return qs #provide access to all instances/rows of fact data indicators
         return qs.filter(location=request.user.location)  #provide access to user's country indicator instances
 
@@ -476,7 +480,6 @@ class IndicatorFactArchiveAdmin(OverideExport):
     search_fields = ('indicator__translations__name', 'location__translations__name',
         'period','indicator__afrocode') #display search field
     list_per_page = 50 #limit records displayed on admin site to 50
-
 
 
 @admin.register(StgNarrative_Type)

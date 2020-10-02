@@ -88,8 +88,9 @@ class DatasourceAdmin(TranslatableAdmin,OverideExport):
     resource_class = DataSourceExport #for export only
     list_display=['name','shortname','code','description','level']
     list_display_links = ('code', 'name',)
-    search_fields = ('translations__name', 'translations__shortname','code','translations__level') #display search field
-    list_per_page = 15 #limit records displayed on admin site to 15
+    search_fields = ('translations__name', 'translations__shortname',
+        'code','translations__level') #display search field
+    list_per_page = 50 #limit records displayed on admin site to 15
     exclude = ('date_created','date_lastupdated',)
 
 
@@ -116,7 +117,8 @@ class FileSourceAdmin(ImportActionModelAdmin):
     def get_queryset(self, request):
     		qs = super().get_queryset(request)
     		if request.user.is_superuser or request.user.groups.filter(
-                name__icontains='Admins'):
+                name__icontains='Admin') or request.user.location.filter(
+                name__icontains='Regional Office'):
     			return qs #provide access to all instances/rows of fact data indicators
     		return qs.filter(location=request.user.location)  # provide access to user's country indicator instances
     def formfield_for_foreignkey(self, db_field, request =None, **kwargs):
@@ -125,7 +127,8 @@ class FileSourceAdmin(ImportActionModelAdmin):
                 kwargs["queryset"] = StgLocation.objects.filter(
                 locationlevel__translations__name__in =['Global','Regional','Country']).order_by(
                     'locationlevel', 'location_id') #superuser can access all countries at level 2 in the database
-            elif request.user.groups.filter(name__icontains='Admins'):
+            elif request.user.groups.filter(name__icontains='Admin') or request.user.location.filter(
+                name__icontains='Regional Office'):
                 kwargs["queryset"] = StgLocation.objects.filter(
                 locationlevel__translations__name__in =['Regional','Country']).order_by(
                     'locationlevel', 'location_id')
@@ -144,7 +147,8 @@ class URLSourceAdmin(ImportActionModelAdmin):
     def get_queryset(self, request):
     		qs = super().get_queryset(request)
     		if request.user.is_superuser or request.user.groups.filter(
-                name__icontains='Admins'):
+                name__icontains='Admin') or request.user.location.filter(
+                name__icontains='Regional Office'):
     			return qs #provide access to all instances/rows of fact data indicators
     		return qs.filter(location=request.user.location)  # provide access to user's country indicator instances
     def formfield_for_foreignkey(self, db_field, request =None, **kwargs):
@@ -153,7 +157,8 @@ class URLSourceAdmin(ImportActionModelAdmin):
                 kwargs["queryset"] = StgLocation.objects.filter(
                 locationlevel__translations__name__in =['Global','Regional','Country']).order_by(
                     'locationlevel', 'location_id') #superuser can access all countries at level 2 in the database
-            elif request.user.groups.filter(name__icontains='Admins'):
+            elif request.user.groups.filter(name__icontains='Admin') or request.user.location.filter(
+                name__icontains='Regional Office'):
                 kwargs["queryset"] = StgLocation.objects.filter(
                 locationlevel__translations__name__in =['Regional','Country']).order_by(
                     'locationlevel', 'location_id')

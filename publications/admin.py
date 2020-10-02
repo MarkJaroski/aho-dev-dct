@@ -38,7 +38,6 @@ class ResourceTypeAdmin(TranslatableAdmin):
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
     }
-
     list_display=['name','code','shortname','description']
     list_display_links =('code', 'name',)
     search_fields = ('translations__name','translations__shortname','code',) #display search field
@@ -73,8 +72,9 @@ class ProductAdmin(TranslatableAdmin,ImportExportModelAdmin,
     }
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        if request.user.is_superuser or \
-            request.user.groups.filter(pk=1):
+        if request.user.is_superuser or request.user.groups.filter(
+            name__icontains='Admin') or request.user.location.filter(
+            name__icontains='Regional Office'):
             # Provide access to all instances/rows of all location, i.e. all AFRO member states
             return qs
         return qs.filter(location_id=request.user.location_id)#provide user with specific country details!
@@ -141,16 +141,15 @@ class ProductAdmin(TranslatableAdmin,ImportExportModelAdmin,
             ('Description & Abstract', {
                 'fields': ('description', 'abstract',),
             }),
-            ('Attribution & Access Details', {
+            ('Attribution, Access and Approval Details', {
                 'fields': ('author','year_published','internal_url',
-                    'external_url','cover_image',),
+                    'external_url','cover_image','comment'),
             }),
         )
 
     def get_location(obj):
            return obj.location.name
     get_location.short_description = 'Location'
-
 
     def get_type(obj):
            return obj.type.name
@@ -163,13 +162,14 @@ class ProductAdmin(TranslatableAdmin,ImportExportModelAdmin,
     readonly_fields = ('comment',)
     search_fields = ('translations__title','type__translations__name',
         'location__translations__name',) #display search field
-    list_per_page = 30 #limit records displayed on admin site to 30
+    list_per_page = 50 #limit records displayed on admin site to 30
     actions = [transition_to_pending,transition_to_approved,
         transition_to_rejected]
     exclude = ('date_created','date_lastupdated','code',)
     list_filter = (
         ('location',RelatedOnlyDropdownFilter),
         ('type',RelatedOnlyDropdownFilter),
+        ('comment',DropdownFilter),
     )
 
 
@@ -197,7 +197,7 @@ class ProductDomainAdmin(TranslatableAdmin,OverideExport):
     filter_horizontal = ('publications',) # should display multiselect records
 
     exclude = ('date_created','date_lastupdated','code',)
-    list_per_page = 30 #limit records displayed on admin site to 15
+    list_per_page = 50 #limit records displayed on admin site to 15
     list_filter = (
         ('parent',RelatedOnlyDropdownFilter),
         ('publications',RelatedOnlyDropdownFilter,),# Added 16/12/2019 for M2M lookup

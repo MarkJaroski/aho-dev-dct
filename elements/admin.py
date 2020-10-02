@@ -184,7 +184,8 @@ class DataElementFactAdmin(OverideImportExport,ImportExportActionModelAdmin):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         if request.user.is_superuser or request.user.groups.filter(
-            name__icontains='Admins'):
+            name__icontains='Admin') or request.user.location.filter(
+            name__icontains='Regional Office'):
             return qs #provide access to all instances/rows of fact data elements
         return qs.filter(location=request.user.location) #provide access to user's country instances of data elements
 
@@ -202,7 +203,8 @@ class DataElementFactAdmin(OverideImportExport,ImportExportActionModelAdmin):
                 # Looks up for the traslated location level name in related table
                 locationlevel__translations__name__in =[
                 'Global','Regional','Country']).order_by('locationlevel', 'location_id')
-            elif request.user.groups.filter(name__icontains='Admin'):
+            elif request.user.groups.filter(name__icontains='Admin') or request.user.location.filter(
+                name__icontains='Regional Office'):
                 kwargs["queryset"] = StgLocation.objects.filter(
                 locationlevel__translations__name__in =[
                 'Regional','Country']).order_by('locationlevel', 'location_id')
@@ -258,24 +260,27 @@ class DataElementFactAdmin(OverideImportExport,ImportExportActionModelAdmin):
     fieldsets = ( # used to create frameset sections on the data entry form
         ('Data Element Details', {
                 'fields': ('dataelement', 'location', 'categoryoption',
-                    'datasource','valuetype',)
+                    'datasource','start_year', 'end_year',)
             }),
             ('Reporting Period & Value', {
-                'fields': ('start_year', 'end_year','value','target_value'),
+                'fields': ('valuetype','value','target_value',),
             }),
         )
     #The list display includes a callable get_afrocode that returns data element code for display on admin pages
     list_display=['dataelement','location',get_afrocode,'categoryoption','period',
         'value','datasource','get_comment_display',]
     list_display_links = ('dataelement','location', get_afrocode,) #For making the code and name clickable
-    search_fields = ('dataelement__translations__name','location__translations__name','period','dataelement__code') #display search field
+    search_fields = ('dataelement__translations__name','location__translations__name',
+        'period','dataelement__code') #display search field
     list_per_page = 30 #limit records displayed on admin site to 30
     #this field need to be controlled for data entry. should only be active for the approving authority
     list_filter = (
         ('location', RelatedOnlyDropdownFilter,),
-        ('categoryoption', RelatedOnlyDropdownFilter,),
+        ('dataelement', RelatedOnlyDropdownFilter,),
         ('period',DropdownFilter),
-        ('dataelement', RelatedOnlyDropdownFilter,)
+        ('comment',DropdownFilter),
+        ('categoryoption', RelatedOnlyDropdownFilter,),
+
     )
     readonly_fields=('comment', 'period', )
     actions = [transition_to_pending, transition_to_approved, transition_to_rejected]
@@ -309,7 +314,8 @@ class FactElementInline(admin.TabularInline):
                 locationlevel__translations__name__in =['Global','Regional','Country']).order_by(
                     'locationlevel', 'location_id') #superuser can access all countries
             # This works like charm!! only AFRO admin staff are allowed to process all countries and data
-            elif request.user.groups.filter(name__icontains='Admins'):
+            elif request.user.groups.filter(name__icontains='Admin')or request.user.location.filter(
+                name__icontains='Regional Office'):
                 kwargs["queryset"] = StgLocation.objects.filter(
                 locationlevel__translations__name__in =[
                     'Regional','Country']).order_by('locationlevel', 'location_id')
@@ -382,5 +388,4 @@ class DataElementGoupAdmin(TranslatableAdmin,OverideExport):
     list_display=['name','code','shortname', 'description',]
     search_fields = ('code','translations__name',) #display search field
     filter_horizontal = ('dataelement',) # this should display an inline with multiselect
-
     exclude = ('code',)

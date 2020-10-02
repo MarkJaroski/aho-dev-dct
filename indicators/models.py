@@ -205,7 +205,7 @@ class FactDataIndicator(models.Model):
     comment = models.CharField(_('Status'),max_length=10, choices= STATUS_CHOICES,
         default=STATUS_CHOICES[0][0])  # Field name made lowercase.
     string_value= models.CharField(_('String Value'),max_length=500,blank=True,
-        null=True,default='nul') # davy's request as of 30/4/2019
+        null=True) # davy's request as of 30/4/2019
     date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
         auto_now_add=True)
     date_lastupdated = models.DateTimeField(_('Date Modified'),blank=True,

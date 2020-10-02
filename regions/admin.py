@@ -100,7 +100,8 @@ class LocationAdmin(TranslatableAdmin,OverideExport):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         if request.user.is_superuser or request.user.groups.filter(
-            name__icontains='Admins'):
+            name__icontains='Admin') or request.user.location.filter(
+            name__icontains='Regional Office'):
             return qs #provide access to all instances/rows of all location, i.e. all AFRO member states
         return qs.filter(location_id=request.user.location_id)#provide the user with specific country details!
     """
@@ -111,7 +112,8 @@ class LocationAdmin(TranslatableAdmin,OverideExport):
     def formfield_for_foreignkey(self, db_field, request =None, **kwargs): #to implement user filtering her
         if db_field.name == "parent":
             if request.user.is_superuser or request.user.groups.filter(
-                name__icontains='Admins'):
+                name__icontains='Admin') or request.user.location.filter(
+                name__icontains='Regional Office'):
                 kwargs["queryset"] = StgLocation.objects.filter(
                 locationlevel__translations__name__in =[
                     'Country','Regional','Global']).order_by('locationlevel',)
@@ -121,7 +123,8 @@ class LocationAdmin(TranslatableAdmin,OverideExport):
 
         if db_field.name == "locationlevel":
             if request.user.is_superuser or request.user.groups.filter(
-                name__icontains='Admins'):
+                name__icontains='Admin') or request.user.location.filter(
+                name__icontains='Regional Office'):
                 kwargs["queryset"] = StgLocationLevel.objects.all().order_by(
                     'translations__name',) #superuser can access all countries at level 2 in the database
             else:
@@ -142,7 +145,6 @@ class LocationAdmin(TranslatableAdmin,OverideExport):
                 'fields': ('wb_income','zone','special',),
             }),
         )
-
     resource_class = LocationResourceExport
     list_display=['name','code','parent','special','zone',]
     list_display_links = ('code', 'name',) #display as clickable link

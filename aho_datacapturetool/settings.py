@@ -134,7 +134,7 @@ WSGI_APPLICATION = 'aho_datacapturetool.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'aho_azure_database', #temporary
+        'NAME': 'aho_azure_database24', #temporary
 		'HOST': 'localhost',
 		'USER': 'ahodbadmin',
 		'PASSWORD': 'Aho@1234',

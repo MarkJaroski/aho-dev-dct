@@ -84,9 +84,9 @@ class ResourceAdmin(TranslatableAdmin,ImportExportModelAdmin,
     }
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        if request.user.is_superuser or \
-            request.user.groups.filter(pk=1):
-            # Provide access to all instances/rows of all location, i.e. all AFRO member states
+        if request.user.is_superuser or request.user.groups.filter(
+            name__icontains='Admin') or request.user.location.filter(
+            name__icontains='Regional Office'):
             return qs
         return qs.filter(location_id=request.user.location_id)#provide user with specific country details!
 
@@ -188,7 +188,8 @@ class TrainingInsitutionAdmin(TranslatableAdmin,OverideExport):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         if request.user.is_superuser or request.user.groups.filter(
-            name__icontains='Admins'):
+            name__icontains='Admin') or request.user.location.filter(
+            name__icontains='Regional Office'):
             return qs #provide access to all instances/rows of all location, i.e. all AFRO member states
         return qs.filter(location_id=request.user.location_id)#provide the user with specific country details!
 
@@ -200,7 +201,8 @@ class TrainingInsitutionAdmin(TranslatableAdmin,OverideExport):
                 # Looks up for the traslated location level name in related table
                 locationlevel__translations__name__in =[
                 'Global','Regional','Country']).order_by('locationlevel', 'location_id')
-            elif request.user.groups.filter(name__icontains='Admin'):
+            elif request.user.groups.filter(name__icontains='Admin') or request.user.location.filter(
+                name__icontains='Regional Office'):
                 kwargs["queryset"] = StgLocation.objects.filter(
                 locationlevel__translations__name__in =[
                 'Regional','Country']).order_by('locationlevel', 'location_id')
@@ -248,7 +250,8 @@ class HealthCadreAdmin(TranslatableAdmin,OverideExport):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         if request.user.is_superuser or request.user.groups.filter(
-            name__icontains='Admins'):
+            name__icontains='Admin') or request.user.location.filter(
+            name__icontains='Regional Office'):
             return qs #provide access to all instances/rows of all location, i.e. all AFRO member states
         return qs.filter(location_id=request.user.location_id)#provide the user with specific country details!
 
@@ -289,8 +292,9 @@ class HealthworforceFactsAdmin(ImportExportModelAdmin,ImportExportActionModelAdm
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        if request.user.is_superuser or \
-            request.user.groups.filter(pk=1):
+        if request.user.is_superuser or request.user.groups.filter(
+            name__icontains='Admin') or request.user.location.filter(
+            name__icontains='Regional Office'):
             # Provide access to all instances/rows of all location, i.e. all AFRO member states
             return qs
         return qs.filter(location_id=request.user.location_id)#provide user with specific country details!
@@ -302,7 +306,8 @@ class HealthworforceFactsAdmin(ImportExportModelAdmin,ImportExportActionModelAdm
                 # Looks up for the traslated location level name in related table
                 locationlevel__translations__name__in =['Global','Regional','Country']).order_by(
                     'locationlevel', 'location_id') #superuser can access all countries at level 2 in the database
-            elif request.user.groups.filter(name__icontains='Admin'):
+            elif request.user.groups.filter(name__icontains='Admin') or request.user.location.filter(
+                name__icontains='Regional Office'):
                 kwargs["queryset"] = StgLocation.objects.filter(
                 locationlevel__translations__name__in =['Regional','Country']).order_by(
                     'locationlevel', 'location_id')
@@ -352,6 +357,10 @@ class HealthworforceFactsAdmin(ImportExportModelAdmin,ImportExportActionModelAdm
     exclude = ('date_created','date_lastupdated',)
     list_filter = (
         ('cadre_id',RelatedOnlyDropdownFilter),
+        ('location', RelatedOnlyDropdownFilter,),
+        ('period',DropdownFilter),
+        ('status',DropdownFilter),
+        ('categoryoption', RelatedOnlyDropdownFilter,),
     )
 
 
@@ -365,8 +374,9 @@ class RecurringEventsAdmin(TranslatableAdmin,ImportExportModelAdmin,OverideImpor
     }
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        if request.user.is_superuser or request.user.groups.filter(pk=1):
-            # Provide access to all instances/rows of all location, i.e. all AFRO member states
+        if request.user.is_superuser or request.user.groups.filter(
+            name__icontains='Admin') or request.user.location.filter(
+            name__icontains='Regional Office'):
             return qs
         return qs.filter(location_id=request.user.location_id)#provide user with specific country details!
 
@@ -437,7 +447,9 @@ class EventsAnnouncementAdmin(TranslatableAdmin,ImportExportModelAdmin,
     }
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        if request.user.is_superuser or request.user.groups.filter(pk=1):
+        if request.user.is_superuser or request.user.groups.filter(
+            name__icontains='Admin') or request.user.location.filter(
+            name__icontains='Regional Office'):
             # Provide access to all instances/rows of all location, i.e. all AFRO member states
             return qs
         return qs.filter(location_id=request.user.location_id)#provide user with specific country details!
