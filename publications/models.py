@@ -113,7 +113,7 @@ class StgKnowledgeProduct(TranslatableModel):
     categorization = models.ForeignKey(StgResourceCategory,models.PROTECT,
         blank=False,verbose_name=_('Resource Category'),default = 1)
     translations = TranslatedFields(
-        title = models.CharField(_('Title'),max_length=230,blank=False, null=False),
+        title = models.CharField(_('Title'),max_length=500,blank=False, null=False),
         description = models.TextField(_('Brief Description'),blank=True, null=True),
         abstract = models.TextField(_('Abstract/Summary'),blank=True, null=True),
         author = models.CharField(_('Author/Owner'),max_length=200, blank=False,

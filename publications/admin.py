@@ -149,15 +149,16 @@ class ProductAdmin(TranslatableAdmin,ImportExportModelAdmin,
 
     def get_location(obj):
            return obj.location.name
-    get_location.short_description = 'Location'
+    get_location.short_description = 'Publication Place'
 
     def get_type(obj):
            return obj.type.name
     get_type.short_description = 'Type'
 
+
     # To display the choice field values use the helper method get_foo_display where foo is the field name
     list_display=['title','code',get_type,'author','year_published',get_location,
-        'internal_url','show_external_url','cover_image','get_comment_display']
+        'internal_url','show_external_url','language_code','get_comment_display']
     list_display_links = ['code','title',]
     readonly_fields = ('comment',)
     search_fields = ('translations__title','type__translations__name',

@@ -134,7 +134,7 @@ WSGI_APPLICATION = 'aho_datacapturetool.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'aho_azure_database24', #temporary
+        'NAME': 'aho_azure_database', #temporary
 		'HOST': 'localhost',
 		'USER': 'ahodbadmin',
 		'PASSWORD': 'Aho@1234',
@@ -166,8 +166,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 # Internationalization
-LANGUAGE_CODE = 'en'
-
+PARLER_DEFAULT_LANGUAGE_CODE ='en'
 LANGUAGES = ( #added
 ('en','English'),
 ('fr', 'French'),
@@ -181,7 +180,8 @@ None: (
 {'code': 'pt'},
 ),
 'default': {
-'fallback': 'en',
+# Changed to fallbacks to fill missing list_display name in change form 15/10/2020
+'fallbacks': ['fr','pt','en'],
 'hide_untranslated': False, #show default as English
 }
 }
