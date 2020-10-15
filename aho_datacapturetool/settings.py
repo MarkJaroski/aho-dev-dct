@@ -166,7 +166,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 # Internationalization
-PARLER_DEFAULT_LANGUAGE_CODE ='en'
+LANGUAGE_CODE ='en'
+
 LANGUAGES = ( #added
 ('en','English'),
 ('fr', 'French'),
