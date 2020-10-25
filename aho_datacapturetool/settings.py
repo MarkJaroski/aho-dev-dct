@@ -53,7 +53,6 @@ INSTALLED_APPS = [
     'rest_framework', # register Django
     'rest_framework_swagger',
     'django_admin_listfilter_dropdown',
-    'rosetta',
 ]
 
 DATA_WIZARD = {

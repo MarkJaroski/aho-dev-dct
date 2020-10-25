@@ -47,7 +47,6 @@ urlpatterns = [
 ]
 
 urlpatterns += i18n_patterns ( # must be python immutable list () and not []
-    path('rosetta/', include('rosetta.urls')), # language translations helper
     path('', views.index, name='index'),
     path('admin/', admin.site.urls,name='dashboard'),
     path('accounts/login/', views.login_view, name='login'),
