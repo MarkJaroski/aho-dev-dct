@@ -3,8 +3,7 @@ from .settings import *
 DEBUG = False
 # Configure default domain name
 ALLOWED_HOSTS = [os.environ['WEBSITE_SITE_NAME'] + '.azurewebsites.net',
-'af-aho-datacapturetool.azurewebsites.net']
-if 'WEBSITE_SITE_NAME' in os.environ else []
+'af-aho-datacapturetool.azurewebsites.net'] if 'WEBSITE_SITE_NAME' in os.environ else []
 
 # WhiteNoise configuration
 MIDDLEWARE = [
