@@ -3,7 +3,9 @@ from .settings import *
 DEBUG = False
 # Configure default domain name
 ALLOWED_HOSTS = [os.environ['WEBSITE_SITE_NAME'] + '.azurewebsites.net',
-    '127.0.0.1'] if 'WEBSITE_SITE_NAME' in os.environ else []
+os.environ['WEBSITE_SITE_NAME'] + '.azurewebsites.net/fr',
+os.environ['WEBSITE_SITE_NAME'] + '.azurewebsites.net/pt',
+'127.0.0.1'] if 'WEBSITE_SITE_NAME' in os.environ else []
 
 # WhiteNoise configuration
 MIDDLEWARE = [
