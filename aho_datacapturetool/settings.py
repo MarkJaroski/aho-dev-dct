@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/2.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.1/ref/settings/
 """
-
+from django.utils.translation import ugettext_lazy as _
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -53,7 +53,7 @@ INSTALLED_APPS = [
     'rest_framework', # register Django
     'rest_framework_swagger',
     'django_admin_listfilter_dropdown',
-
+    'rosetta',
 ]
 
 DATA_WIZARD = {
@@ -169,9 +169,9 @@ AUTH_PASSWORD_VALIDATORS = [
 LANGUAGE_CODE ='en'
 
 LANGUAGES = ( #added
-('en','English'),
-('fr', 'French'),
-('pt','Portuguese'),
+('en',_('English')),
+('fr', _('French')),
+('pt',_('Portuguese')),
 )
 
 PARLER_LANGUAGES = {
@@ -195,7 +195,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
 
-LOCALE_PATHS = (os.path.join(BASE_DIR, 'locale/'),
+LOCALE_PATHS = (os.path.join(BASE_DIR, 'locale/'), # for UI language translations
 )
 
 MEDIA_URL = '/media/'

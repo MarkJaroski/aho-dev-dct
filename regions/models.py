@@ -18,7 +18,7 @@ class StgLocationLevel(TranslatableModel):
             choices=make_choices(LEVEL),default=LEVEL[0]),  # Field name made lowercase.
         name = models.CharField(_('Level Name'),max_length=230, blank=False,
             null=False),  # Field name made lowercase.
-        description = models.TextField(_('Brief Description'),blank=True, null=True)  # Field name made lowercase.
+        description = models.TextField(_('Description'),blank=True, null=True)  # Field name made lowercase.
     )
     code = models.CharField(unique=True, max_length=50, blank=True,null=False)  # Field name made lowercase.
     date_created = models.DateTimeField(_('Date Created'),blank=True,null=True,
@@ -167,19 +167,19 @@ class StgLocation(TranslatableModel):
         name = models.CharField(_('Location Name'),max_length=230,blank=False,
             null=False),  # Field name made lowercase.
         description = models.TextField(_('Brief Description'),blank=True, null=True),
-        latitude = models.FloatField(blank=True, null=True),
-        longitude = models.FloatField(blank=True, null=True),
-        cordinate = models.TextField(blank=True, null=True)
+        latitude = models.FloatField(_('Latitude'),blank=True, null=True),
+        longitude = models.FloatField(_('Longitude'),blank=True, null=True),
+        cordinate = models.TextField(_('Cordinates'),blank=True, null=True)
     )
-    iso_alpha = models.CharField(_('Alpha Code'),unique=True,max_length=15,
+    iso_alpha = models.CharField(_('ISO Alpha Code'),unique=True,max_length=15,
         blank=False,null=False)
-    iso_number = models.CharField(_('Numeric Code'),unique=True, max_length=15,
+    iso_number = models.CharField(_('ISO Numeric Code'),unique=True, max_length=15,
         blank=False)
     code = models.CharField(_('Unique Code'),unique=True, max_length=15,
         blank=True, null=False)
     parent = models.ForeignKey('self', models.PROTECT,blank=True, null=True,
         verbose_name = _('Parent Location'),default=1,
-        help_text=_("You are not allowed to edit this field because it is \
+        help_text=_("You are not allowed to edit this field because it is\
         related to other records"))
     wb_income = models.ForeignKey(StgWorldbankIncomegroups, models.PROTECT,blank=False,
         null=False, verbose_name = _('Income level'), default='99')  # Field name made lowercase.
@@ -201,7 +201,6 @@ class StgLocation(TranslatableModel):
 
     def __str__(self):
         return self.name #display the location name such as country
-
 
     # This function makes sure the location name is unique instead of enforcing unque constraint on DB
     def clean(self): # Don't allow end_period to be greater than the start_period.

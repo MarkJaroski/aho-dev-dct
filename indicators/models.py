@@ -16,9 +16,9 @@ def make_choices(values):
     return [(v, v) for v in values]
 
 STATUS_CHOICES = ( #choices for approval of indicator data by authorized users
-    ('pending', 'Pending'),
-    ('approved','Approved'),
-    ('rejected','Rejected'),
+    ('pending', _('Pending')),
+    ('approved',_('Approved')),
+    ('rejected',_('Rejected')),
 )
 
 class StgIndicatorReference(TranslatableModel):
@@ -111,12 +111,12 @@ class StgIndicator(TranslatableModel):
 
 class StgIndicatorDomain(TranslatableModel):
     LEVEL = (
-    (1, 'level 1'),
-    (2, 'level 2'),
-    (3,'level 3'),
-    (4,'level 4'),
-    (5,'level 5'),
-    (6,'level 6'),
+    (1,_('level 1')),
+    (2,_('level 2')),
+    (3,_('level 3')),
+    (4,_('level 4')),
+    (5,_('level 5')),
+    (6,_('level 6')),
     )
 
     domain_id = models.AutoField(primary_key=True)  # Field name made lowercase.
@@ -127,7 +127,6 @@ class StgIndicatorDomain(TranslatableModel):
         null=False),
         shortname = models.CharField(_('Short Name'),max_length=45,blank=False,
             null=False),
-
         description = models.TextField(_('Brief Description'),blank=True, null=True,)
     )
     level =models.SmallIntegerField(_('Theme Level'),choices=LEVEL,
@@ -236,10 +235,10 @@ class FactDataIndicator(models.Model):
     message and wait until the user corrects the mistake.
     """
     def clean(self): # Don't allow end_period to be greater than the start_period.
-        if self.start_period <=1990 or self.start_period > datetime.date.today().year:
+        if self.start_period <=1900 or self.start_period > datetime.date.today().year:
             raise ValidationError({'start_period':_(
-                'Sorry! Start year cannot be less than 1990 or greater than current Year ')})
-        elif self.end_period <=1990 or self.end_period > datetime.date.today().year:
+                'Sorry! Start year cannot be less than 1900 or greater than current Year ')})
+        elif self.end_period <=1900 or self.end_period > datetime.date.today().year:
             raise ValidationError({'end_period':_(
                 'Sorry! The ending year cannot be lower than the start year or \
                 greater than the current Year ')})
@@ -397,7 +396,7 @@ class aho_factsindicator_archive(models.Model):
     start_period = models.IntegerField(_('Starting Period',),null=False,
         blank=False,default=datetime.date.today().year,#extract current date year value only
         help_text=_("This Year marks the start of the reporting period. \
-            NB: 1990 is the Lowest Limit!"))
+            NB: 1900 is the Lowest Limit!"))
     end_period  = models.IntegerField(_('Ending Year'),null=False,blank=False,
         default=datetime.date.today().year, #extract current date year value only
         help_text=_("This Year marks the end of reporting. \
@@ -468,7 +467,7 @@ class StgAnalyticsNarrative(models.Model):
     location = models.ForeignKey(StgLocation, models.PROTECT, blank=False,
         null=False,verbose_name = _('Location'), default = 1)
     code = models.CharField(unique=True, max_length=50, blank=True, null=False,
-        verbose_name = 'Code')  # Field name made lowercase.
+        verbose_name = _('Code'))  # Field name made lowercase.
     narrative_text = models.TextField(_('Narrative Text'),blank=False, null=False)  # Field name made lowercase.
     date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
         auto_now_add=True)
@@ -497,7 +496,7 @@ class StgIndicatorNarrative(models.Model):
     location = models.ForeignKey(StgLocation, models.PROTECT, blank=False, null=False,
          verbose_name = _('Location'), default = 1)
     code = models.CharField(unique=True, max_length=50, blank=True, null=False,
-        verbose_name = 'Code')  # Field name made lowercase.
+        verbose_name = _('Code'))  # Field name made lowercase.
     narrative_text = models.TextField(_('Narrative Text'),blank=False, null=False)  # Field name made lowercase.
     date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
         auto_now_add=True)

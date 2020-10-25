@@ -9,6 +9,7 @@ from admin_menu.templatetags import custom_admin_menu
 from import_export.admin import (ImportExportModelAdmin, ExportActionModelAdmin,
     ExportMixin,ImportMixin,ExportActionModelAdmin,ImportExportActionModelAdmin) #added exportaction mixin only
 from import_export.formats import base_formats
+from django.utils.translation import ugettext_lazy as _
 # Customize the site admin header for login, title bar, and data admin form section.
 class AdminSite(AdminSite):
     site_header = 'African Health Observatory' #also shown on login form

@@ -15,7 +15,7 @@ from home.models import (StgDatasource,StgCategoryoption,StgMeasuremethod)
 def make_choices(values):
     return [(v, v) for v in values]
 
-YEAR_CHOICES = [(r,r) for r in range(1990, datetime.date.today().year+1)]
+YEAR_CHOICES = [(r,r) for r in range(1900, datetime.date.today().year+1)]
 """
 Knowledge Resource proxy model.The def clean (self) method was contributed
 by Daniel Mbugua to resolve the issue of parent-child saving issue in the
@@ -103,13 +103,13 @@ class StgInstitutionProgrammes(TranslatableModel):
 
 class StgTrainingInstitution(TranslatableModel):
     STATUS_CHOICES = ( #choices for approval of indicator data by authorized users
-        ('accredited', 'Accredited'),
-        ('charterted','Chartered'),
-        ('unacredited','Not Accredited'),
-        ('pending','Pending Accreditation'),
+        ('accredited', _('Accredited')),
+        ('charterted',_('Chartered')),
+        ('unacredited',_('Not Accredited')),
+        ('pending',_('Pending Accreditation')),
     )
     phone_regex = RegexValidator(
-    regex=r'^\+?1?\d{9,15}$', message="Phone Number format: '+999999999' maximum 15.")
+    regex=r'^\+?1?\d{9,15}$', message="Phone format: '+999999999' maximum 15.")
     institution_id = models.AutoField(primary_key=True)
     uuid = uuid = models.CharField(_('Unique ID'),unique=True,max_length=36,
         blank=False,null=False,default=uuid.uuid4,editable=False)
@@ -139,11 +139,11 @@ class StgTrainingInstitution(TranslatableModel):
             validators=[phone_regex], max_length=15, blank=True), # validators should be a list
         url = models.URLField(_('Web Address'),blank=True, null=True,
             max_length=2083),
-        latitude = models.FloatField(blank=True, null=True),
-        longitude = models.FloatField(blank=True, null=True),
+        latitude = models.FloatField(_('Latitude'),blank=True, null=True),
+        longitude = models.FloatField(_('Longitude'),blank=True, null=True),
     )
     code = models.CharField(unique=True, max_length=15, blank=True, null=False,
-        verbose_name = 'Institution Code')  # Field name made lowercase.
+        verbose_name = _('Institution Code'))  # Field name made lowercase.
     location = models.ForeignKey(StgLocation, models.PROTECT,blank=False,
         null=False, verbose_name = _('Location'), default='1')  # Field name made lowercase.
     type = models.ForeignKey(StgInstitutionType, models.PROTECT, blank=False,
@@ -176,26 +176,26 @@ class StgTrainingInstitution(TranslatableModel):
 
 class StgHealthCadre(TranslatableModel):
     STATUS_CHOICES = ( #choices for approval of indicator data by authorized users
-        ('degree', 'Degree'),
-        ('diploma', 'Diploma'),
-        ('masters','Masters'),
-        ('phd','Doctorate'),
-        ('certificate','Certificate'),
-        ('basic','Basic Education'),
+        ('degree', _('Degree')),
+        ('diploma', _('Diploma')),
+        ('masters',_('Masters')),
+        ('phd',_('Doctorate')),
+        ('certificate',_('Certificate')),
+        ('basic',_('Basic Education')),
 
     )
     cadre_id = models.AutoField(primary_key=True)
     uuid = uuid = models.CharField(_('Unique ID'),unique=True,max_length=36,
         blank=False,null=False, default=uuid.uuid4,editable=False)
     code = models.CharField(unique=True, blank=True,null=False,
-        max_length=45,verbose_name='ISCO-08 Code')
+        max_length=45,verbose_name=_('ISCO-08 Code'))
     parent = models.ForeignKey('self', models.PROTECT,blank=True, null=True,
         verbose_name = _('Parent Cadre'),default=1,)
     translations = TranslatedFields(
         name = models.CharField(_('Cadre Name'),max_length=230,blank=False,
             null=False),  # Field name made lowercase.
         shortname = models.CharField(_('Short Name'),max_length=230,blank=False,
-            null=False,default='Not Available'),  # Field name made lowercase.
+            null=False),  # Field name made lowercase.
         academic = models.CharField(_('Academic Qualification'),max_length=10,
             choices= STATUS_CHOICES,default=STATUS_CHOICES[0][0]),  # Field name made lowercase.
         description = models.TextField(_('Brief Description'),blank=True, null=True)  # Field name made lowercase.
@@ -227,9 +227,9 @@ class StgHealthCadre(TranslatableModel):
 
 class StgHealthWorkforceFacts(models.Model):
     STATUS_CHOICES = ( #choices for approval of indicator data by authorized users
-        ('pending', 'Pending'),
-        ('approved','Approved'),
-        ('rejected','Rejected'),
+        ('pending', _('Pending')),
+        ('approved',_('Approved')),
+        ('rejected',_('Rejected')),
     )
     AGGREGATION_TYPE = ('Count','Sum','Average','Standard Deviation',
         'Variance', 'Min', 'max','None')
@@ -276,10 +276,10 @@ class StgHealthWorkforceFacts(models.Model):
     message and wait until the user corrects the mistake.
     """
     def clean(self): # Don't allow end_year to be greater than the start_year.
-        if self.start_year<=1990 or self.start_year > datetime.date.today().year:
+        if self.start_year<=1900 or self.start_year > datetime.date.today().year:
             raise ValidationError({'start_year':_(
-                'Sorry! Start year cannot be less than 1990 or greater than current Year ')})
-        elif self.end_year <=1990 or self.end_year > datetime.date.today().year:
+                'Sorry! Start year cannot be less than 1900 or greater than current Year ')})
+        elif self.end_year <=1900 or self.end_year > datetime.date.today().year:
             raise ValidationError({'end_year':_(
                 'Sorry! The ending year cannot be lower than the start year or \
                 greater than the current Year ')})
@@ -307,9 +307,9 @@ class StgHealthWorkforceFacts(models.Model):
 
 class StgRecurringEvent(TranslatableModel):
     STATUS_CHOICES = ( #choices for approval of indicator data by authorized users
-        ('active', 'Open'),
-        ('inactive','Closed'),
-        ('suspended','Suspended'),
+        ('active', _('Open')),
+        ('inactive',_('Closed')),
+        ('suspended',_('Suspended')),
     )
     event_id = models.AutoField(primary_key=True)
     uuid = uuid = models.CharField(_('Unique ID'),unique=True,max_length=36,
@@ -323,14 +323,14 @@ class StgRecurringEvent(TranslatableModel):
         verbose_name = _('Event Location'),default = 1)
     translations = TranslatedFields(
         name = models.CharField(_('Name of Event'),max_length=230,blank=False,
-            null=False,default='International Year of the Nurse and the Midwife'),  # Field name made lowercase.
+            null=False,default=_('International Year of the Nurse and the Midwife')),  # Field name made lowercase.
         shortname = models.CharField(_('Short Name'),max_length=230,blank=False,
-            null=False,default='Not Available'),  # Field name made lowercase.
+            null=False),  # Field name made lowercase.
         theme = models.TextField(_('Theme'),blank=True, null=True)
     )  # End of translatable fields
     internal_url = models.FileField (_('Upload File/Video(s)'),
         upload_to='media/files/events',blank=True,)  # For uploading the resource
-    external_url = models.CharField(_('Web Link (URL)'), blank=True, null=True,
+    external_url = models.CharField(_('Web Address (URL)'), blank=True, null=True,
         max_length=2083)
     cover_image = models.ImageField(_('Upload Picture/Banner(s)'),
         upload_to='media/images/events',blank=True,) #for thumbnail..requires pillow
@@ -392,9 +392,9 @@ class StgRecurringEvent(TranslatableModel):
 
 class StgAnnouncements(TranslatableModel):
     STATUS_CHOICES = ( #choices for approval of indicator data by authorized users
-        ('active', 'Open'),
-        ('inactive','Closed'),
-        ('suspended','Suspended'),
+        ('active', _('Open')),
+        ('inactive',_('Closed')),
+        ('suspended',_('Suspended')),
     )
     event_id = models.AutoField(primary_key=True)
     uuid = uuid = models.CharField(_('Unique ID'),unique=True,max_length=36,

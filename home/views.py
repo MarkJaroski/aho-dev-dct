@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.http import HttpResponseRedirect
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import redirect
 from rest_framework import viewsets
@@ -9,6 +10,8 @@ from home.models import (StgDatasource,StgCategoryParent, StgCategoryoption,)
 
 from django.shortcuts import render_to_response
 from django.template import RequestContext
+
+from django.conf import settings
 
 context = {}
 
@@ -35,11 +38,12 @@ def login_view(request):
     user = authenticate(request, username=username, password=password)
     if user is not None:
         login(request, user)
-        return redirect('/admin/')
+        return redirect('admin:index') # Changed 25/10/2020 for multi-lingo login
     else:
         return render(
             request, 'index.html', {
-                    'error_message': 'Login Failed! Please enter Valid Username and Password.', })
+                    'error_message': 'Login Failed! \
+                    Please enter Valid Username and Password.', })
 
 # Methods for custom error handlers that serve htmls in templates/home/errors
 def handler404(request, exception):

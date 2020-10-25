@@ -38,8 +38,16 @@ api_patterns = [
     path('', include(('elements.urls', 'elements'), namespace='elements')),
     path('', include(('home.urls', 'home'), namespace='home')),
 ]
+"""
+This pattern was added on 25/10/2020 to allow setting of the base/root URL to
+ include language selected from the login form once the used selects en, fror pt
+ """
+urlpatterns = [
+    path('i18n/', include('django.conf.urls.i18n')), #Important for language selection
+]
 
-urlpatterns = i18n_patterns ( # must be python immutable list () and not []
+urlpatterns += i18n_patterns ( # must be python immutable list () and not []
+    path('rosetta/', include('rosetta.urls')), # language translations helper
     path('', views.index, name='index'),
     path('admin/', admin.site.urls,name='dashboard'),
     path('accounts/login/', views.login_view, name='login'),
@@ -68,7 +76,8 @@ urlpatterns = i18n_patterns ( # must be python immutable list () and not []
     path('api/swagger-docs/', schema_view),
     # Route that allows display of uploaded files when Debug=False in settings.py
     re_path(r'^media/(?P<path>.*)$', serve,{'document_root': settings.MEDIA_ROOT}),
-    prefix_default_language=False # Hide language code e.g. en-us on all url routes
+    prefix_default_language=False # Hide default language code (en) on all urls
+
 )
 
 # Routes for error handlers served by home view and htmls in templates/home/errors

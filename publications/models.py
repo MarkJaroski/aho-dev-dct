@@ -33,13 +33,12 @@ class StgResourceType(TranslatableModel):
     class Meta:
         managed = True
         db_table = 'stg_resource_type'
-        verbose_name = 'Resource Type'
-        verbose_name_plural = 'Resource Types'
+        verbose_name = _('Resource Type')
+        verbose_name_plural = _('Resource Types')
         ordering = ('translations__name',)
 
     def __str__(self):
         return self.name #display the knowledge product category name
-
 
     def clean(self):
         if StgResourceType.objects.filter(
@@ -58,11 +57,11 @@ class StgResourceCategory(TranslatableModel):
     uuid = uuid = models.CharField(_('Unique ID'),unique=True,max_length=36,
         blank=False,null=False,default=uuid.uuid4,editable=False)
     translations = TranslatedFields(
-        name = models.CharField(_('category Name'),max_length=230, blank=False,
+        name = models.CharField(_('Category Name'),max_length=230, blank=False,
             null=False),  # Field name made lowercase.
         shortname = models.CharField(_('Short Name'),max_length=100, blank=True,
             null=True),
-        description = models.TextField(_('Brief Description'),blank=True,
+        description = models.TextField(_('Description'),blank=True,
             null=True)  # Field name made lowercase.
     )
     code = models.CharField(_('Code'),unique=True, max_length=50, blank=True,
@@ -75,13 +74,12 @@ class StgResourceCategory(TranslatableModel):
     class Meta:
         managed = True
         db_table = 'stg_resource_category'
-        verbose_name = 'Resource Category'
-        verbose_name_plural = ' Resource Categories'
+        verbose_name = _('Resource Category')
+        verbose_name_plural = _(' Resource Categories')
         ordering = ('translations__name',)
 
     def __str__(self):
         return self.name #display the knowledge product category name
-
 
     def clean(self):
         if StgResourceCategory.objects.filter(
@@ -96,15 +94,11 @@ class StgResourceCategory(TranslatableModel):
 
 class StgKnowledgeProduct(TranslatableModel):
     STATUS_CHOICES = (
-        ('pending', 'Pending'),
-        ('approved', 'Approved'),
-        ('rejected', 'Rejected'),
+        ('pending', _('Pending')),
+        ('approved', _('Approved')),
+        ('rejected', _('Rejected')),
     )
 
-    BROAD_CATEGORY_CHOICES = (
-        ('toolkit', 'Toolkit'),
-        ('publication', 'Publication'),
-    )
     product_id = models.AutoField(primary_key=True)
     uuid = uuid = models.CharField(_('Unique ID'),unique=True,max_length=36,
         blank=False,null=False,default=uuid.uuid4,editable=False)
@@ -171,12 +165,12 @@ class StgKnowledgeProduct(TranslatableModel):
 
 class StgProductDomain(TranslatableModel):
     LEVEL = (
-    (1, 'level 1'),
-    (2, 'level 2'),
-    (3,'level 3'),
-    (4,'level 4'),
-    (5,'level 5'),
-    (6,'level 6'),
+    (1,_('level 1')),
+    (2,_('level 2')),
+    (3,_('level 3')),
+    (4,_('level 4')),
+    (5,_('level 5')),
+    (6,_('level 6')),
     )
     domain_id = models.AutoField(primary_key=True)
     uuid = uuid = models.CharField(_('Unique ID'),unique=True,max_length=36,

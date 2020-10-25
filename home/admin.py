@@ -1,5 +1,6 @@
 from django.contrib import admin
 from parler.admin import TranslatableAdmin
+from django.utils.translation import gettext_lazy as _ #For translating imported verbose_name
 from regions.models import StgLocation
 from data_wizard.admin import ImportActionModelAdmin
 from data_wizard.sources.models import FileSource,URLSource #customize import sourece
@@ -18,7 +19,6 @@ from django_admin_listfilter_dropdown.filters import (
 
 @admin.register(StgCategoryParent)
 class DisaggregateCategoryAdmin(TranslatableAdmin,OverideExport):
-    menu_title = "Disagregation Categories"
     from django.db import models
     formfield_overrides = {
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
@@ -34,7 +34,6 @@ class DisaggregateCategoryAdmin(TranslatableAdmin,OverideExport):
 
 @admin.register(StgCategoryoption)
 class DisaggregationAdmin(TranslatableAdmin,OverideExport):
-    menu_title = "Disaggregation Options"
     fieldsets = (
         ('Disaggregation Attributes', {
                 'fields': ('name','shortname','category',)
@@ -56,7 +55,6 @@ class DisaggregationAdmin(TranslatableAdmin,OverideExport):
 
 @admin.register(StgValueDatatype)
 class DatatypeAdmin(TranslatableAdmin,OverideExport):
-    menu_title = "Data Types"
     from django.db import models
     formfield_overrides = {
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
@@ -71,7 +69,6 @@ class DatatypeAdmin(TranslatableAdmin,OverideExport):
 
 @admin.register(StgDatasource)
 class DatasourceAdmin(TranslatableAdmin,OverideExport):
-    menu_title = "Data Sources"
     from django.db import models
     formfield_overrides = {
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
@@ -96,7 +93,6 @@ class DatasourceAdmin(TranslatableAdmin,OverideExport):
 
 @admin.register(StgMeasuremethod)
 class MeasuredAdmin(TranslatableAdmin,OverideExport):
-    menu_title = "Indicator Types"
     from django.db import models
     formfield_overrides = {
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
@@ -109,11 +105,12 @@ class MeasuredAdmin(TranslatableAdmin,OverideExport):
     list_per_page = 15 #limit records displayed on admin site to 15
     exclude = ('date_created','date_lastupdated','code',)
 
-# ---------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------
 # The following two admin classes are used to customize the Data_Wizard page.
 # The classes overrides admin.py in site-packages/data_wizard/sources/
-# ---------------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------
 class FileSourceAdmin(ImportActionModelAdmin):
+    menu_title = _("Import Data File... ")
     def get_queryset(self, request):
     		qs = super().get_queryset(request)
     		if request.user.is_superuser or request.user.groups.filter(
@@ -127,7 +124,8 @@ class FileSourceAdmin(ImportActionModelAdmin):
                 kwargs["queryset"] = StgLocation.objects.filter(
                 locationlevel__translations__name__in =['Global','Regional','Country']).order_by(
                     'locationlevel', 'location_id') #superuser can access all countries at level 2 in the database
-            elif request.user.groups.filter(name__icontains='Admin') or request.user.location.filter(
+            elif request.user.groups.filter(
+                name__icontains='Admin') or request.user.location.filter(
                 name__icontains='Regional Office'):
                 kwargs["queryset"] = StgLocation.objects.filter(
                 locationlevel__translations__name__in =['Regional','Country']).order_by(
@@ -144,6 +142,7 @@ admin.site.register(FileSource, FileSourceAdmin)
 
 # This class admin class is used to customize change page for the URL data source
 class URLSourceAdmin(ImportActionModelAdmin):
+    menu_title = _("Import via URL...")
     def get_queryset(self, request):
     		qs = super().get_queryset(request)
     		if request.user.is_superuser or request.user.groups.filter(

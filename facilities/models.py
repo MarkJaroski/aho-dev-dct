@@ -75,7 +75,7 @@ class StgFacilityInfrastructure(TranslatableModel):
     class Meta:
         managed = True
         db_table = 'stg_facility_infrastructure'
-        verbose_name = _('Infratsrucrure')
+        verbose_name = _('Infrastructure')
         verbose_name_plural = _('Health Infrastructures')
         ordering = ('translations__name',)
 
@@ -86,7 +86,7 @@ class StgFacilityInfrastructure(TranslatableModel):
         if StgFacilityInfrastructure.objects.filter(
             translations__name=self.name).count() and not self.infra_id and not \
                 self.code:
-            raise ValidationError({'name':_('Resource type with the same \
+            raise ValidationError({'name':_('Facility type with the same \
                 name exists')})
 
     def save(self, *args, **kwargs):
@@ -128,7 +128,7 @@ class StgFacilityOwnership(TranslatableModel):
         if StgFacilityOwnership.objects.filter(
             translations__name=self.name).count() and not self.owner_id and not \
                 self.code:
-            raise ValidationError({'name':_('Resource type with the same \
+            raise ValidationError({'name':_('facility owner with the same \
                 name exists')})
 
     def save(self, *args, **kwargs):
@@ -137,12 +137,12 @@ class StgFacilityOwnership(TranslatableModel):
 
 class StgHealthFacility(TranslatableModel):
     STATUS_CHOICES = (
-        ('pending', 'Active'),
-        ('approved', 'Inactive'),
+        ('pending', _('Active')),
+        ('approved', _('Inactive')),
     )
     # Regular expression to validate phone number entry to international format
     phone_regex = RegexValidator(
-    regex=r'^\+?1?\d{9,15}$', message="Phone Number format: '+999999999' maximum 15.")
+    regex=r'^\+?1?\d{9,15}$', message="Phone format: '+999999999' maximum 15.")
     facility_id = models.AutoField(primary_key=True)
     uuid = uuid = models.CharField(_('Unique ID'),unique=True,max_length=36,
         blank=False,null=False,default=uuid.uuid4,editable=False)
@@ -170,8 +170,8 @@ class StgHealthFacility(TranslatableModel):
             validators=[phone_regex], max_length=15, blank=True), # validators should be a list
         year_established = models.IntegerField(_('Year Established'),
             default=datetime.now().year,blank=True,null=True),
-        latitude = models.FloatField(blank=True, null=True),
-        longitude = models.FloatField(blank=True, null=True),
+        latitude = models.FloatField(_('Latitude'),blank=True, null=True),
+        longitude = models.FloatField(_('Longitude'),blank=True, null=True),
         url = models.URLField(_('Web Address'),blank=True, null=True,
             max_length=2083),
     )  # End of translatable fields

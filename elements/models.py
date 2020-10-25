@@ -11,7 +11,7 @@ from django.db.models.fields import DecimalField
 from home.models import (StgDatasource,StgCategoryoption,StgMeasuremethod,
     StgValueDatatype)
 
-YEAR_CHOICES = [(r,r) for r in range(1990, datetime.date.today().year+1)]
+YEAR_CHOICES = [(r,r) for r in range(1900, datetime.date.today().year+1)]
 
 def make_choices(values):
     return [(v, v) for v in values]
@@ -21,14 +21,14 @@ class StgDataElement(TranslatableModel):
         'Variance', 'Min', 'max','None')
     dataelement_id = models.AutoField(primary_key=True)  # Field name made lowercase.
     uuid = uuid = models.CharField(unique=True,max_length=36, blank=False, null=False,
-        default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')  # Field name made lowercase.
+        default=uuid.uuid4,editable=False, verbose_name = _('Unique ID'))  # Field name made lowercase.
     code = models.CharField( unique=True, max_length=45,blank=True, null=False)
     translations = TranslatedFields(
         name = models.CharField(_('Data Element Name'),max_length=230, blank=False,null=False),  # Field name made lowercase.
         shortname = models.CharField(_('short name'), max_length=50),  # Field name made lowercase.
         description = models.TextField(_('Description'),blank=True, null=True),  # Field name made lowercase.
     )
-    aggregation_type = models.CharField(_('aggregate Type'),max_length=45,
+    aggregation_type = models.CharField(_('Aggregate Type'),max_length=45,
         choices=make_choices(AGGREGATION_TYPE),default=AGGREGATION_TYPE[0])  # Field name made lowercase.
     date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
         auto_now_add=True)
@@ -58,7 +58,7 @@ class FactDataElement(models.Model):
 
     fact_id = models.AutoField(primary_key=True)  # Field name made lowercase.
     uuid = uuid = models.CharField(unique=True,max_length=36, blank=False, null=False,
-        default=uuid.uuid4,editable=False, verbose_name = 'Unique Universal ID')  # Field name made lowercase.
+        default=uuid.uuid4,editable=False, verbose_name = _('Unique ID'))  # Field name made lowercase.
     dataelement = models.ForeignKey(StgDataElement, models.PROTECT,
         verbose_name =_('Data Element'))  # Field name made lowercase.
     location = models.ForeignKey(StgLocation, models.PROTECT,verbose_name = 'Location',)  # Field name made lowercase.
@@ -111,11 +111,11 @@ class FactDataElement(models.Model):
     message and wait until the user corrects the mistake.
     """
     def clean(self): # Don't allow end_year to be greater than the srart_year.
-        if self.start_year <=1990 or self.start_year > datetime.date.today().year:
+        if self.start_year <=1900 or self.start_year > datetime.date.today().year:
             raise ValidationError({'start_year':_(
-                'Sorry! The start year cannot be lower than 1990 or greater \
+                'Sorry! The start year cannot be lower than 1900 or greater \
                 than the current Year ')})
-        elif self.end_year <=1990 or self.end_year > datetime.date.today().year:
+        elif self.end_year <=1900 or self.end_year > datetime.date.today().year:
             raise ValidationError({'end_year':_(
                 'Sorry! The end year cannot be lower than start year or greater \
                 than the current Year ')})
@@ -154,8 +154,8 @@ multi-records entry form.My credits to Mr Mbugua of MSc DCT, UoN-Kenya
 class DataElementProxy(StgDataElement):
     class Meta:
         proxy = True
-        verbose_name = 'Multi_Records Form'
-        verbose_name_plural = '  Multi_Records Form'
+        verbose_name = _('Multi_Records Form')
+        verbose_name_plural = _('  Multi_Records Form')
 
     def clean(self):
         pass
