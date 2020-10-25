@@ -3,7 +3,7 @@ from .settings import *
 DEBUG = False
 # Configure default domain name
 ALLOWED_HOSTS = [os.environ['WEBSITE_SITE_NAME'] + '.azurewebsites.net',
-'af-aho-datacapturetool.azurewebsites.net'] if 'WEBSITE_SITE_NAME' in os.environ else []
+'af-aho-datacapturetool.azurewebsites.net/fr'] if 'WEBSITE_SITE_NAME' in os.environ else []
 
 # WhiteNoise configuration
 MIDDLEWARE = [
@@ -20,6 +20,9 @@ MIDDLEWARE = [
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+LOCALE_PATHS = (os.path.join(BASE_DIR, 'locale/'), # for UI language translations
+)
 
 # Configure Postgres database
 DATABASES = {
