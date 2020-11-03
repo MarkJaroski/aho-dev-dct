@@ -8,6 +8,8 @@ media
 
 # Backup files #
 *.bak
+*.zip
+*.gz
 
 # Python #
 *.py[cod]
