@@ -276,33 +276,20 @@ class IndicatorFactAdmin(OverideImportExport):
     'location_id') clause make sure that the regional offices are first displayed
     in ascending order
     """
-    # def formfield_for_foreignkey(self, db_field, request =None, **kwargs):
-    #     if db_field.name == "location":
-    #         if request.user.is_superuser:
-    #             kwargs["queryset"] = StgLocation.objects.filter(
-    #             # Looks up for the traslated location level name in related table
-    #             locationlevel__translations__name__in =['Global','Regional','National']).order_by(
-    #                 'locationlevel', 'location_id') #superuser can access all countries at level 2 in the database
-    #         elif request.user.groups.filter(name__icontains='Admin') or request.user.location.filter(
-    #             name__icontains='Regional'):
-    #             kwargs["queryset"] = StgLocation.objects.filter(
-    #             locationlevel__translations__name__in =['Regional','National']).order_by(
-    #                 'locationlevel', 'location_id')
-    #         else:
-    #             kwargs["queryset"] = StgLocation.objects.filter(
-    #                 location_id=request.user.location_id) #permissions to user country only
-
-        # # Restricted permission to data source implememnted on 20/03/2020
-        # if db_field.name == "datasource":
-        #     if request.user.is_superuser:
-        #         kwargs["queryset"] = StgDatasource.objects.all()
-        #     elif request.user.groups.filter(name__icontains='Admin') or request.user.location.filter(
-        #         name__icontains='Regional'):
-        #         kwargs["queryset"] = StgDatasource.objects.exclude(
-        #         pk__gte=1) # Admin user can only access data from countries
-        #     else:
-        #         kwargs["queryset"] = StgDatasource.objects.filter(pk=1)
-        # return super().formfield_for_foreignkey(db_field, request,**kwargs)
+    def formfield_for_foreignkey(self, db_field, request =None, **kwargs):
+        if db_field.name == "location":
+            if request.user.is_superuser:
+                kwargs["queryset"] = StgLocation.objects.filter(
+                # Looks up for the traslated location level name in related table
+                locationlevel__translations__name__in =['Global','Regional','National']).order_by(
+                    'locationlevel', 'location_id') #superuser can access all countries at level 2 in the database
+            elif request.user.groups.filter(name__icontains='Admin') or request.user.location.filter(
+                name__icontains='Regional'):
+                kwargs["queryset"] = StgLocation.objects.filter(
+                locationlevel__translations__name__in =['Regional','National']).order_by('location_id')
+            else:
+                kwargs["queryset"] = StgLocation.objects.filter(
+                    location_id=request.user.location_id) #permissions to user country only
 
     # #This function is used to get the afrocode from related indicator model for use in list_display
     def get_afrocode(obj):
