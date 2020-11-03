@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-10-25 19:52+0300\n"
+"POT-Creation-Date: 2020-10-26 09:01+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,15 +18,15 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: .\aho_datacapturetool\settings.py:172
+#: .\aho_datacapturetool\settings.py:171
 msgid "English"
 msgstr ""
 
-#: .\aho_datacapturetool\settings.py:173
+#: .\aho_datacapturetool\settings.py:172
 msgid "French"
 msgstr ""
 
-#: .\aho_datacapturetool\settings.py:174
+#: .\aho_datacapturetool\settings.py:173
 msgid "Portuguese"
 msgstr ""
 
@@ -164,7 +164,7 @@ msgid ""
 "year.                         Please make corrections"
 msgstr ""
 
-#: .\elements\apps.py:5
+#: .\elements\apps.py:6
 msgid "elements"
 msgstr ""
 
@@ -933,7 +933,7 @@ msgstr ""
 msgid "Forgot your password?"
 msgstr ""
 
-#: .\indicators\apps.py:5
+#: .\indicators\apps.py:6
 msgid "indicators"
 msgstr ""
 

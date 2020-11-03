@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-10-25 19:52+0300\n"
+"POT-Creation-Date: 2020-10-26 09:01+0300\n"
 "PO-Revision-Date: 2020-10-25 19:35+0000\n"
 "Last-Translator: b'Super Admin <admin@mtccl.co.ke>'\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,15 +19,15 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Translated-Using: django-rosetta 0.9.5\n"
 
-#: .\aho_datacapturetool\settings.py:172
+#: .\aho_datacapturetool\settings.py:171
 msgid "English"
 msgstr "Inglês"
 
-#: .\aho_datacapturetool\settings.py:173
+#: .\aho_datacapturetool\settings.py:172
 msgid "French"
 msgstr "Francês"
 
-#: .\aho_datacapturetool\settings.py:174
+#: .\aho_datacapturetool\settings.py:173
 msgid "Portuguese"
 msgstr "Português"
 
@@ -185,7 +185,7 @@ msgstr ""
 "Desculpe! O final do ano não pode ser inferior ao inícioano. Por favor, faça "
 "correcções"
 
-#: .\elements\apps.py:5
+#: .\elements\apps.py:6
 msgid "elements"
 msgstr "elementos"
 
@@ -1013,7 +1013,7 @@ msgstr "OK"
 msgid "Forgot your password?"
 msgstr "Esqueceu a sua palavra-passe?"
 
-#: .\indicators\apps.py:5
+#: .\indicators\apps.py:6
 msgid "indicators"
 msgstr "indicadores"
 
