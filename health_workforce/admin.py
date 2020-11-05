@@ -14,6 +14,7 @@ from .models import (ResourceTypeProxy,HumanWorkforceResourceProxy,
     StgHealthCadre,StgInstitutionProgrammes,StgRecurringEvent,StgAnnouncements)
 from facilities.models import (StgHealthFacility,)
 from regions.models import StgLocation
+from home.models import StgDatasource
 
 #Methods used to register global actions performed on data. See actions listbox
 def transition_to_pending (modeladmin, request, queryset):
@@ -85,10 +86,9 @@ class ResourceAdmin(TranslatableAdmin,ImportExportModelAdmin,
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         if request.user.is_superuser or request.user.groups.filter(
-            name__icontains='Admin') or request.user.location.filter(
-            name__icontains='Regional Office'):
-            return qs
-        return qs.filter(location_id=request.user.location_id)#provide user with specific country details!
+            name__icontains='Admin' or request.user.location>=1):
+            return qs #provide access to all instances of fact data indicators
+        return qs.filter(location=request.user.location)
 
     #to make URl clickable, I changed show_url to just url in the list_display tuple
     def show_external_url(self, obj):
@@ -188,28 +188,29 @@ class TrainingInsitutionAdmin(TranslatableAdmin,OverideExport):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         if request.user.is_superuser or request.user.groups.filter(
-            name__icontains='Admin') or request.user.location.filter(
-            name__icontains='Regional Office'):
-            return qs #provide access to all instances/rows of all location, i.e. all AFRO member states
-        return qs.filter(location_id=request.user.location_id)#provide the user with specific country details!
+            name__icontains='Admin' or request.user.location>=1):
+            return qs #provide access to all instances of fact data indicators
+        return qs.filter(location=request.user.location)
 
     # #This function is for filtering location to display regional level only. The database field must be parentid for the dropdown list
-    def formfield_for_foreignkey(self, db_field, request =None, **kwargs): #to implement user filtering her
+    def formfield_for_foreignkey(self, db_field, request =None, **kwargs):
         if db_field.name == "location":
             if request.user.is_superuser:
                 kwargs["queryset"] = StgLocation.objects.filter(
                 # Looks up for the traslated location level name in related table
-                locationlevel__translations__name__in =[
-                'Global','Regional','Country']).order_by('locationlevel', 'location_id')
-            elif request.user.groups.filter(name__icontains='Admin') or request.user.location.filter(
-                name__icontains='Regional Office'):
+                locationlevel__locationlevel_id__gte=1).order_by(
+                    'locationlevel', 'location_id') #superuser can access all countries at level 2 in the database
+            elif request.user.groups.filter(
+                name__icontains='Admin' or request.user.location>=1):
                 kwargs["queryset"] = StgLocation.objects.filter(
-                locationlevel__translations__name__in =[
-                'Regional','Country']).order_by('locationlevel', 'location_id')
+                locationlevel__locationlevel_id__gte=1,
+                locationlevel__locationlevel_id__lte=2).order_by(
+                    'locationlevel', 'location_id')
             else:
                 kwargs["queryset"] = StgLocation.objects.filter(
-                    location_id=request.user.location_id) #permissions to user country only
-        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+                location_id=request.user.location_id) #permissions to user country only
+
+        return super().formfield_for_foreignkey(db_field, request,**kwargs)
 
     fieldsets = (
         ('Institution Details',{
@@ -246,14 +247,6 @@ class HealthCadreAdmin(TranslatableAdmin,OverideExport):
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
     }
-
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        if request.user.is_superuser or request.user.groups.filter(
-            name__icontains='Admin') or request.user.location.filter(
-            name__icontains='Regional Office'):
-            return qs #provide access to all instances/rows of all location, i.e. all AFRO member states
-        return qs.filter(location_id=request.user.location_id)#provide the user with specific country details!
 
     fieldsets = (
         ('Occulation/Cadre Details',{
@@ -293,27 +286,34 @@ class HealthworforceFactsAdmin(ImportExportModelAdmin,ImportExportActionModelAdm
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         if request.user.is_superuser or request.user.groups.filter(
-            name__icontains='Admin') or request.user.location.filter(
-            name__icontains='Regional Office'):
-            # Provide access to all instances/rows of all location, i.e. all AFRO member states
-            return qs
-        return qs.filter(location_id=request.user.location_id)#provide user with specific country details!
+            name__icontains='Admin' or request.user.location>=1):
+            return qs #provide access to all instances of fact data indicators
+        return qs.filter(location=request.user.location)
 
     def formfield_for_foreignkey(self, db_field, request =None, **kwargs):
         if db_field.name == "location":
             if request.user.is_superuser:
                 kwargs["queryset"] = StgLocation.objects.filter(
                 # Looks up for the traslated location level name in related table
-                locationlevel__translations__name__in =['Global','Regional','Country']).order_by(
+                locationlevel__locationlevel_id__gte=1).order_by(
                     'locationlevel', 'location_id') #superuser can access all countries at level 2 in the database
-            elif request.user.groups.filter(name__icontains='Admin') or request.user.location.filter(
-                name__icontains='Regional Office'):
+            elif request.user.groups.filter(
+                name__icontains='Admin' or request.user.location>=1):
                 kwargs["queryset"] = StgLocation.objects.filter(
-                locationlevel__translations__name__in =['Regional','Country']).order_by(
+                locationlevel__locationlevel_id__gte=1,
+                locationlevel__locationlevel_id__lte=2).order_by(
                     'locationlevel', 'location_id')
             else:
                 kwargs["queryset"] = StgLocation.objects.filter(
-                    location_id=request.user.location_id) #permissions to user country only
+                location_id=request.user.location_id) #permissions to user country only
+
+        # Restricted permission to data source implememnted on 20/03/2020
+        if db_field.name == "datasource":
+            if request.user.is_superuser or request.user.groups.filter(
+                name__icontains='Admin' or request.user.location>=1):
+                kwargs["queryset"] = StgDatasource.objects.all()
+            else:
+                kwargs["queryset"] = StgDatasource.objects.filter(pk__gte=2)
         return super().formfield_for_foreignkey(db_field, request,**kwargs)
 
     """
@@ -372,14 +372,31 @@ class RecurringEventsAdmin(TranslatableAdmin,ImportExportModelAdmin,OverideImpor
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
     }
+
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         if request.user.is_superuser or request.user.groups.filter(
-            name__icontains='Admin') or request.user.location.filter(
-            name__icontains='Regional Office'):
-            return qs
-        return qs.filter(location_id=request.user.location_id)#provide user with specific country details!
+            name__icontains='Admin' or request.user.location>=1):
+            return qs #provide access to all instances of fact data indicators
+        return qs.filter(location=request.user.location)
 
+    def formfield_for_foreignkey(self, db_field, request =None, **kwargs):
+        if db_field.name == "location":
+            if request.user.is_superuser:
+                kwargs["queryset"] = StgLocation.objects.filter(
+                # Looks up for the traslated location level name in related table
+                locationlevel__locationlevel_id__gte=1).order_by(
+                    'locationlevel', 'location_id') #superuser can access all countries at level 2 in the database
+            elif request.user.groups.filter(
+                name__icontains='Admin' or request.user.location>=1):
+                kwargs["queryset"] = StgLocation.objects.filter(
+                locationlevel__locationlevel_id__gte=1,
+                locationlevel__locationlevel_id__lte=2).order_by(
+                    'locationlevel', 'location_id')
+            else:
+                kwargs["queryset"] = StgLocation.objects.filter(
+                location_id=request.user.location_id) #permissions to user country only
+        return super().formfield_for_foreignkey(db_field, request,**kwargs)
     #to make URl clickable, I changed show_url to just url in the list_display tuple
     def show_external_url(self, obj):
         return format_html("<a href='{url}'>{url}</a>", url=obj.external_url)
@@ -445,14 +462,31 @@ class EventsAnnouncementAdmin(TranslatableAdmin,ImportExportModelAdmin,
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
     }
+
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         if request.user.is_superuser or request.user.groups.filter(
-            name__icontains='Admin') or request.user.location.filter(
-            name__icontains='Regional Office'):
-            # Provide access to all instances/rows of all location, i.e. all AFRO member states
-            return qs
-        return qs.filter(location_id=request.user.location_id)#provide user with specific country details!
+            name__icontains='Admin' or request.user.location>=1):
+            return qs #provide access to all instances of fact data indicators
+        return qs.filter(location=request.user.location)
+
+    def formfield_for_foreignkey(self, db_field, request =None, **kwargs):
+        if db_field.name == "location":
+            if request.user.is_superuser:
+                kwargs["queryset"] = StgLocation.objects.filter(
+                # Looks up for the traslated location level name in related table
+                locationlevel__locationlevel_id__gte=1).order_by(
+                    'locationlevel', 'location_id') #superuser can access all countries at level 2 in the database
+            elif request.user.groups.filter(
+                name__icontains='Admin' or request.user.location>=1):
+                kwargs["queryset"] = StgLocation.objects.filter(
+                locationlevel__locationlevel_id__gte=1,
+                locationlevel__locationlevel_id__lte=2).order_by(
+                    'locationlevel', 'location_id')
+            else:
+                kwargs["queryset"] = StgLocation.objects.filter(
+                location_id=request.user.location_id) #permissions to user country only
+        return super().formfield_for_foreignkey(db_field, request,**kwargs)
 
     #to make URl clickable, I changed show_url to just url in the list_display tuple
     def show_external_url(self, obj):

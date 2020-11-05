@@ -9,6 +9,7 @@ from .models import (StgFacilityType,StgFacilityInfrastructure,
 from commoninfo.admin import OverideImportExport,OverideExport,OverideImport
 # from publications.serializers import StgKnowledgeProductSerializer
 from .resources import (StgFacilityResourceExport,)
+from regions.models import StgLocation
 from django_admin_listfilter_dropdown.filters import (
     DropdownFilter, RelatedDropdownFilter, ChoiceDropdownFilter,
     RelatedOnlyDropdownFilter) #custom
@@ -110,11 +111,28 @@ class FacilityAdmin(TranslatableAdmin,ImportExportModelAdmin,OverideImport,
     }
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        if request.user.is_superuser or \
-            request.user.groups.filter(pk=1):
-            # Provide access to all instances/rows of all location, i.e. all AFRO member states
-            return qs
-        return qs.filter(location_id=request.user.location_id)#provide user with specific country details!
+        if request.user.is_superuser or request.user.groups.filter(
+            name__icontains='Admin' or request.user.location>=1):
+            return qs #provide access to all instances of fact data indicators
+        return qs.filter(location=request.user.location)
+
+    def formfield_for_foreignkey(self, db_field, request =None, **kwargs):
+        if db_field.name == "location":
+            if request.user.is_superuser:
+                kwargs["queryset"] = StgLocation.objects.filter(
+                # Looks up for the traslated location level name in related table
+                locationlevel__locationlevel_id__gte=1).order_by(
+                    'locationlevel', 'location_id') #superuser can access all countries at level 2 in the database
+            elif request.user.groups.filter(
+                name__icontains='Admin' or request.user.location>=1):
+                kwargs["queryset"] = StgLocation.objects.filter(
+                locationlevel__locationlevel_id__gte=1,
+                locationlevel__locationlevel_id__lte=2).order_by(
+                    'locationlevel', 'location_id')
+            else:
+                kwargs["queryset"] = StgLocation.objects.filter(
+                location_id=request.user.location_id) #permissions to user country only
+        return super().formfield_for_foreignkey(db_field, request,**kwargs)
 
     """
     Returns available export formats.

@@ -184,10 +184,9 @@ class DataElementFactAdmin(OverideImportExport,ImportExportActionModelAdmin):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         if request.user.is_superuser or request.user.groups.filter(
-            name__icontains='Admin') or request.user.location.filter(
-            name__icontains='Regional'):
-            return qs #provide access to all instances/rows of fact data elements
-        return qs.filter(location=request.user.location) #provide access to user's country instances of data elements
+            name__icontains='Admin' or request.user.location>=1):
+            return qs #provide access to all instances of fact data indicators
+        return qs.filter(location=request.user.location)
 
     """
     Davy requested that the form for data input be restricted to the user's country.
@@ -196,23 +195,31 @@ class DataElementFactAdmin(OverideImportExport,ImportExportActionModelAdmin):
     USER, If the user is superuser, he/she can enter data for all AFRO member countries
     otherwise, can only enter data for his/her country.
     """
-    def formfield_for_foreignkey(self, db_field, request =None, **kwargs): #to implement user filtering her
+    def formfield_for_foreignkey(self, db_field, request =None, **kwargs):
         if db_field.name == "location":
             if request.user.is_superuser:
                 kwargs["queryset"] = StgLocation.objects.filter(
                 # Looks up for the traslated location level name in related table
-                locationlevel__translations__name__in =[
-                'Global','Regional','National']).order_by('locationlevel', 'location_id')
-            elif request.user.groups.filter(name__icontains='Admin') or request.user.location.filter(
-                name__icontains='Regional Office'):
+                locationlevel__locationlevel_id__gte=1).order_by(
+                    'locationlevel', 'location_id') #superuser can access all countries at level 2 in the database
+            elif request.user.groups.filter(
+                name__icontains='Admin' or request.user.location>=1):
                 kwargs["queryset"] = StgLocation.objects.filter(
-                locationlevel__translations__name__in =[
-                'Regional','National']).order_by('locationlevel', 'location_id')
+                locationlevel__locationlevel_id__gte=1,
+                locationlevel__locationlevel_id__lte=2).order_by(
+                    'locationlevel', 'location_id')
             else:
                 kwargs["queryset"] = StgLocation.objects.filter(
-                    location_id=request.user.location_id) #permissions to user country only
+                location_id=request.user.location_id) #permissions to user country only
 
-        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+        # Restricted permission to data source implememnted on 20/03/2020
+        if db_field.name == "datasource":
+            if request.user.is_superuser or request.user.groups.filter(
+                name__icontains='Admin' or request.user.location>=1):
+                kwargs["queryset"] = StgDatasource.objects.all()
+            else:
+                kwargs["queryset"] = StgDatasource.objects.filter(pk__gte=2)
+        return super().formfield_for_foreignkey(db_field, request,**kwargs)
 
     #This function is used to get the afrocode from related indicator model for use in list_display
     def get_afrocode(obj):
@@ -311,18 +318,27 @@ class FactElementInline(admin.TabularInline):
         if db_field.name == "location":
             if request.user.is_superuser:
                 kwargs["queryset"] = StgLocation.objects.filter(
-                locationlevel__translations__name__in =['Global','Regional','National']).order_by(
-                    'locationlevel', 'location_id') #superuser can access all countries
-            # This works like charm!! only AFRO admin staff are allowed to process all countries and data
-            elif request.user.groups.filter(name__icontains='Admin')or request.user.location.filter(
-                name__icontains='Regional Office'):
+                # Looks up for the traslated location level name in related table
+                locationlevel__locationlevel_id__gte=1).order_by(
+                    'locationlevel', 'location_id') #superuser can access all countries at level 2 in the database
+            elif request.user.groups.filter(
+                name__icontains='Admin' or request.user.location>=1):
                 kwargs["queryset"] = StgLocation.objects.filter(
-                locationlevel__translations__name__in =[
-                    'Regional','National']).order_by('locationlevel', 'location_id')
+                locationlevel__locationlevel_id__gte=1,
+                locationlevel__locationlevel_id__lte=2).order_by(
+                    'locationlevel', 'location_id')
             else:
                 kwargs["queryset"] = StgLocation.objects.filter(
-                    location_id=request.user.location_id) #permissions for user country filter---works as per Davy's request
-        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+                location_id=request.user.location_id) #permissions to user country only
+
+        # Restricted permission to data source implememnted on 20/03/2020
+        if db_field.name == "datasource":
+            if request.user.is_superuser or request.user.groups.filter(
+                name__icontains='Admin' or request.user.location>=1):
+                kwargs["queryset"] = StgDatasource.objects.all()
+            else:
+                kwargs["queryset"] = StgDatasource.objects.filter(pk__gte=2)
+        return super().formfield_for_foreignkey(db_field, request,**kwargs)
 
     fields = ('dataelement','location','datasource', 'valuetype','categoryoption',
             'start_year', 'end_year','value',)

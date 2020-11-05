@@ -111,30 +111,32 @@ class MeasuredAdmin(TranslatableAdmin,OverideExport):
 # ------------------------------------------------------------------------------------------
 class FileSourceAdmin(ImportActionModelAdmin):
     menu_title = _("Import Data File... ")
+
     def get_queryset(self, request):
-    		qs = super().get_queryset(request)
-    		if request.user.is_superuser or request.user.groups.filter(
-                name__icontains='Admin') or request.user.location.filter(
-                name__icontains='Regional Office'):
-    			return qs #provide access to all instances/rows of fact data indicators
-    		return qs.filter(location=request.user.location)  # provide access to user's country indicator instances
+        qs = super().get_queryset(request)
+        if request.user.is_superuser or request.user.groups.filter(
+            name__icontains='Admin' or request.user.location>=1):
+            return qs #provide access to all instances of fact data indicators
+        return qs.filter(location=request.user.location)
+
     def formfield_for_foreignkey(self, db_field, request =None, **kwargs):
         if db_field.name == "location":
             if request.user.is_superuser:
                 kwargs["queryset"] = StgLocation.objects.filter(
-                locationlevel__translations__name__in =['Global','Regional','Country']).order_by(
+                # Looks up for the traslated location level name in related table
+                locationlevel__locationlevel_id__gte=1).order_by(
                     'locationlevel', 'location_id') #superuser can access all countries at level 2 in the database
             elif request.user.groups.filter(
-                name__icontains='Admin') or request.user.location.filter(
-                name__icontains='Regional Office'):
+                name__icontains='Admin' or request.user.location>=1):
                 kwargs["queryset"] = StgLocation.objects.filter(
-                locationlevel__translations__name__in =['Regional','Country']).order_by(
+                locationlevel__locationlevel_id__gte=1,
+                locationlevel__locationlevel_id__lte=2).order_by(
                     'locationlevel', 'location_id')
             else:
                 kwargs["queryset"] = StgLocation.objects.filter(
-                    #permissions for user country filter---works as per Davy's request
-                    location_id=request.user.location_id)
-        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+                location_id=request.user.location_id) #permissions to user country only
+        return super().formfield_for_foreignkey(db_field, request,**kwargs)
+
     fields = ('location','name','file',)
     list_display=['name','location','date']
 admin.site.register(FileSource, FileSourceAdmin)
@@ -144,28 +146,30 @@ admin.site.register(FileSource, FileSourceAdmin)
 class URLSourceAdmin(ImportActionModelAdmin):
     menu_title = _("Import via URL...")
     def get_queryset(self, request):
-    		qs = super().get_queryset(request)
-    		if request.user.is_superuser or request.user.groups.filter(
-                name__icontains='Admin') or request.user.location.filter(
-                name__icontains='Regional Office'):
-    			return qs #provide access to all instances/rows of fact data indicators
-    		return qs.filter(location=request.user.location)  # provide access to user's country indicator instances
+        qs = super().get_queryset(request)
+        if request.user.is_superuser or request.user.groups.filter(
+            name__icontains='Admin' or request.user.location>=1):
+            return qs #provide access to all instances of fact data indicators
+        return qs.filter(location=request.user.location)
+
     def formfield_for_foreignkey(self, db_field, request =None, **kwargs):
         if db_field.name == "location":
             if request.user.is_superuser:
                 kwargs["queryset"] = StgLocation.objects.filter(
-                locationlevel__translations__name__in =['Global','Regional','Country']).order_by(
+                # Looks up for the traslated location level name in related table
+                locationlevel__locationlevel_id__gte=1).order_by(
                     'locationlevel', 'location_id') #superuser can access all countries at level 2 in the database
-            elif request.user.groups.filter(name__icontains='Admin') or request.user.location.filter(
-                name__icontains='Regional Office'):
+            elif request.user.groups.filter(
+                name__icontains='Admin' or request.user.location>=1):
                 kwargs["queryset"] = StgLocation.objects.filter(
-                locationlevel__translations__name__in =['Regional','Country']).order_by(
+                locationlevel__locationlevel_id__gte=1,
+                locationlevel__locationlevel_id__lte=2).order_by(
                     'locationlevel', 'location_id')
             else:
                 kwargs["queryset"] = StgLocation.objects.filter(
-                    #permissions for user country filter---works as per Davy's request
-                    location_id=request.user.location_id)
-        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+                location_id=request.user.location_id) #permissions to user country only
+        return super().formfield_for_foreignkey(db_field, request,**kwargs)
+        
     fields = ('location','name','url',)
     list_display=['name','location','url','date']
 admin.site.register(URLSource,URLSourceAdmin)

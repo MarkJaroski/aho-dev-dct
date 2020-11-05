@@ -259,12 +259,10 @@ class IndicatorFactAdmin(OverideImportExport):
     """
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        #This works like charm!! only superusers and AFRO admin staff are allowed to view all countries and data
         if request.user.is_superuser or request.user.groups.filter(
-            name__icontains='Admin') or request.user.location.filter(
-            name__icontains='Regional Office'):
+            name__icontains='Admin' or request.user.location>=1):
             return qs #provide access to all instances of fact data indicators
-        return qs.filter(location=request.user.location)  #provide access to user's country indicator instances
+        return qs.filter(location=request.user.location)
 
     """
     Davy requested that the form for data input be restricted to the user's country.
@@ -281,27 +279,25 @@ class IndicatorFactAdmin(OverideImportExport):
             if request.user.is_superuser:
                 kwargs["queryset"] = StgLocation.objects.filter(
                 # Looks up for the traslated location level name in related table
-                locationlevel__translations__name__in =['Global','Regional','Country']).order_by(
+                locationlevel__locationlevel_id__gte=1).order_by(
                     'locationlevel', 'location_id') #superuser can access all countries at level 2 in the database
-            elif request.user.groups.filter(name__icontains='Admin') or request.user.location.filter(
-                name__icontains='Regional Office'):
+            elif request.user.groups.filter(
+                name__icontains='Admin' or request.user.location>=1):
                 kwargs["queryset"] = StgLocation.objects.filter(
-                locationlevel__translations__name__in =['Regional','Country']).order_by(
+                locationlevel__locationlevel_id__gte=1,
+                locationlevel__locationlevel_id__lte=2).order_by(
                     'locationlevel', 'location_id')
             else:
                 kwargs["queryset"] = StgLocation.objects.filter(
-                    location_id=request.user.location_id) #permissions to user country only
+                location_id=request.user.location_id) #permissions to user country only
 
         # Restricted permission to data source implememnted on 20/03/2020
         if db_field.name == "datasource":
-            if request.user.is_superuser:
+            if request.user.is_superuser or request.user.groups.filter(
+                name__icontains='Admin' or request.user.location>=1):
                 kwargs["queryset"] = StgDatasource.objects.all()
-            elif request.user.groups.filter(name__icontains='Admin') or request.user.location.filter(
-                name__icontains='Regional Office'):
-                kwargs["queryset"] = StgDatasource.objects.exclude(
-                pk__gte=1) # Admin user can only access data from countries
             else:
-                kwargs["queryset"] = StgDatasource.objects.filter(pk=1)
+                kwargs["queryset"] = StgDatasource.objects.filter(pk__gte=2)
         return super().formfield_for_foreignkey(db_field, request,**kwargs)
 
     # #This function is used to get the afrocode from related indicator model for use in list_display
@@ -384,29 +380,26 @@ class FactIndicatorInline(admin.TabularInline):
             if request.user.is_superuser:
                 kwargs["queryset"] = StgLocation.objects.filter(
                 # Looks up for the traslated location level name in related table
-                locationlevel__translations__name__in =['Global','Regional','Country']).order_by(
+                locationlevel__locationlevel_id__gte=1).order_by(
                     'locationlevel', 'location_id') #superuser can access all countries at level 2 in the database
-            elif request.user.groups.filter(name__icontains='Admin') or request.user.location.filter(
-                name__icontains='Regional Office'):
+            elif request.user.groups.filter(
+                name__icontains='Admin' or request.user.location>=1):
                 kwargs["queryset"] = StgLocation.objects.filter(
-                locationlevel__translations__name__in =['Regional','Country']).order_by(
+                locationlevel__locationlevel_id__gte=1,
+                locationlevel__locationlevel_id__lte=2).order_by(
                     'locationlevel', 'location_id')
             else:
                 kwargs["queryset"] = StgLocation.objects.filter(
-                    location_id=request.user.location_id) #permissions to user country only
+                location_id=request.user.location_id) #permissions to user country only
 
-    # This is a new construct created upon request by Davy to restrict data source access
-        if db_field.name == "datasource":# Restricted data source implememnted on 20/03/2020
-            if request.user.is_superuser:
-                kwargs["queryset"] = StgDatasource.objects.all()
-            elif request.user.groups.filter(name__icontains='Admin') or request.user.location.filter(
-                name__icontains='Regional Office'):
+        # Restricted permission to data source implememnted on 20/03/2020
+        if db_field.name == "datasource":
+            if request.user.is_superuser or request.user.groups.filter(
+                name__icontains='Admin' or request.user.location>=1):
                 kwargs["queryset"] = StgDatasource.objects.all()
             else:
-                kwargs["queryset"] = StgDatasource.objects.filter(
-                    datasource_id=1)
-
-        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+                kwargs["queryset"] = StgDatasource.objects.filter(pk__gte=2)
+        return super().formfield_for_foreignkey(db_field, request,**kwargs)
 
     fields = ('indicator','location','datasource','measuremethod','start_period',
         'end_period','categoryoption','value_received','numerator_value',
@@ -467,12 +460,10 @@ class IndicatorFactArchiveAdmin(OverideExport):
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        # Only superusers and admin are allowed to view all countries data
         if request.user.is_superuser or request.user.groups.filter(
-            name__icontains='Admin') or request.user.location.filter(
-            name__icontains='Regional Office'):
-            return qs #provide access to all instances/rows of fact data indicators
-        return qs.filter(location=request.user.location)  #provide access to user's country indicator instances
+            name__icontains='Admin' or request.user.location>=1):
+            return qs #provide access to all instances of fact data indicators
+        return qs.filter(location=request.user.location)
 
     #resource_class = AchivedIndicatorResourceExport
     list_display=['location', 'indicator',get_afrocode,'period','categoryoption',

@@ -70,14 +70,13 @@ class ProductAdmin(TranslatableAdmin,ImportExportModelAdmin,
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
     }
+
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         if request.user.is_superuser or request.user.groups.filter(
-            name__icontains='Admin') or request.user.location.filter(
-            name__icontains='Regional Office'):
-            # Provide access to all instances/rows of all location, i.e. all AFRO member states
-            return qs
-        return qs.filter(location_id=request.user.location_id)#provide user with specific country details!
+            name__icontains='Admin' or request.user.location>=1):
+            return qs #provide access to all instances of fact data indicators
+        return qs.filter(location=request.user.location)
 
     #to make URl clickable, I changed show_url to just url in the list_display tuple
     def show_external_url(self, obj):
