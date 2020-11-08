@@ -260,7 +260,7 @@ class IndicatorFactAdmin(OverideImportExport):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         if request.user.is_superuser or request.user.groups.filter(
-            name__icontains='Admin' or request.user.location>=1):
+            name__icontains='Admin'):
             return qs #provide access to all instances of fact data indicators
         return qs.filter(location=request.user.location)
 
@@ -282,7 +282,7 @@ class IndicatorFactAdmin(OverideImportExport):
                 locationlevel__locationlevel_id__gte=1).order_by(
                     'locationlevel', 'location_id') #superuser can access all countries at level 2 in the database
             elif request.user.groups.filter(
-                name__icontains='Admin' or request.user.location>=1):
+                name__icontains='Admin'):
                 kwargs["queryset"] = StgLocation.objects.filter(
                 locationlevel__locationlevel_id__gte=1,
                 locationlevel__locationlevel_id__lte=2).order_by(
@@ -294,7 +294,7 @@ class IndicatorFactAdmin(OverideImportExport):
         # Restricted permission to data source implememnted on 20/03/2020
         if db_field.name == "datasource":
             if request.user.is_superuser or request.user.groups.filter(
-                name__icontains='Admin' or request.user.location>=1):
+                name__icontains='Admin'):
                 kwargs["queryset"] = StgDatasource.objects.all()
             else:
                 kwargs["queryset"] = StgDatasource.objects.filter(pk__gte=2)
