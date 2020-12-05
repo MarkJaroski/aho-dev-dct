@@ -47,7 +47,7 @@ class StgCategoryoption(TranslatableModel):
             verbose_name = _('Short Name')),  # Field name made lowercase.
         description = models.TextField(blank=True, null=True)  # Field name made lowercase.
     )
-    code = models.CharField(unique=True,max_length=230, blank=True, null=False)  # Field name made lowercase.
+    code = models.CharField(unique=True,max_length=50, blank=True, null=False)  # Field name made lowercase.
     date_created = models.DateTimeField(blank=True, null=True, auto_now_add=True,
         verbose_name = 'Date Created')
     date_lastupdated = models.DateTimeField(blank=True, null=True, auto_now=True,

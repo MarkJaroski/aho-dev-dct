@@ -133,7 +133,7 @@ class StgTrainingInstitution(TranslatableModel):
             blank=True,null=True),
         posta = models.CharField(_('Post Address'),max_length=500,blank=True,
             null=True),
-        email = models.EmailField(_('Email'),unique=True,max_length=250,blank=True,
+        email = models.EmailField(_('Email'),unique=True,max_length=150,blank=True,
             null=True),  # Field name made lowercase.
         phone_number = models.CharField(_('Phone Number'),
             validators=[phone_regex], max_length=15, blank=True), # validators should be a list
@@ -246,7 +246,7 @@ class StgHealthWorkforceFacts(models.Model):
         null=False,verbose_name = _('Data Source'), default = 1)  # Field name made lowercase.
     measuremethod = models.ForeignKey(StgMeasuremethod, models.PROTECT,blank=True,
         null=True, verbose_name = _('Measure Type'))  # Field name made lowercase.
-    value = DecimalField(_('Data Value'),max_digits=20,decimal_places=2,
+    value = DecimalField(_('Data Value'),max_digits=20,decimal_places=3,
         blank=False, null=False)  # Field name made lowercase.
     start_year = models.IntegerField(_('Starting Period'),null=False,blank=False,
         default=datetime.date.today().year)

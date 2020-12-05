@@ -248,7 +248,7 @@ data_wizard.register(FactDataIndicator)
 @admin.register(FactDataIndicator)
 class IndicatorFactAdmin(OverideImportExport):
     form = IndicatorProxyForm #overrides the default django model form
-    #resource_class = AchivedIndicatorResourceExport
+
     """
     Davy requested that a user does not see other countries data. This function
     does exactly that by filtering location based on logged in user. For this

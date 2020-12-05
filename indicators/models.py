@@ -182,17 +182,19 @@ class FactDataIndicator(models.Model):
     measuremethod = models.ForeignKey(StgMeasuremethod, models.PROTECT,blank=True,
         null=True, verbose_name =_('Measure Type'))  # Field name made lowercase.
     numerator_value = models.DecimalField(_('Numerator Value'),max_digits=20,
-        decimal_places=2,blank=True, null=True)
+        decimal_places=3,blank=True, null=True)
     denominator_value = models.DecimalField(_('Denominator Value'),max_digits=20,
-        decimal_places=2,blank=True, null=True)  # Field name made lowercase.
-    value_received = DecimalField(_('Numeric Value'),max_digits=20,decimal_places=2,
+        decimal_places=3,blank=True, null=True)  # Field name made lowercase.
+    value_received = DecimalField(_('Numeric Value'),max_digits=20,decimal_places=3,
         blank=True,null=True)  # Field name made lowercase.
     min_value = models.DecimalField(_('Minimum Value'),max_digits=20,
-        decimal_places=2,blank=True, null=True)  # Field name made lowercase.
+        decimal_places=3,blank=True, null=True)  # Field name made lowercase.
     max_value = models.DecimalField(_('Maximum Value'),max_digits=20,
-        decimal_places=2,blank=True, null=True)  # Field name made lowercase.
+        decimal_places=3,blank=True, null=True)  # Field name made lowercase.
     target_value = models.DecimalField(_('Target Value'),max_digits=20,
-        decimal_places=2,blank=True, null=True)  # Field name made lowercase.
+        decimal_places=3,blank=True, null=True)  # Field name made lowercase.
+    string_value= models.CharField(_('String Value'),max_length=500,blank=True,
+        null=True) # davy's request as of 30/4/2019
     start_period = models.IntegerField(_('Starting period'),null=False,blank=False,
         default=datetime.date.today().year,#extract current date year value only
         help_text=_("This marks the start of reporting period"))
@@ -203,8 +205,6 @@ class FactDataIndicator(models.Model):
     period = models.CharField(_('Period'),max_length=25,blank=True,null=False)
     comment = models.CharField(_('Status'),max_length=10, choices= STATUS_CHOICES,
         default=STATUS_CHOICES[0][0])  # Field name made lowercase.
-    string_value= models.CharField(_('String Value'),max_length=500,blank=True,
-        null=True) # davy's request as of 30/4/2019
     date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
         auto_now_add=True)
     date_lastupdated = models.DateTimeField(_('Date Modified'),blank=True,
@@ -223,7 +223,7 @@ class FactDataIndicator(models.Model):
         db_table = 'fact_data_indicator'
         verbose_name = _('Indicator Data Record')
         verbose_name_plural = _('    Single-record Form')
-        ordering = ('indicator__name','location__name',)
+        ordering = ('indicator__name',)
 
 
     def __str__(self):
@@ -381,18 +381,20 @@ class aho_factsindicator_archive(models.Model):
         null=False, verbose_name = _('Data Source'))  # Field name made lowercase.
     measuremethod = models.ForeignKey(StgMeasuremethod, models.PROTECT,blank=True,
         null=True, verbose_name = _('Measure Type'))  # Field name made lowercase.
-    value_received = models.DecimalField(_('Value'),max_digits=20,decimal_places=2,
+    value_received = models.DecimalField(_('Value'),max_digits=20,decimal_places=3,
         blank=False,null=True)  # Field name made lowercase.
     numerator_value = models.DecimalField(_('Numerator Value'),max_digits=20,
-        decimal_places=2,blank=True, null=True)  # Field name made lowercase.
+        decimal_places=3,blank=True, null=True)  # Field name made lowercase.
     denominator_value = models.DecimalField(_('Denominator Value'),max_digits=20,
-        decimal_places=2,blank=True, null=True)  # Field name made lowercase.
+        decimal_places=3,blank=True, null=True)  # Field name made lowercase.
     min_value = models.DecimalField(_('Minimum Value'),max_digits=20,
-        decimal_places=2,blank=True, null=True)  # Field name made lowercase.
+        decimal_places=3,blank=True, null=True)  # Field name made lowercase.
     max_value = models.DecimalField(_('Maximum Value'),max_digits=20,
-        decimal_places=2,blank=True, null=True)  # Field name made lowercase.
+        decimal_places=3,blank=True, null=True)  # Field name made lowercase.
     target_value = models.DecimalField(_('Target Value'),max_digits=20,
-        decimal_places=2,blank=True, null=True)  # Field name made lowercase.
+        decimal_places=3,blank=True, null=True)
+    string_value=models.CharField(_('Comments'),max_length=500,blank=True,
+        null=True) # davy's request as of 30/4/2019
     start_period = models.IntegerField(_('Starting Period',),null=False,
         blank=False,default=datetime.date.today().year,#extract current date year value only
         help_text=_("This Year marks the start of the reporting period. \
@@ -404,15 +406,13 @@ class aho_factsindicator_archive(models.Model):
     period = models.CharField(_('Period'),max_length=25,blank=True,null=False) #try to concatenate period field
     comment = models.CharField(_('Status'),max_length=10,choices= STATUS_CHOICES,
         default=STATUS_CHOICES[0][0])
-    string_value=models.CharField(_('Comments'),max_length=500,blank=True,
-        null=True,default='nul') # davy's request as of 30/4/2019
 
     class Meta:
         managed = False
         db_table = 'aho_factsindicator_archive'
         verbose_name = _('Indicator Archive')
         verbose_name_plural = _('Indicators Archive')
-        ordering = ('indicator__name','location__name',)
+        ordering = ('indicator__name',)
 
     def __str__(self):
          return str(self.indicator)
