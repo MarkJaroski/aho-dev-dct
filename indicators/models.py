@@ -393,12 +393,11 @@ class aho_factsindicator_archive(models.Model):
         decimal_places=3,blank=True, null=True)  # Field name made lowercase.
     target_value = models.DecimalField(_('Target Value'),max_digits=20,
         decimal_places=3,blank=True, null=True)
-    string_value=models.CharField(_('Comments'),max_length=500,blank=True,
+    string_value=models.CharField(_('String Value'),max_length=500,blank=True,
         null=True) # davy's request as of 30/4/2019
     start_period = models.IntegerField(_('Starting Period',),null=False,
         blank=False,default=datetime.date.today().year,#extract current date year value only
-        help_text=_("This Year marks the start of the reporting period. \
-            NB: 1900 is the Lowest Limit!"))
+        help_text=_("This Year marks the start of the reporting period"))
     end_period  = models.IntegerField(_('Ending Year'),null=False,blank=False,
         default=datetime.date.today().year, #extract current date year value only
         help_text=_("This Year marks the end of reporting. \

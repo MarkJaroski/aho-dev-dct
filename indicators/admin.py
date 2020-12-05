@@ -467,7 +467,7 @@ class IndicatorFactArchiveAdmin(OverideExport):
 
     #resource_class = AchivedIndicatorResourceExport
     list_display=['location', 'indicator',get_afrocode,'period','categoryoption',
-        'value_received','target_value','string_value','get_comment_display',]
+        'value_received','string_value','get_comment_display',]
     search_fields = ('indicator__translations__name', 'location__translations__name',
         'period','indicator__afrocode') #display search field
     list_per_page = 50 #limit records displayed on admin site to 50
