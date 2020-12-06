@@ -453,6 +453,14 @@ class IndicatorFactArchiveAdmin(OverideExport):
     def has_delete_permission(self, request, obj=None):
         return False
 
+    def change_view(self, request, object_id, extra_context=None):
+        ''' Customize add/edit form '''
+        extra_context = extra_context or {}
+        extra_context['show_save_and_continue'] = False
+        extra_context['show_save'] = False
+        return super(IndicatorFactArchiveAdmin, self).change_view(
+            request,object_id,extra_context=extra_context)
+
     def get_afrocode(obj):
         return obj.indicator.afrocode
     get_afrocode.admin_order_field  = 'indicator__afrocode'  #Lookup to allow column sorting by AFROCODE
@@ -527,20 +535,19 @@ class IndicatorNarrativeAdmin(OverideExport):
 
 @admin.register(AhoDoamain_Lookup)
 class AhoDoamain_LookupAdmin(OverideExport):
-    def has_delete_permission(self, request, obj=None): # Removes the add button on the admin interface
+    # This method removes the add button on the admin interface
+    def has_delete_permission(self, request, obj=None):
         return False
-
-    def has_add_permission(self, request, obj=None): # Removes the add button on the admin interface
+    # This method removes the add button on the admin interface
+    def has_add_permission(self, request, obj=None):
         return False
-
-    #This method removes the save buttons from the model form
-    def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
+    #This method removes the save buttons from the model form added on 6th Dec 2020
+    def changeform_view(self,request,object_id=None,form_url='',extra_context=None):
         extra_context = extra_context or {}
         extra_context['show_save_and_continue'] = False
         extra_context['show_save'] = False
         return super(AhoDoamain_LookupAdmin, self).changeform_view(
             request, object_id, extra_context=extra_context)
-
     list_display=('indicator_name','code','domain_name', 'domain_level',)
     list_display_links = None # make the link for change object non-clickable
     readonly_fields = ('indicator_name','code','domain_name', 'domain_level',)
