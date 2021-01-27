@@ -449,6 +449,11 @@ class IndicatorProxyAdmin(TranslatableAdmin):
 
 @admin.register(aho_factsindicator_archive)
 class IndicatorFactArchiveAdmin(OverideExport,ImportExportActionModelAdmin):
+
+    def queryset(self, request):
+        qs = super(MyModelAdmin, self).queryset(request)
+        return qs.filter(user=request.user)
+
     def has_add_permission(self, request): #removes the add button because no data entry is needed
         return False
 
