@@ -118,7 +118,6 @@ class StgIndicatorDomain(TranslatableModel):
     (5,_('level 5')),
     (6,_('level 6')),
     )
-
     domain_id = models.AutoField(primary_key=True)  # Field name made lowercase.
     uuid = uuid = models.CharField(_('Unique ID'),unique=True,max_length=36,
         blank=False, null=False,default=uuid.uuid4,editable=False)
