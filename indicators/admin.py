@@ -22,6 +22,7 @@ from regions.models import StgLocation,StgLocationLevel
 from home.models import ( StgDatasource,StgCategoryoption)
 from import_export.admin import (ImportExportModelAdmin, ExportMixin,
     ImportMixin,ImportExportActionModelAdmin)
+from django.contrib.admin.views.main import ChangeList
 
 #The following 3 functions are used to register global actions performed on the data. See action listbox
 def transition_to_pending (modeladmin, request, queryset):
@@ -36,6 +37,10 @@ def transition_to_rejected (modeladmin, request, queryset):
     queryset.update (comment = 'rejected')
 transition_to_rejected.short_description = "Mark selected as Rejected"
 
+class CustomChangeList(ChangeList):
+    def get_queryset(self, request):
+        queryset = super(CustomChangeList, self).get_queryset(request)
+        return queryset[:500]
 
 class GroupedModelChoiceIterator(ModelChoiceIterator):
     def __iter__(self):
@@ -449,10 +454,8 @@ class IndicatorProxyAdmin(TranslatableAdmin):
 
 @admin.register(aho_factsindicator_archive)
 class IndicatorFactArchiveAdmin(OverideExport,ImportExportActionModelAdmin):
-
-    def queryset(self, request):
-        qs = super(MyModelAdmin, self).queryset(request)
-        return qs.filter(user=request.user)
+    def get_changelist(self, request, **kwargs):
+        return CustomChangeList
 
     def has_add_permission(self, request): #removes the add button because no data entry is needed
         return False
