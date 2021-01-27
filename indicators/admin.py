@@ -20,6 +20,8 @@ from django_admin_listfilter_dropdown.filters import (
 from commoninfo.fields import RoundingDecimalFormField # For fixing rounded decimal
 from regions.models import StgLocation,StgLocationLevel
 from home.models import ( StgDatasource,StgCategoryoption)
+from import_export.admin import (ImportExportModelAdmin, ExportMixin,
+    ImportMixin,ImportExportActionModelAdmin)
 
 #The following 3 functions are used to register global actions performed on the data. See action listbox
 def transition_to_pending (modeladmin, request, queryset):
@@ -246,7 +248,7 @@ class IndicatorProxyForm(forms.ModelForm):
 # Register fact_data serializer to allow import os semi-structured data Excel/CSV
 data_wizard.register(FactDataIndicator)
 @admin.register(FactDataIndicator)
-class IndicatorFactAdmin(OverideImportExport):
+class IndicatorFactAdmin(OverideImportExport,ImportExportActionModelAdmin):
     form = IndicatorProxyForm #overrides the default django model form
 
     """
@@ -446,7 +448,7 @@ class IndicatorProxyAdmin(TranslatableAdmin):
 
 
 @admin.register(aho_factsindicator_archive)
-class IndicatorFactArchiveAdmin(OverideExport):
+class IndicatorFactArchiveAdmin(OverideExport,ImportExportActionModelAdmin):
     def has_add_permission(self, request): #removes the add button because no data entry is needed
         return False
 
@@ -473,12 +475,23 @@ class IndicatorFactArchiveAdmin(OverideExport):
             return qs #provide access to all instances of fact data indicators
         return qs.filter(location=request.user.location)
 
+    def get_export_resource_class(self):
+        return AchivedIndicatorResourceExport
+
     #resource_class = AchivedIndicatorResourceExport
     list_display=['location', 'indicator',get_afrocode,'period','categoryoption',
         'value_received','string_value','get_comment_display',]
     search_fields = ('indicator__translations__name', 'location__translations__name',
         'period','indicator__afrocode') #display search field
     list_per_page = 50 #limit records displayed on admin site to 50
+    list_filter = (
+        ('location', RelatedOnlyDropdownFilter,),
+        ('indicator', RelatedOnlyDropdownFilter,),
+        ('period',DropdownFilter),
+        ('categoryoption', RelatedOnlyDropdownFilter,),
+        ('comment',DropdownFilter),
+    )
+
 
 
 @admin.register(StgNarrative_Type)

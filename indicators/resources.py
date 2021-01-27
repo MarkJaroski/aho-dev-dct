@@ -62,7 +62,7 @@ class IndicatorResourceExport(resources.ModelResource):
     categoryoption__code = Field(attribute='categoryoption__code', column_name='Disaggregation Code')
     categoryoption__name = Field(attribute='categoryoption__name', column_name='Disaggregation Type')
     period = Field(attribute='period', column_name='Period')
-    value_received = Field(attribute='value_received', column_name='Value')
+    value_received = Field(attribute='value_received', column_name='Numeric Value')
     target_value = Field(attribute='target_value', column_name='Target Measure')
     datasource = Field(attribute='datasource', column_name='Data Source')
     valuetype = Field(attribute='valuetype', column_name='Data Type')
@@ -76,6 +76,39 @@ class IndicatorResourceExport(resources.ModelResource):
         fields = ('location__name','location__code','indicator__name',
             'indicator__afrocode','categoryoption__code','categoryoption__name',
             'period','value_received','comment','string_value',)
+
+
+class AchivedIndicatorResourceExport(resources.ModelResource):
+    location__name = Field(
+        attribute='location__name', column_name='Location')
+    location__code = Field(
+        attribute='location__code', column_name='Location Code')
+    indicator__name = Field(
+        attribute='indicator__name', column_name='Indicator Name')
+    indicator__afrocode = Field(
+        attribute='indicator__afrocode', column_name='Indicator Code')
+    categoryoption__code = Field(
+        attribute='categoryoption__code', column_name='Disaggregation Code')
+    categoryoption__name = Field(
+        attribute='categoryoption__name', column_name='Disaggregation Type')
+    start_period = Field(attribute='start_period', column_name='Start Period')
+    end_period = Field(attribute='end_period', column_name='End Period')
+    period = Field(attribute='period', column_name='Period')
+    value_received = Field(attribute='value_received', column_name='Numeric Value')
+    target_value = Field(attribute='target_value', column_name='Target Measure')
+    datasource = Field(attribute='datasource', column_name='Data Source')
+    valuetype = Field(attribute='valuetype', column_name='Data Type')
+    string_value = Field(attribute='string_value', column_name='String Value')
+    comment = Field(attribute='comment', column_name='Approval Status')
+
+    class Meta:
+        model = aho_factsindicator_archive
+        skip_unchanged = False
+        report_skipped = False
+        fields = ('location__name','location__code','indicator__name',
+            'indicator__afrocode',
+            'categoryoption__code','categoryoption__name','start_period',
+            'end_period','period','value_received',)
 
 
 class DomainResourceImport(resources.ModelResource): #to be worked on!
@@ -125,35 +158,3 @@ class DomainResourceExport(resources.ModelResource):
         skip_unchanged = False
         report_skipped = False
         fields = ('domain_code','domain_name', 'shortname', 'description',)
-
-
-class AchivedIndicatorResourceExport(resources.ModelResource):
-    location__name = Field(
-        attribute='location__name', column_name='Location')
-    location__code = Field(
-        attribute='location__code', column_name='Location Code')
-    indicator__name = Field(
-        attribute='indicator__name', column_name='Indicator Name')
-    indicator__afrocode = Field(
-        attribute='indicator__afrocode', column_name='Indicator Code')
-    categoryoption__code = Field(
-        attribute='categoryoption__code', column_name='Disaggregation Code')
-    categoryoption__name = Field(
-        attribute='categoryoption__name', column_name='Disaggregation Type')
-    start_period = Field(attribute='start_period', column_name='Start Period')
-    end_period = Field(attribute='end_period', column_name='End Period')
-    period = Field(attribute='period', column_name='Period')
-    value_received = Field(attribute='value_received', column_name='Nominal Value')
-    target_value = Field(attribute='target_value', column_name='Target Measure')
-    datasource = Field(attribute='datasource', column_name='Data Source')
-    valuetype = Field(attribute='valuetype', column_name='Data Type')
-    comment = Field(attribute='comment', column_name='Approval Status')
-
-    class Meta:
-        model = aho_factsindicator_archive
-        skip_unchanged = False
-        report_skipped = False
-        fields = ('location__name','location__code','indicator__name',
-            'indicator__afrocode',
-            'categoryoption__code','categoryoption__name','start_period',
-            'end_period','period','value_received',)
