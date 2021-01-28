@@ -37,10 +37,10 @@ def transition_to_rejected (modeladmin, request, queryset):
     queryset.update (comment = 'rejected')
 transition_to_rejected.short_description = "Mark selected as Rejected"
 
-# class CustomChangeList(ChangeList):
-#     def get_queryset(self, request):
-#         queryset = super(CustomChangeList, self).get_queryset(request)
-#         return queryset[:5]
+class CustomChangeList(ChangeList):
+    def get_queryset(self, request):
+        queryset = super(CustomChangeList, self).get_queryset(request).distinct()
+        return queryset
 
 class GroupedModelChoiceIterator(ModelChoiceIterator):
     def __iter__(self):
@@ -454,8 +454,8 @@ class IndicatorProxyAdmin(TranslatableAdmin):
 
 @admin.register(aho_factsindicator_archive)
 class IndicatorFactArchiveAdmin(OverideExport,ExportActionModelAdmin):
-    # def get_changelist(self, request, **kwargs):
-    #     return CustomChangeList
+    def get_changelist(self, request, **kwargs):
+        return CustomChangeList
 
     def has_add_permission(self, request): #removes the add button because no data entry is needed
         return False
