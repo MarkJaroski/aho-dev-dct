@@ -500,7 +500,6 @@ class IndicatorFactArchiveAdmin(OverideExport,ImportExportActionModelAdmin):
         ('categoryoption', RelatedOnlyDropdownFilter,),
         ('comment',DropdownFilter),
     )
-=======
     # list_filter = (
     #     ('location', RelatedOnlyDropdownFilter,),
     #     ('indicator', RelatedOnlyDropdownFilter,),
@@ -509,7 +508,6 @@ class IndicatorFactArchiveAdmin(OverideExport,ImportExportActionModelAdmin):
     #     ('comment',DropdownFilter),
     # )
 
->>>>>>> 58e47307b4795f8035f99025ea77bbac3eda7587
 
 
 @admin.register(StgNarrative_Type)
