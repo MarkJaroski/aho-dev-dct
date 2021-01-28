@@ -454,9 +454,11 @@ class IndicatorProxyAdmin(TranslatableAdmin):
 
 @admin.register(aho_factsindicator_archive)
 class IndicatorFactArchiveAdmin(OverideExport):
-    pass
-
-
+    list_display=['indicator','location', 'period','value_received']
+    list_filter = (
+        ('location', RelatedOnlyDropdownFilter,),
+        ('indicator', RelatedOnlyDropdownFilter,),
+    )
 
 @admin.register(StgNarrative_Type)
 class NarrativeTypeAdmin(TranslatableAdmin,OverideExport):
