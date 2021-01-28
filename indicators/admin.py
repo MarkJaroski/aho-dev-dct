@@ -472,10 +472,10 @@ class IndicatorFactArchiveAdmin(OverideExport,ImportExportActionModelAdmin):
     #     return super(IndicatorFactArchiveAdmin, self).change_view(
     #         request,object_id,extra_context=extra_context)
     #
-    # def get_afrocode(obj):
-    #     return obj.indicator.afrocode
-    # get_afrocode.admin_order_field  = 'indicator__afrocode'  #Lookup to allow column sorting by AFROCODE
-    # get_afrocode.short_description = 'Indicator Code'  #Renames the column head
+    def get_afrocode(obj):
+        return obj.indicator.afrocode
+    get_afrocode.admin_order_field  = 'indicator__afrocode'  #Lookup to allow column sorting by AFROCODE
+    get_afrocode.short_description = 'Indicator Code'  #Renames the column head
     #
     # def get_queryset(self, request):
     #     qs = super().get_queryset(request)
@@ -488,8 +488,8 @@ class IndicatorFactArchiveAdmin(OverideExport,ImportExportActionModelAdmin):
     # #     return AchivedIndicatorResourceExport
     #
     # #resource_class = AchivedIndicatorResourceExport
-    # list_display=['location', 'indicator',get_afrocode,'period','categoryoption',
-    #     'value_received','string_value','get_comment_display',]
+    list_display=['location', 'indicator',get_afrocode,'period','categoryoption',
+        'value_received','string_value','get_comment_display',]
     # search_fields = ('indicator__translations__name', 'location__translations__name',
     #     'period','indicator__afrocode') #display search field
     # list_per_page = 50 #limit records displayed on admin site to 50
