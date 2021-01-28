@@ -479,6 +479,13 @@ class IndicatorFactArchiveAdmin(OverideExport):
     search_fields = ('indicator__translations__name', 'location__translations__name',
         'period','indicator__afrocode') #display search field
     list_per_page = 50 #limit records displayed on admin site to 50
+    list_filter = (
+        ('location', RelatedOnlyDropdownFilter,),
+        ('indicator', RelatedOnlyDropdownFilter,),
+        ('period',DropdownFilter),
+        ('categoryoption', RelatedOnlyDropdownFilter,),
+        ('comment',DropdownFilter),
+    )
 
 
 @admin.register(StgNarrative_Type)

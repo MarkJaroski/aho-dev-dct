@@ -164,7 +164,7 @@ class StgHealthFacility(TranslatableModel):
         description = models.TextField(_('Brief Description'),blank=True, null=True), # Field name made lowercase.
         address = models.CharField(_('Contact Address'),max_length=500,blank=True,
             null=True),  # Field name made lowercase.
-        email = models.EmailField(_('Email'),unique=True,max_length=250,
+        email = models.EmailField(_('Email'),unique=True,max_length=150,
             blank=True,null=True),  # Field name made lowercase.
         phone_number = models.CharField(_('Phone Number'),
             validators=[phone_regex], max_length=15, blank=True), # validators should be a list
