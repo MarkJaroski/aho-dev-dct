@@ -453,8 +453,7 @@ class IndicatorProxyAdmin(TranslatableAdmin):
 
 
 @admin.register(aho_factsindicator_archive)
-class IndicatorFactArchiveAdmin(OverideExport,ImportExportActionModelAdmin):
-    pass
+class IndicatorFactArchiveAdmin(OverideExport):
     # # def get_changelist(self, request, **kwargs):
     # #     return CustomChangeList
     #
@@ -472,11 +471,11 @@ class IndicatorFactArchiveAdmin(OverideExport,ImportExportActionModelAdmin):
     #     return super(IndicatorFactArchiveAdmin, self).change_view(
     #         request,object_id,extra_context=extra_context)
     #
-    def get_afrocode(obj):
-        return obj.indicator.afrocode
-    get_afrocode.admin_order_field  = 'indicator__afrocode'  #Lookup to allow column sorting by AFROCODE
-    get_afrocode.short_description = 'Indicator Code'  #Renames the column head
-    #
+    # def get_afrocode(obj):
+    #     return obj.indicator.afrocode
+    # get_afrocode.admin_order_field  = 'indicator__afrocode'  #Lookup to allow column sorting by AFROCODE
+    # get_afrocode.short_description = 'Indicator Code'  #Renames the column head
+    # #
     # def get_queryset(self, request):
     #     qs = super().get_queryset(request)
     #     if request.user.is_superuser or request.user.groups.filter(
@@ -488,7 +487,7 @@ class IndicatorFactArchiveAdmin(OverideExport,ImportExportActionModelAdmin):
     # #     return AchivedIndicatorResourceExport
     #
     # #resource_class = AchivedIndicatorResourceExport
-    list_display=['location', 'indicator',get_afrocode,'period','categoryoption',
+    list_display=['location', 'indicator','period','categoryoption',
         'value_received','string_value','get_comment_display',]
     # search_fields = ('indicator__translations__name', 'location__translations__name',
     #     'period','indicator__afrocode') #display search field
