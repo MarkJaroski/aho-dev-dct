@@ -492,7 +492,6 @@ class IndicatorFactArchiveAdmin(OverideExport,ImportExportActionModelAdmin):
     search_fields = ('indicator__translations__name', 'location__translations__name',
         'period','indicator__afrocode') #display search field
     list_per_page = 50 #limit records displayed on admin site to 50
-<<<<<<< HEAD
     list_filter = (
         ('location', RelatedOnlyDropdownFilter,),
         ('indicator', RelatedOnlyDropdownFilter,),
@@ -500,13 +499,6 @@ class IndicatorFactArchiveAdmin(OverideExport,ImportExportActionModelAdmin):
         ('categoryoption', RelatedOnlyDropdownFilter,),
         ('comment',DropdownFilter),
     )
-    # list_filter = (
-    #     ('location', RelatedOnlyDropdownFilter,),
-    #     ('indicator', RelatedOnlyDropdownFilter,),
-    #     ('period',DropdownFilter),
-    #     ('categoryoption', RelatedOnlyDropdownFilter,),
-    #     ('comment',DropdownFilter),
-    # )
 
 
 
