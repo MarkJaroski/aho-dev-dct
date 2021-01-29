@@ -40,7 +40,7 @@ transition_to_rejected.short_description = "Mark selected as Rejected"
 class CustomChangeList(ChangeList):
     def get_queryset(self, request):
         queryset = super(CustomChangeList, self).get_queryset(request).distinct()
-        return queryset
+        return queryset[:5]
 
 class GroupedModelChoiceIterator(ModelChoiceIterator):
     def __iter__(self):
