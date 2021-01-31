@@ -490,19 +490,18 @@ class IndicatorFactArchiveAdmin(OverideExport,ExportActionModelAdmin):
     # def get_export_resource_class(self):
     #     return AchivedIndicatorResourceExport
 
-    resource_class = IndicatorResourceExport
+    resource_class = AchivedIndicatorResourceExport
     list_display=['indicator','location','categoryoption','datasource',
     'value_received','period','comment']
-    # search_fields = ('indicator__translations__name', 'location__translations__name',
-    #     'period','indicator__afrocode') #display search field
-    # list_per_page = 50 #limit records displayed on admin site to 50
-    # list_filter = (
-    #     ('location', RelatedOnlyDropdownFilter,),
-    #     ('indicator', RelatedOnlyDropdownFilter,),
-    #     ('period',DropdownFilter),
-    #     ('categoryoption', RelatedOnlyDropdownFilter,),
-    #     ('comment',DropdownFilter),
-    # )
+    search_fields = ('indicator__translations__name','location__translations__name',
+        'period') #display search field
+    list_per_page = 100 #limit records displayed on admin site to 50
+    list_filter = (
+        ('location', RelatedOnlyDropdownFilter,),
+        ('indicator', RelatedOnlyDropdownFilter,),
+        ('categoryoption', RelatedOnlyDropdownFilter,),
+        ('comment',DropdownFilter),
+    )
 
 @admin.register(StgNarrative_Type)
 class NarrativeTypeAdmin(TranslatableAdmin,OverideExport):

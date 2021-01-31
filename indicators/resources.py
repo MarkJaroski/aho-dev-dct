@@ -79,25 +79,16 @@ class IndicatorResourceExport(resources.ModelResource):
 
 
 class AchivedIndicatorResourceExport(resources.ModelResource):
-    location__name = Field(
-        attribute='location__name', column_name='Location')
-    location__code = Field(
-        attribute='location__code', column_name='Location Code')
-    indicator__name = Field(
-        attribute='indicator__name', column_name='Indicator Name')
+    location__name = Field(attribute='location__name', column_name='Location')
+    location__code = Field(attribute='location__code', column_name='Location Code')
+    indicator__name = Field(attribute='indicator__name', column_name='Indicator')
     indicator__afrocode = Field(
         attribute='indicator__afrocode', column_name='Indicator Code')
-    categoryoption__code = Field(
-        attribute='categoryoption__code', column_name='Disaggregation Code')
     categoryoption__name = Field(
-        attribute='categoryoption__name', column_name='Disaggregation Type')
-    start_period = Field(attribute='start_period', column_name='Start Period')
-    end_period = Field(attribute='end_period', column_name='End Period')
+        attribute='categoryoption__name', column_name='Disaggregation')
     period = Field(attribute='period', column_name='Period')
     value_received = Field(attribute='value_received', column_name='Numeric Value')
-    target_value = Field(attribute='target_value', column_name='Target Measure')
     datasource = Field(attribute='datasource', column_name='Data Source')
-    valuetype = Field(attribute='valuetype', column_name='Data Type')
     string_value = Field(attribute='string_value', column_name='String Value')
     comment = Field(attribute='comment', column_name='Approval Status')
 
@@ -106,9 +97,8 @@ class AchivedIndicatorResourceExport(resources.ModelResource):
         skip_unchanged = False
         report_skipped = False
         fields = ('location__name','location__code','indicator__name',
-            'indicator__afrocode',
-            'categoryoption__code','categoryoption__name','start_period',
-            'end_period','period','value_received',)
+            'indicator__afrocode','categoryoption__name','period',
+            'value_received','comment')
 
 
 class DomainResourceImport(resources.ModelResource): #to be worked on!
