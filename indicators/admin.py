@@ -42,7 +42,7 @@ class CustomChangeList(ChangeList):
         queryset = super(CustomChangeList, self).get_queryset(request)
         queryset = aho_factsindicator_archive.objects.only(
             'indicator','location','categoryoption','datasource',
-            'value_received','period')
+            'value_received','period','comment')
         return queryset
 
 class GroupedModelChoiceIterator(ModelChoiceIterator):
@@ -95,7 +95,8 @@ class GroupedModelChoiceField(ModelChoiceField):
 class IndicatorRefAdmin(TranslatableAdmin):
     def sort_data(self, request):
         language_code = settings.LANGUAGE_CODE
-        StgIndicatorReference.objects.translated(language_code).order_by('translations__code')
+        StgIndicatorReference.objects.translated(language_code).order_by(
+        'translations__code')
     from django.db import models
     formfield_overrides = {
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
@@ -460,7 +461,6 @@ class IndicatorFactArchiveAdmin(OverideExport,ExportActionModelAdmin):
     def get_changelist(self, request, **kwargs):
         return CustomChangeList
 
-
     def has_add_permission(self, request): #removes the add button because no data entry is needed
         return False
 
@@ -492,7 +492,7 @@ class IndicatorFactArchiveAdmin(OverideExport,ExportActionModelAdmin):
 
     resource_class = IndicatorResourceExport
     list_display=['indicator','location','categoryoption','datasource',
-    'value_received','period']
+    'value_received','period','comment']
     # search_fields = ('indicator__translations__name', 'location__translations__name',
     #     'period','indicator__afrocode') #display search field
     # list_per_page = 50 #limit records displayed on admin site to 50
