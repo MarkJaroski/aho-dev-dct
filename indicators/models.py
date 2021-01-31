@@ -407,7 +407,7 @@ class aho_factsindicator_archive(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'fact_data_indicator'
+        db_table = 'fact_data_archive'
         verbose_name = _('Indicator Archive')
         verbose_name_plural = _('Indicators Archive')
         ordering = ('indicator__name',)

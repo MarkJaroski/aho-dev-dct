@@ -39,8 +39,9 @@ transition_to_rejected.short_description = "Mark selected as Rejected"
 
 class CustomChangeList(ChangeList):
     def get_queryset(self, request):
-        queryset = super(CustomChangeList, self).get_queryset(request).distinct()
-        return queryset[:5000]
+        queryset = super(CustomChangeList, self).get_queryset(request)
+        queryset = aho_factsindicator_archive.objects.only("indicator")
+        return queryset
 
 class GroupedModelChoiceIterator(ModelChoiceIterator):
     def __iter__(self):
@@ -457,6 +458,7 @@ class IndicatorFactArchiveAdmin(OverideExport,ExportActionModelAdmin):
     def get_changelist(self, request, **kwargs):
         return CustomChangeList
 
+
     def has_add_permission(self, request): #removes the add button because no data entry is needed
         return False
 
@@ -487,18 +489,17 @@ class IndicatorFactArchiveAdmin(OverideExport,ExportActionModelAdmin):
     #     return AchivedIndicatorResourceExport
 
     resource_class = IndicatorResourceExport
-    list_display=['location', 'indicator',get_afrocode,'period','categoryoption',
-        'value_received','string_value','get_comment_display',]
-    search_fields = ('indicator__translations__name', 'location__translations__name',
-        'period','indicator__afrocode') #display search field
-    list_per_page = 50 #limit records displayed on admin site to 50
-    list_filter = (
-        ('location', RelatedOnlyDropdownFilter,),
-        ('indicator', RelatedOnlyDropdownFilter,),
-        ('period',DropdownFilter),
-        ('categoryoption', RelatedOnlyDropdownFilter,),
-        ('comment',DropdownFilter),
-    )
+    list_display=['indicator']
+    # search_fields = ('indicator__translations__name', 'location__translations__name',
+    #     'period','indicator__afrocode') #display search field
+    # list_per_page = 50 #limit records displayed on admin site to 50
+    # list_filter = (
+    #     ('location', RelatedOnlyDropdownFilter,),
+    #     ('indicator', RelatedOnlyDropdownFilter,),
+    #     ('period',DropdownFilter),
+    #     ('categoryoption', RelatedOnlyDropdownFilter,),
+    #     ('comment',DropdownFilter),
+    # )
 
 @admin.register(StgNarrative_Type)
 class NarrativeTypeAdmin(TranslatableAdmin,OverideExport):
