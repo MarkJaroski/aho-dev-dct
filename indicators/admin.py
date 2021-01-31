@@ -458,8 +458,8 @@ class IndicatorProxyAdmin(TranslatableAdmin):
 
 @admin.register(aho_factsindicator_archive)
 class IndicatorFactArchiveAdmin(OverideExport,ExportActionModelAdmin):
-    # def get_changelist(self, request, **kwargs):
-    #     return CustomChangeList
+    def get_changelist(self, request, **kwargs):
+        return CustomChangeList
 
     def has_add_permission(self, request): #removes the add button because no data entry is needed
         return False
