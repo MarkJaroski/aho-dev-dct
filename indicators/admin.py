@@ -42,7 +42,7 @@ class CustomChangeList(ChangeList):
         queryset = super(CustomChangeList, self).get_queryset(request)
         queryset = aho_factsindicator_archive.objects.only(
             'indicator','location','categoryoption','datasource',
-            'value_received')
+            'value_received','period')
         return queryset
 
 class GroupedModelChoiceIterator(ModelChoiceIterator):
@@ -492,7 +492,7 @@ class IndicatorFactArchiveAdmin(OverideExport,ExportActionModelAdmin):
 
     resource_class = IndicatorResourceExport
     list_display=['indicator','location','categoryoption','datasource',
-    'value_received']
+    'value_received','period']
     # search_fields = ('indicator__translations__name', 'location__translations__name',
     #     'period','indicator__afrocode') #display search field
     # list_per_page = 50 #limit records displayed on admin site to 50
