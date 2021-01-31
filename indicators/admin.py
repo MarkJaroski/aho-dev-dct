@@ -458,8 +458,15 @@ class IndicatorProxyAdmin(TranslatableAdmin):
 
 @admin.register(aho_factsindicator_archive)
 class IndicatorFactArchiveAdmin(OverideExport,ExportActionModelAdmin):
-    def get_changelist(self, request, **kwargs):
-        return CustomChangeList
+    # def get_changelist(self, request, **kwargs):
+    #     return CustomChangeList
+    def get_queryset(self, request):
+        queryset = super(CustomChangeList, self).get_queryset(request)
+        queryset = aho_factsindicator_archive.objects.only(
+            'indicator','location','categoryoption','datasource',
+            'value_received','period','comment')
+        return queryset
+        
 
     def has_add_permission(self, request): #removes the add button because no data entry is needed
         return False
@@ -486,9 +493,6 @@ class IndicatorFactArchiveAdmin(OverideExport,ExportActionModelAdmin):
             name__icontains='Admin' or request.user.location>=1):
             return qs #provide access to all instances of fact data indicators
         return qs.filter(location=request.user.location)
-
-    # def get_export_resource_class(self):
-    #     return AchivedIndicatorResourceExport
 
     resource_class = AchivedIndicatorResourceExport
     list_display=['indicator','location','categoryoption','datasource',
