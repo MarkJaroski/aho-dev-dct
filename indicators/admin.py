@@ -37,13 +37,6 @@ def transition_to_rejected (modeladmin, request, queryset):
     queryset.update (comment = 'rejected')
 transition_to_rejected.short_description = "Mark selected as Rejected"
 
-class CustomChangeList(ChangeList):
-    def get_queryset(self, request):
-        queryset = super(CustomChangeList, self).get_queryset(request)
-        queryset = aho_factsindicator_archive.objects.only(
-            'indicator','location','categoryoption','datasource',
-            'value_received','period','comment')
-        return queryset
 
 class GroupedModelChoiceIterator(ModelChoiceIterator):
     def __iter__(self):
@@ -372,7 +365,7 @@ class LimitModelFormset(BaseInlineFormSet):
         self.queryset = FactDataIndicator.objects.filter(
             indicator_id=instance).order_by('-date_created')[:5]
 
-# this class define the fact table as a tubular (not columnar) form for ease of entry as requested by Davy Liboko
+# Define the fact table as a tubular form for ease of data entry
 class FactIndicatorInline(admin.TabularInline):
     form = IndicatorProxyForm #overrides the default django form
     model = FactDataIndicator
@@ -392,7 +385,7 @@ class FactIndicatorInline(admin.TabularInline):
                 kwargs["queryset"] = StgLocation.objects.filter(
                 # Looks up for the traslated location level name in related table
                 locationlevel__locationlevel_id__gte=1).order_by(
-                    'locationlevel', 'location_id') #superuser can access all countries at level 2 in the database
+                    'locationlevel', 'location_id') 
             elif request.user.groups.filter(
                 name__icontains='Admin' or request.user.location>=1):
                 kwargs["queryset"] = StgLocation.objects.filter(
@@ -458,15 +451,14 @@ class IndicatorProxyAdmin(TranslatableAdmin):
 
 @admin.register(aho_factsindicator_archive)
 class IndicatorFactArchiveAdmin(OverideExport,ExportActionModelAdmin):
-    # def get_changelist(self, request, **kwargs):
-    #     return CustomChangeList
+    # Query optimization method that fetches records from archived indicator data:
     def get_queryset(self, request):
         queryset = super(CustomChangeList, self).get_queryset(request)
         queryset = aho_factsindicator_archive.objects.only(
             'indicator','location','categoryoption','datasource',
             'value_received','period','comment')
         return queryset
-        
+
 
     def has_add_permission(self, request): #removes the add button because no data entry is needed
         return False
