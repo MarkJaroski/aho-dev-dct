@@ -11,6 +11,7 @@ from parler.models import TranslatableModel, TranslatedFields
 from home.models import (StgDatasource,StgCategoryoption,StgMeasuremethod,
     StgValueDatatype)
 from regions.models import StgLocation
+from authentication.models import CustomUser
 
 def make_choices(values):
     return [(v, v) for v in values]
@@ -168,16 +169,18 @@ class FactDataIndicator(models.Model):
     fact_id = models.AutoField(primary_key=True)  # Field name made lowercase.
     uuid = uuid = models.CharField(_('Unique ID'),unique=True,max_length=36,
         blank=False, null=False,default=uuid.uuid4,editable=False)
+    user = models.ForeignKey(CustomUser, models.PROTECT,blank=False,
+		verbose_name = 'User Name (Email)',default=2) ## request helper field
     indicator = models.ForeignKey(StgIndicator, models.PROTECT,
         verbose_name = _('Indicator Name'))  # Field name made lowercase.
-    location = models.ForeignKey(StgLocation, models.PROTECT,
-        verbose_name = _('Location Name'))  # Field name made lowercase.
+    location = models.ForeignKey(StgLocation, models.PROTECT,default=1,
+        blank=False,verbose_name = _('Location Name'),)  # Field name made lowercase.
     categoryoption = models.ForeignKey(StgCategoryoption, models.PROTECT,blank=False,
-        verbose_name =_('Disaggregation Options'), default=999)  # Field name made lowercase.
-    # This field is used to lookup sources of data such as routine systems, census and surveys
+        verbose_name =_('Disaggregation Options'), default=999)
+    # This field is used to lookup data sources e.g. routine, census and surveys
     datasource = models.ForeignKey(StgDatasource, models.PROTECT,
         verbose_name = _('Data Source'))  # Field name made lowercase.
-    # This field is used to lookup the type of data required such as text, integer or float
+    # This field is used to lookup the type of data required e.g.text, integer or float
     measuremethod = models.ForeignKey(StgMeasuremethod, models.PROTECT,blank=True,
         null=True, verbose_name =_('Measure Type'))  # Field name made lowercase.
     numerator_value = models.DecimalField(_('Numerator Value'),max_digits=20,
@@ -208,6 +211,7 @@ class FactDataIndicator(models.Model):
         auto_now_add=True)
     date_lastupdated = models.DateTimeField(_('Date Modified'),blank=True,
         null=True, auto_now=True)
+
 
     class Meta:
         permissions = (
@@ -370,10 +374,12 @@ class aho_factsindicator_archive(models.Model):
     fact_id = models.AutoField(primary_key=True)  # Field name made lowercase.
     uuid =models.CharField(_('Unique ID'),unique=True,max_length=36, blank=False,
         null=False,default=uuid.uuid4,editable=False)
-    indicator = models.ForeignKey('StgIndicator', models.PROTECT,blank=False,
+    user = models.ForeignKey(CustomUser, models.PROTECT,blank=False,
+		verbose_name = 'User Name (Email)',default=2) ## request helper field
+    indicator = models.ForeignKey('StgIndicator',models.PROTECT,blank=False,
         null=False, verbose_name = _('Indicator Name'))  # Field name made lowercase.
     location = models.ForeignKey(StgLocation, models.PROTECT,
-        verbose_name = _('Location Name'))
+        blank=False,verbose_name = _('Location Name'))
     categoryoption = models.ForeignKey(StgCategoryoption, models.PROTECT,blank=False,
         verbose_name = _('Disaggregation Option'), default=99)  # Field name made lowercase.
     datasource = models.ForeignKey(StgDatasource, models.PROTECT,blank=False,
@@ -423,7 +429,7 @@ class StgNarrative_Type(TranslatableModel):
     code = models.CharField(unique=True, max_length=50, blank=True, null=False,
         verbose_name = 'Code')  # Field name made lowercase.
     translations = TranslatedFields(
-        name = models.CharField(_('Name'),max_length=500, blank=False, null=False),  # Field name made lowercase.
+        name = models.CharField(_('Name'),max_length=500, blank=False, null=False),
         shortname = models.CharField(_('Short Name'),unique=True, max_length=120,
             blank=False,null=True),  # Field name made lowercase.
         description = models.TextField(_('Brief Description'),blank=False,null=True)
@@ -466,7 +472,7 @@ class StgAnalyticsNarrative(models.Model):
         null=False,verbose_name = _('Location'), default = 1)
     code = models.CharField(unique=True, max_length=50, blank=True, null=False,
         verbose_name = _('Code'))  # Field name made lowercase.
-    narrative_text = models.TextField(_('Narrative Text'),blank=False, null=False)  # Field name made lowercase.
+    narrative_text = models.TextField(_('Narrative Text'),blank=False, null=False)
     date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
         auto_now_add=True)
     date_lastupdated = models.DateTimeField(_('Date Modified'),blank=True,
@@ -495,7 +501,7 @@ class StgIndicatorNarrative(models.Model):
          verbose_name = _('Location'), default = 1)
     code = models.CharField(unique=True, max_length=50, blank=True, null=False,
         verbose_name = _('Code'))  # Field name made lowercase.
-    narrative_text = models.TextField(_('Narrative Text'),blank=False, null=False)  # Field name made lowercase.
+    narrative_text = models.TextField(_('Narrative Text'),blank=False, null=False)
     date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
         auto_now_add=True)
     date_lastupdated = models.DateTimeField(_('Date Modified'),blank=True,

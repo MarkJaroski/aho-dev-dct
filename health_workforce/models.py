@@ -7,9 +7,10 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _ # The _ is alias for gettext
 from parler.models import TranslatableModel, TranslatedFields
 from publications.models import (StgResourceType,StgKnowledgeProduct,
-    StgProductDomain,)
+    StgProductDomain,StgResourceCategory)
 from regions.models import StgLocation
 from facilities.models import (StgHealthFacility,)
+from authentication.models import CustomUser
 from home.models import (StgDatasource,StgCategoryoption,StgMeasuremethod)
 
 def make_choices(values):
@@ -31,11 +32,22 @@ class ResourceTypeProxy(StgResourceType):
     def clean(self):
         pass
 
+
 class HumanWorkforceResourceProxy(StgKnowledgeProduct):
     class Meta:
         proxy = True
         verbose_name = _('Resource/Guide')
         verbose_name_plural = _('Resources/Guides')
+
+    def clean(self):
+        pass
+
+
+class ResourceCategoryProxy(StgResourceCategory):
+    class Meta:
+        proxy = True
+        verbose_name = _('Resource Category')
+        verbose_name_plural = _('Resource Categories')
 
     def clean(self):
         pass
@@ -113,6 +125,8 @@ class StgTrainingInstitution(TranslatableModel):
     institution_id = models.AutoField(primary_key=True)
     uuid = uuid = models.CharField(_('Unique ID'),unique=True,max_length=36,
         blank=False,null=False,default=uuid.uuid4,editable=False)
+    user = models.ForeignKey(CustomUser, models.PROTECT,blank=False,
+		verbose_name = 'User Name (Email)',default=2) ## request helper field
     programmes = models.ManyToManyField(StgInstitutionProgrammes,
         db_table='stg_institution_programs_lookup',blank=True,
         verbose_name = _('Training Programmes'))
@@ -236,14 +250,16 @@ class StgHealthWorkforceFacts(models.Model):
     fact_id = models.AutoField(primary_key=True)
     uuid = uuid = models.CharField(_('Unique ID'),unique=True,max_length=36,
         blank=False,null=False, default=uuid.uuid4,editable=False)
+    user = models.ForeignKey(CustomUser, models.PROTECT,blank=False,
+		verbose_name = 'User Name (Email)',default=2) ## request helper field
     cadre_id = models.ForeignKey(StgHealthCadre, models.PROTECT,
-        verbose_name = _('Occupation/Cadre'),default = 1)  # disallow deletion of a related field
+        verbose_name = _('Occupation/Cadre'),default = 1)  # disallow deletion
     location = models.ForeignKey(StgLocation, models.PROTECT,
         verbose_name = _('Location'),default = 1)
     categoryoption = models.ForeignKey(StgCategoryoption, models.PROTECT,
-        verbose_name = _('Disaggregation Options'))  # disallow deletion of a related field
+        verbose_name = _('Disaggregation Options'))  # disallow deletion
     datasource = models.ForeignKey(StgDatasource, models.PROTECT,blank=False,
-        null=False,verbose_name = _('Data Source'), default = 1)  # Field name made lowercase.
+        null=False,verbose_name = _('Data Source'), default = 1)
     measuremethod = models.ForeignKey(StgMeasuremethod, models.PROTECT,blank=True,
         null=True, verbose_name = _('Measure Type'))  # Field name made lowercase.
     value = DecimalField(_('Data Value'),max_digits=20,decimal_places=3,
@@ -264,8 +280,8 @@ class StgHealthWorkforceFacts(models.Model):
     class Meta:
         managed = True
         db_table = 'fact_health_workforce'
-        verbose_name = _('Healthworkforce Data')
-        verbose_name_plural = _('    Healthworkforce Data')
+        verbose_name = _('Health Workforce')
+        verbose_name_plural = _('    Health Workforce')
         ordering = ('cadre_id', )
 
     def __str__(self):

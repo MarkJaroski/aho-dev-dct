@@ -2,9 +2,16 @@ from django.contrib import admin
 from django import forms
 from django.conf import settings # allow import of projects settings at the root
 from django.forms import BaseInlineFormSet
-from parler.admin import TranslatableAdmin,TranslatableStackedInline,TranslatableInlineModelAdmin
+from parler.admin import (TranslatableAdmin,TranslatableStackedInline,
+    TranslatableInlineModelAdmin)
 import data_wizard # Solution to data import madness that had refused to go
 from itertools import groupby #additional import for managing grouped dropdowm
+from import_export.admin import (ImportExportModelAdmin, ExportMixin,
+    ImportMixin,ExportActionModelAdmin)
+from django_admin_listfilter_dropdown.filters import (
+    DropdownFilter, RelatedDropdownFilter, ChoiceDropdownFilter,
+    RelatedOnlyDropdownFilter) #custom
+from django.contrib.admin.views.main import ChangeList
 from indicators.serializers import FactDataIndicatorSerializer
 from django.forms.models import ModelChoiceField, ModelChoiceIterator
 from .models import (StgIndicatorReference,StgIndicator,StgIndicatorDomain,
@@ -14,15 +21,11 @@ from django.forms import TextInput,Textarea # customize textarea row and column 
 from commoninfo.admin import OverideImportExport,OverideExport
 from .resources import (IndicatorResourceExport, IndicatorResourceImport,
     AchivedIndicatorResourceExport,DomainResourceExport,IndicatorResourceExport)
-from django_admin_listfilter_dropdown.filters import (
-    DropdownFilter, RelatedDropdownFilter, ChoiceDropdownFilter,
-    RelatedOnlyDropdownFilter) #custom
 from commoninfo.fields import RoundingDecimalFormField # For fixing rounded decimal
 from regions.models import StgLocation,StgLocationLevel
+from authentication.models import CustomUser, CustomGroup
 from home.models import ( StgDatasource,StgCategoryoption)
-from import_export.admin import (ImportExportModelAdmin, ExportMixin,
-    ImportMixin,ExportActionModelAdmin)
-from django.contrib.admin.views.main import ChangeList
+
 
 #The following 3 functions are used to register global actions performed on the data. See action listbox
 def transition_to_pending (modeladmin, request, queryset):
@@ -115,7 +118,8 @@ class IndicatorRefAdmin(TranslatableAdmin):
 class IndicatorAdmin(TranslatableAdmin,OverideExport):
     def sort_data(self, request):
         language_code = settings.LANGUAGE_CODE
-        StgIndicator.objects.translated(language_code).order_by('translations__name')
+        StgIndicator.objects.translated(language_code).order_by(
+        'translations__name')
     from django.db import models
     formfield_overrides = {
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
@@ -178,7 +182,6 @@ class IndicatorProxyForm(forms.ModelForm):
     categoryoption = GroupedModelChoiceField(group_by_field='category',
         queryset=StgCategoryoption.objects.all().order_by('category__category_id'),
     )
-
     '''
     Implemented after overrriding decimal place restriction that facts with >3
     decimal places. The RoundingDecimalFormField is in serializer.py
@@ -197,10 +200,11 @@ class IndicatorProxyForm(forms.ModelForm):
         max_digits=20,decimal_places=2,required=False)
 
     class Meta:
-        fields = ('indicator','location', 'categoryoption','datasource',
-            'measuremethod','start_period','end_period','period',
-            'value_received','string_value')
         model = FactDataIndicator
+        # widgets = {'user': forms.HiddenInput()} # hide user email on input field
+        fields = ('indicator','location', 'categoryoption','datasource',
+            'measuremethod','start_period','end_period','period','value_received',
+            'string_value','user')
 
     def clean(self):
         cleaned_data = super().clean()
@@ -220,6 +224,9 @@ class IndicatorProxyForm(forms.ModelForm):
         end_year_field = 'end_period'
         end_period = cleaned_data.get(end_year_field)
 
+        user_field = 'user' #
+        user = cleaned_data.get(user_field)
+
         # This construct modified on 26/03/2020 to allow new record entry
         if indicator and location and categoryoption and datasource and \
             start_period and end_period:
@@ -238,12 +245,12 @@ class IndicatorProxyForm(forms.ModelForm):
                 cleaned_data.pop(measuremethod_field)
                 cleaned_data.pop(start_year_field)
                 cleaned_data.pop(end_year_field)
+                cleaned_data.pop(user_field)
 
                 if end_period < start_period:
                     raise ValidationError({'start_period':_(
                         'Sorry! Ending year cannot be lower than the start year. \
                         Please make corrections')})
-
         return cleaned_data
 
 
@@ -251,64 +258,83 @@ class IndicatorProxyForm(forms.ModelForm):
 data_wizard.register(FactDataIndicator)
 @admin.register(FactDataIndicator)
 class IndicatorFactAdmin(OverideImportExport,ExportActionModelAdmin):
-    form = IndicatorProxyForm #overrides the default django model form
 
+    form = IndicatorProxyForm #overrides the default django model form
     """
-    Davy requested that a user does not see other countries data. This function
-    does exactly that by filtering location based on logged in user. For this
-    reason only the country of the loggied in user is displayed whereas the
-    superuser has access to all the countries. Thanks Good for
-    https://docs.djangoproject.com/en/2.2/ref/contrib/admin/
-    because is gave the exact logic of achiving this non-functional requirement
+    Serge requested that a user does not see other users or groups data.
+    This method filters logged in users depending on group roles and permissions.
+    Only the superuser can see all users and locations data while a users
+    can only see data from registered location within his/her group/system role.
+    If a user is not assigned to a group, he/she can only own data - 01/02/2021
     """
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        if request.user.is_superuser or request.user.groups.filter(
-            name__icontains='Admin'):
-            return qs #provide access to all instances of fact data indicators
-        return qs.filter(location=request.user.location)
+        # Get a query of groups the user belongs and flatten it to list object
+        groups = list(request.user.groups.values_list('user', flat=True))
+        user = request.user.id
+        user_location = request.user.location.location_id
+        db_locations = StgLocation.objects.all().order_by('location_id')
+        # Returns data for all the locations to the lowest location level
+        if request.user.is_superuser:
+            qs
+        # returns data for AFRO and member countries
+        elif user in groups and user_location==1:
+            qs_admin=db_locations.filter(locationlevel__locationlevel_id__gte=1,
+                locationlevel__locationlevel_id__lte=2)
+        # return data based on the location of the user logged/request location
+        elif user in groups and user_location>1:
+            qs=qs.filter(location=user_location)
+        else: # return own data if not member of a group
+            qs=qs.filter(user=request.user).distinct()
+        return qs
 
     """
-    Davy requested that the form for data input be restricted to the user's country.
+    Serge requested that the form for data input be restricted to user's country.
     Thus, this function is for filtering location to display country level.
     The location is used to filter the dropdownlist based on the request
     object's USER, If the user has superuser privileges or is a member of
     AFRO-DataAdmins, he/she can enter data for all the AFRO member countries
-    otherwise, can only enter data for his/her country.The order_by('locationlevel',
-    'location_id') clause make sure that the regional offices are first displayed
-    in ascending order
+    otherwise, can only enter data for his/her country.=== modified 02/02/2021
     """
     def formfield_for_foreignkey(self, db_field, request =None, **kwargs):
+        groups = list(request.user.groups.values_list('user', flat=True))
+        user = request.user.id
         if db_field.name == "location":
             if request.user.is_superuser:
-                kwargs["queryset"] = StgLocation.objects.filter(
-                # Looks up for the traslated location level name in related table
-                locationlevel__locationlevel_id__gte=1).order_by(
-                    'locationlevel', 'location_id') #superuser can access all countries at level 2 in the database
-            elif request.user.groups.filter(
-                name__icontains='Admin'):
+                kwargs["queryset"] = StgLocation.objects.all().order_by(
+                'location_id')
+                # Looks up for the location level upto the country level
+            elif user in groups:
                 kwargs["queryset"] = StgLocation.objects.filter(
                 locationlevel__locationlevel_id__gte=1,
                 locationlevel__locationlevel_id__lte=2).order_by(
-                    'locationlevel', 'location_id')
+                'location_id')
             else:
                 kwargs["queryset"] = StgLocation.objects.filter(
-                location_id=request.user.location_id) #permissions to user country only
+                location_id=request.user.location_id).translated(
+                language_code='en')
+
+        if db_field.name == "user":
+                kwargs["queryset"] = CustomUser.objects.filter(
+                    email=request.user)
 
         # Restricted permission to data source implememnted on 20/03/2020
         if db_field.name == "datasource":
-            if request.user.is_superuser or request.user.groups.filter(
-                name__icontains='Admin'):
-                kwargs["queryset"] = StgDatasource.objects.all()
+            if request.user.is_superuser:
+                kwargs["queryset"] = StgDatasource.objects.all().order_by(
+                'datasource_id')
+            elif user in groups:
+                kwargs["queryset"] = StgDatasource.objects.all().order_by(
+                'datasource_id')
             else:
                 kwargs["queryset"] = StgDatasource.objects.filter(pk__gte=2)
         return super().formfield_for_foreignkey(db_field, request,**kwargs)
 
-    # #This function is used to get the afrocode from related indicator model for use in list_display
+    # #This method gets afrocode from  indicator model for use in list_display
     def get_afrocode(obj):
         return obj.indicator.afrocode
-    get_afrocode.admin_order_field  = 'indicator__afrocode'  #Lookup to allow column sorting by AFROCODE
-    get_afrocode.short_description = 'Indicator Code'  #Renames the column head
+    get_afrocode.admin_order_field  = 'indicator__afrocode'  #For sorting by AFROCODE
+    get_afrocode.short_description = 'Indicator Code'  #Renames the column header
 
     def get_actions(self, request):
         actions = super(IndicatorFactAdmin, self).get_actions(request)
@@ -335,16 +361,19 @@ class IndicatorFactAdmin(OverideImportExport,ExportActionModelAdmin):
             ('Reporting Period & Data Values', {
                 'fields': ('start_period','end_period','value_received',
                 'numerator_value','denominator_value','min_value','max_value',
-                'target_value','string_value',),
+                'target_value','string_value'),
+            }),
+            ('Logged Admin/Staff', {
+                'fields': ('user',)
             }),
         )
-    # The list display includes a callable get_afrocode that returns indicator code for display on admin pages
+    # The list display includes a callable get_afrocode that returns indicator code
     list_display=['indicator','location', get_afrocode,'period','categoryoption',
         'value_received','string_value','datasource','get_comment_display',]
     list_display_links = ('location',get_afrocode, 'indicator',) #display as clickable link
     search_fields = ('indicator__translations__name', 'location__translations__name',
         'period','indicator__afrocode') #display search field
-    list_per_page = 30 #limit records displayed on admin site to 30
+    list_per_page = 50 #limit records displayed on admin site to 30
      #this field need to be controlled for data entry. Active for the approving authority
     readonly_fields=('comment',)
     actions =[transition_to_pending, transition_to_approved, transition_to_rejected]
@@ -373,41 +402,51 @@ class FactIndicatorInline(admin.TabularInline):
     extra = 2 # Used to control  number of empty rows displayed.
 
     """
-    Davy requested that the form input be restricted to the user's country.
+    Davy and Serge requested that the form be restricted to user's country.
     Thus, this function is for filtering location to display country level.
-    The location is used to fielter the dropdownlist based on the request
-    object's USER, If the user is superuser, he/she can enter data for all the
-    AFRO member countries otherwise, can only enter data for his/her country.
+    The location is used to filter the dropdownlist based on the request
+    object's USER, If the user has superuser privileges or is a member of
+    AFRO-DataAdmins, he/she can enter data for all the AFRO member countries
+    otherwise, can only enter data for his/her country.=== modified 02/02/2021
     """
     def formfield_for_foreignkey(self, db_field, request =None, **kwargs):
+        groups = list(request.user.groups.values_list('user', flat=True))
+        user = request.user.id
         if db_field.name == "location":
             if request.user.is_superuser:
-                kwargs["queryset"] = StgLocation.objects.filter(
-                # Looks up for the traslated location level name in related table
-                locationlevel__locationlevel_id__gte=1).order_by(
-                    'locationlevel', 'location_id') 
-            elif request.user.groups.filter(
-                name__icontains='Admin' or request.user.location>=1):
+                kwargs["queryset"] = StgLocation.objects.all().order_by(
+                'location_id')
+                # Looks up for the location level upto the country level
+            elif user in groups:
                 kwargs["queryset"] = StgLocation.objects.filter(
                 locationlevel__locationlevel_id__gte=1,
                 locationlevel__locationlevel_id__lte=2).order_by(
-                    'locationlevel', 'location_id')
+                'location_id')
             else:
                 kwargs["queryset"] = StgLocation.objects.filter(
-                location_id=request.user.location_id) #permissions to user country only
+                location_id=request.user.location_id).translated(
+                language_code='en')
+
+        if db_field.name == "user":
+                kwargs["queryset"] = CustomUser.objects.filter(
+                    email=request.user)
 
         # Restricted permission to data source implememnted on 20/03/2020
         if db_field.name == "datasource":
-            if request.user.is_superuser or request.user.groups.filter(
-                name__icontains='Admin' or request.user.location>=1):
-                kwargs["queryset"] = StgDatasource.objects.all()
+            if request.user.is_superuser:
+                kwargs["queryset"] = StgDatasource.objects.all().order_by(
+                'datasource_id')
+            elif user in groups:
+                kwargs["queryset"] = StgDatasource.objects.all().order_by(
+                'datasource_id')
             else:
                 kwargs["queryset"] = StgDatasource.objects.filter(pk__gte=2)
         return super().formfield_for_foreignkey(db_field, request,**kwargs)
 
     fields = ('indicator','location','datasource','measuremethod','start_period',
         'end_period','categoryoption','value_received','numerator_value',
-        'denominator_value','min_value','max_value','target_value','string_value',)
+        'denominator_value','min_value','max_value','target_value','string_value',
+        'user')
 
 
 @admin.register(IndicatorProxy)
@@ -440,7 +479,7 @@ class IndicatorProxyAdmin(TranslatableAdmin):
 
     inlines = [FactIndicatorInline] #try tabular form
     readonly_fields = ('afrocode', 'name',) # Make it read-only for referential integrity constraunts
-    fields = ('afrocode', 'name')
+    fields = ('afrocode', 'name',)
     list_display=['name','afrocode','reference',]
     list_display_links=['afrocode', 'name']
     search_fields = ('afrocode','translations__name', 'translations__shortname',) #display search field
@@ -453,12 +492,11 @@ class IndicatorProxyAdmin(TranslatableAdmin):
 class IndicatorFactArchiveAdmin(OverideExport,ExportActionModelAdmin):
     # Query optimization method that fetches records from archived indicator data:
     def get_queryset(self, request):
-        queryset = super(CustomChangeList, self).get_queryset(request)
+        queryset = super(IndicatorFactArchiveAdmin, self).get_queryset(request)
         queryset = aho_factsindicator_archive.objects.only(
             'indicator','location','categoryoption','datasource',
-            'value_received','period','comment')
+            'value_received','period','comment','user')
         return queryset
-
 
     def has_add_permission(self, request): #removes the add button because no data entry is needed
         return False
@@ -479,12 +517,34 @@ class IndicatorFactArchiveAdmin(OverideExport,ExportActionModelAdmin):
     get_afrocode.admin_order_field  = 'indicator__afrocode'  #Lookup to allow column sorting by AFROCODE
     get_afrocode.short_description = 'Indicator Code'  #Renames the column head
 
+    """
+    Serge requested that the form for data input be restricted to user's location.
+    Thus, this function is for filtering location to display country level.
+    The location is used to filter the dropdownlist based on the request
+    object's USER, If the user has superuser privileges or is a member of
+    AFRO-DataAdmins, he/she can enter data for all the AFRO member countries
+    otherwise, can only enter data for his/her country.===modified 02/02/2021
+    """
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        if request.user.is_superuser or request.user.groups.filter(
-            name__icontains='Admin' or request.user.location>=1):
-            return qs #provide access to all instances of fact data indicators
-        return qs.filter(location=request.user.location)
+        # Get a query of groups the user belongs and flatten it to list object
+        groups = list(request.user.groups.values_list('user', flat=True))
+        user = request.user.id
+        user_location = request.user.location.location_id
+        db_locations = StgLocation.objects.all().order_by('location_id')
+        # Returns data for all the locations to the lowest location level
+        if request.user.is_superuser:
+            qs
+        # returns data for AFRO and member countries
+        elif user in groups and user_location==1:
+            qs_admin=db_locations.filter(locationlevel__locationlevel_id__gte=1,
+                locationlevel__locationlevel_id__lte=2)
+        # return data based on the location of the user logged/request location
+        elif user in groups and user_location>1:
+            qs=qs.filter(location=user_location)
+        else: # return own data if not member of a group
+            qs=qs.filter(user=request.user).distinct()
+        return qs
 
     resource_class = AchivedIndicatorResourceExport
     list_display=['indicator','location','categoryoption','datasource',
