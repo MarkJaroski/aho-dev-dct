@@ -124,10 +124,6 @@ class ProductAdmin(TranslatableAdmin,ImportExportModelAdmin,
                 kwargs["queryset"] = StgLocation.objects.filter(
                 location_id=request.user.location_id).translated(
                 language_code='en')
-
-        if db_field.name == "user":
-                kwargs["queryset"] = CustomUser.objects.filter(
-                    email=request.user)
         return super().formfield_for_foreignkey(db_field, request,**kwargs)
 
     #to make URl clickable, I changed show_url to just url in the list_display tuple
@@ -196,10 +192,9 @@ class ProductAdmin(TranslatableAdmin,ImportExportModelAdmin,
                 'fields': ('author','year_published','internal_url',
                     'external_url','cover_image','comment'),
             }),
-
-            ('Logged Admin/Staff', {
-                'fields': ('user',)
-            }),
+            # ('Logged Admin/Staff', {
+            #     'fields': ('user',)
+            # }),
         )
 
     def get_location(obj):
@@ -221,7 +216,7 @@ class ProductAdmin(TranslatableAdmin,ImportExportModelAdmin,
     list_per_page = 50 #limit records displayed on admin site to 30
     actions = [transition_to_pending,transition_to_approved,
         transition_to_rejected]
-    exclude = ('date_created','date_lastupdated','code',)
+    exclude = ('date_created','date_lastupdated','code','comment')
     list_filter = (
         ('location',RelatedOnlyDropdownFilter),
         ('type',RelatedOnlyDropdownFilter),
