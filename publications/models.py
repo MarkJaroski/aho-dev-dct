@@ -103,8 +103,8 @@ class StgKnowledgeProduct(TranslatableModel):
     product_id = models.AutoField(primary_key=True)
     uuid = uuid = models.CharField(_('Unique ID'),unique=True,max_length=36,
         blank=False,null=False,default=uuid.uuid4,editable=False)
-    user = models.ForeignKey(CustomUser, models.PROTECT,blank=False,
-		verbose_name = 'User Name (Email)',default=2) ## request helper field
+    # user = models.ForeignKey(CustomUser, models.PROTECT,blank=False,
+	# 	verbose_name = 'User Name (Email)',default=2) ## request helper field
     type = models.ForeignKey(StgResourceType, models.PROTECT,blank=False,
         null=False,verbose_name = _('Resource Type'))
     categorization = models.ForeignKey(StgResourceCategory,models.PROTECT,

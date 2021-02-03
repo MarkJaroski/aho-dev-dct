@@ -96,7 +96,7 @@ class ProductAdmin(TranslatableAdmin,ImportExportModelAdmin,
         elif user in groups and user_location>1:
             qs=qs.filter(location=user_location)
         else: # return own data if not member of a group
-            qs=qs.filter(user=request.user).distinct()
+            qs=qs.filter(location=user_location) #to be reconsidered for privacy
         return qs
 
     """
