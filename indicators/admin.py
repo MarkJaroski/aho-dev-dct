@@ -279,7 +279,8 @@ class IndicatorFactAdmin(OverideImportExport,ExportActionModelAdmin):
             qs
         # returns data for AFRO and member countries
         elif user in groups and user_location==1:
-            qs_admin=db_locations.filter(locationlevel__locationlevel_id__gte=1,
+            qs_admin=db_locations.filter(
+				locationlevel__locationlevel_id__gte=1,
                 locationlevel__locationlevel_id__lte=2)
         # return data based on the location of the user logged/request location
         elif user in groups and user_location>1:
@@ -455,7 +456,7 @@ class IndicatorProxyAdmin(TranslatableAdmin):
     def has_add_permission(self, request, obj=None):
         return False
 
-    def get_import_formats(self):  #This function limits the export format to only 3 types -CSV, XML and XLSX
+    def get_import_formats(self):  #This function limits the export format to CSV, XML and XLSX
         """
         This function returns available export formats.
         """
@@ -491,12 +492,12 @@ class IndicatorProxyAdmin(TranslatableAdmin):
 @admin.register(aho_factsindicator_archive)
 class IndicatorFactArchiveAdmin(OverideExport,ExportActionModelAdmin):
     # Query optimization method that fetches records from archived indicator data:
-    def get_queryset(self, request):
-        queryset = super(IndicatorFactArchiveAdmin, self).get_queryset(request)
-        queryset = aho_factsindicator_archive.objects.only(
-            'indicator','location','categoryoption','datasource',
-            'value_received','period','comment','user')
-        return queryset
+    # def get_queryset(self, request):
+    #     queryset = super(IndicatorFactArchiveAdmin, self).get_queryset(request)
+    #     queryset = fact_data_archive.objects.only(
+    #         'indicator','location','categoryoption','datasource',
+    #         'value_received','period','comment','user')
+    #     return queryset
 
     def has_add_permission(self, request): #removes the add button because no data entry is needed
         return False
@@ -532,9 +533,14 @@ class IndicatorFactArchiveAdmin(OverideExport,ExportActionModelAdmin):
         user = request.user.id
         user_location = request.user.location.location_id
         db_locations = StgLocation.objects.all().order_by('location_id')
+        facts_archive= aho_factsindicator_archive.objects.only(
+            'indicator','location','categoryoption','datasource',
+            'value_received','period','comment','user')[:2]
+
+        # import pdb; pdb.set_trace()
         # Returns data for all the locations to the lowest location level
         if request.user.is_superuser:
-            qs
+            return qs
         # returns data for AFRO and member countries
         elif user in groups and user_location==1:
             qs_admin=db_locations.filter(locationlevel__locationlevel_id__gte=1,
@@ -558,6 +564,8 @@ class IndicatorFactArchiveAdmin(OverideExport,ExportActionModelAdmin):
         ('categoryoption', RelatedOnlyDropdownFilter,),
         ('comment',DropdownFilter),
     )
+
+    
 
 @admin.register(StgNarrative_Type)
 class NarrativeTypeAdmin(TranslatableAdmin,OverideExport):

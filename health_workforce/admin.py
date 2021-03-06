@@ -331,6 +331,9 @@ class TrainingInsitutionAdmin(TranslatableAdmin,OverideExport):
             ('Academic Details', {
                 'fields': ( 'faculty','language','programmes',),
             }),
+            ('Logged Admin/Staff', {
+                'fields': ('user',)
+            }),
         )
 
     filter_horizontal = ('programmes',) # this should display  inline with multiselect

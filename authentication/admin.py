@@ -77,7 +77,7 @@ class UserAdmin (UserAdmin):
     )
 
     list_display = ['first_name','last_name','username','email','gender',
-        'date_joined','last_login']
+        'location','last_login']
     list_display_links = ['first_name','last_name','username','email']
 
 class GroupInline(admin.StackedInline):
