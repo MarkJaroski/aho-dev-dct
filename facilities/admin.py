@@ -414,6 +414,8 @@ class FacilityAdmin(TranslatableAdmin,ImportExportModelAdmin,OverideImport,
 
         if db_field.name == "phone_code":
             kwargs["queryset"]=country_code # very sgood
+
+    
         return super().formfield_for_foreignkey(db_field, request,**kwargs)
 
     """
@@ -448,7 +450,9 @@ class FacilityAdmin(TranslatableAdmin,ImportExportModelAdmin,OverideImport,
                 'fields': ('latitude','longitude','altitude','geosource',
                 'address','email','phone_code','phone_part','url',),
             }),
-
+            ('Logged Admin/Staff', {
+                'fields': ('user',)
+            }),
         )
     # To display the choice field values use the helper method get_foo_display
     list_display=('name','code','type','owner','location','admin_location',
@@ -461,7 +465,7 @@ class FacilityAdmin(TranslatableAdmin,ImportExportModelAdmin,OverideImport,
         'owner__translations__name')
     list_per_page = 50 #limit records displayed on admin site to 50
     exclude = ('date_created','date_lastupdated','code',)
-    readonly_fields = ('phone_code',)
+    readonly_fields = ('phone_code','user',)
     list_filter = (
         ('location',RelatedOnlyDropdownFilter),
         ('type',RelatedOnlyDropdownFilter),
