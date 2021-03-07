@@ -167,6 +167,7 @@ class IndicatorDomainAdmin(TranslatableAdmin,OverideExport):
         )
     resource_class = DomainResourceExport
     list_display=['name','code','level','parent',]
+    list_select_related = ('parent',)
     list_display_links = ('code', 'name',)
     search_fields = ('translations__name','translations__shortname','code') #display search field
     list_per_page = 50 #limit records displayed on admin site to 15
@@ -369,8 +370,11 @@ class IndicatorFactAdmin(OverideImportExport,ExportActionModelAdmin):
             }),
         )
     # The list display includes a callable get_afrocode that returns indicator code
-    list_display=['indicator','location', get_afrocode,'period','categoryoption',
-        'value_received','string_value','datasource','get_comment_display',]
+    list_display=('indicator','location', get_afrocode,'period','categoryoption',
+        'value_received','string_value','datasource','get_comment_display',)
+
+    list_select_related = ('indicator','location','categoryoption','datasource',)
+
     list_display_links = ('location',get_afrocode, 'indicator',) #display as clickable link
     search_fields = ('indicator__translations__name', 'location__translations__name',
         'period','indicator__afrocode') #display search field
@@ -491,14 +495,6 @@ class IndicatorProxyAdmin(TranslatableAdmin):
 
 @admin.register(aho_factsindicator_archive)
 class IndicatorFactArchiveAdmin(OverideExport,ExportActionModelAdmin):
-    # Query optimization method that fetches records from archived indicator data:
-    # def get_queryset(self, request):
-    #     queryset = super(IndicatorFactArchiveAdmin, self).get_queryset(request)
-    #     queryset = fact_data_archive.objects.only(
-    #         'indicator','location','categoryoption','datasource',
-    #         'value_received','period','comment','user')
-    #     return queryset
-
     def has_add_permission(self, request): #removes the add button because no data entry is needed
         return False
 
@@ -553,8 +549,11 @@ class IndicatorFactArchiveAdmin(OverideExport,ExportActionModelAdmin):
         return qs
 
     resource_class = AchivedIndicatorResourceExport
-    list_display=['indicator','location','categoryoption','datasource',
-    'value_received','period','comment']
+    list_display=('indicator','location','categoryoption','datasource',
+    'value_received','period','comment')
+
+    list_select_related = ('indicator','location','categoryoption','datasource',)
+
     search_fields = ('indicator__translations__name','location__translations__name',
         'period') #display search field
     list_per_page = 100 #limit records displayed on admin site to 50
@@ -565,7 +564,7 @@ class IndicatorFactArchiveAdmin(OverideExport,ExportActionModelAdmin):
         ('comment',DropdownFilter),
     )
 
-    
+
 
 @admin.register(StgNarrative_Type)
 class NarrativeTypeAdmin(TranslatableAdmin,OverideExport):
@@ -590,6 +589,7 @@ class AnalyticsNarrativeAdmin(OverideExport):
     }
 
     list_display=['narrative_type','location','domain','narrative_text']
+    list_select_related = ('location','domain',)
     list_display_links =('narrative_type','domain')
     search_fields = ('code','location__translations__name',
         'domain__translations__name') #display search field
@@ -609,6 +609,7 @@ class IndicatorNarrativeAdmin(OverideExport):
     }
 
     list_display=['narrative_type','code','location','indicator','narrative_text',]
+    list_select_related = ('location','indicator',)
     list_display_links =('code',)
     search_fields = ('code','location__translations__name',
         'indicator__translations__name') #display search field

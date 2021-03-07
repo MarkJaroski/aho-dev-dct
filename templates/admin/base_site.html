@@ -1,10 +1,5 @@
 {% extends "admin/base_site.html" %}
 {% load static %}
-{% load bootstrap4 %}
-{% bootstrap_css %}
-{% bootstrap_javascript jquery='full' %}
-{{ form.media }} 
-
 {% block extrastyle %}{{ block.super }}<link rel="stylesheet" type="text/css" href="{% static "ahocss/container.css" %}" />{% endblock %}
 {% block pretitle %}
 {% endblock %}
