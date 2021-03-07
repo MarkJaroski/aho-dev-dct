@@ -184,7 +184,7 @@ class StgHealthFacility(TranslatableModel):
         blank=True,null=True)  # Field name made lowercase.
     phone_code = models.CharField(_('Phone Code'), max_length=5, blank=True,
         help_text=_("Specific country code for the phone number such as +242 is \
-        automatically retrieved from database of AFRO member countries"))  # Field name made lowercase.) # validators should be a list
+        automatically retrieved from database of AFRO member countries"))  
     phone_part = models.CharField(_('Phone Number'),validators=[number_regex],
         max_length=15, blank=True) # validators should be a list
     phone_number = models.CharField(_('Telephone'),validators=[phone_regex],
