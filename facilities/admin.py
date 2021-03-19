@@ -394,13 +394,11 @@ class FacilityAdmin(TranslatableAdmin,ImportExportModelAdmin,OverideImport,
     def formfield_for_foreignkey(self, db_field, request =None, **kwargs):
         qs = super().get_queryset(request)
         groups = list(request.user.groups.values_list('user', flat=True))
-        user = request.user.id
-        # This queryset is used to load country phone code as a list
+        user = request.user.email        # This queryset is used to load country phone code as a list
         countrycodes=StgLocationCodes.objects.values_list(
             'country_code',flat=True)
         # This queryset is used to load specific phone code for logged in user
         country_code = countrycodes.filter(location=request.user.location)
-
 
         if db_field.name == "location":
             if request.user.is_superuser:
@@ -415,7 +413,8 @@ class FacilityAdmin(TranslatableAdmin,ImportExportModelAdmin,OverideImport,
         if db_field.name == "phone_code":
             kwargs["queryset"]=country_code # very sgood
 
-    
+        if db_field.name == "user":
+                kwargs["queryset"] = CustomUser.objects.filter(email=user)
         return super().formfield_for_foreignkey(db_field, request,**kwargs)
 
     """
@@ -465,7 +464,7 @@ class FacilityAdmin(TranslatableAdmin,ImportExportModelAdmin,OverideImport,
         'owner__translations__name')
     list_per_page = 50 #limit records displayed on admin site to 50
     exclude = ('date_created','date_lastupdated','code',)
-    readonly_fields = ('phone_code','user',)
+    readonly_fields = ('phone_code',)
     list_filter = (
         ('location',RelatedOnlyDropdownFilter),
         ('type',RelatedOnlyDropdownFilter),
@@ -476,7 +475,6 @@ class FacilityAdmin(TranslatableAdmin,ImportExportModelAdmin,OverideImport,
 
 @admin.register(FacilityServiceAvailabilityProxy)
 class FacilityServiceAvailabilityAdmin(OverideExport):
-
     change_form_template = "admin/change_form_availability.html"
     def response_change(self, request, obj):
         if "_capacity-form" in request.POST:
@@ -525,17 +523,17 @@ class FacilityServiceAvailabilityAdmin(OverideExport):
     otherwise, can only enter data for his/her country.=== modified 02/02/2021
     """
     def formfield_for_foreignkey(self, db_field, request =None, **kwargs):
+        qs = super().get_queryset(request)
+        user = request.user.email
         db_sevicedomains = StgServiceDomain.objects.all()
         db_sevicesubdomains=db_sevicedomains.exclude(
             parent_id__isnull=True).filter(category=1)
-
 
         if db_field.name == "domain":
             kwargs["queryset"]=db_sevicesubdomains
 
         if db_field.name == "user":
-                kwargs["queryset"] = CustomUser.objects.filter(
-                    email=request.user)
+                kwargs["queryset"] = CustomUser.objects.filter(email=user)
         return super().formfield_for_foreignkey(db_field, request,**kwargs)
 
     def has_add_permission(self, request, obj=None):
@@ -565,15 +563,19 @@ class FacilityServiceAvailabilityAdmin(OverideExport):
         )
         return [f for f in formats if f().can_export()]
 
+    inlines = [FacilityServiceAvailabilityInline] # Displays tabular subform
+
     fieldsets = (
         ('FACILITY DETAILS', {
                 'fields':('name','type','location','admin_location','owner',) #afrocode may be null
             }),
+            ('Logged Admin/Staff', {
+                'fields': ('user',)
+            }),
         )
-    inlines = [FacilityServiceAvailabilityInline] # Displays tabular subform
     list_display=('name','type','location','admin_location','owner',)
     list_select_related = ('type','owner','location','owner',)
-    readonly_fields = ('name','type','location','admin_location','owner','user')
+    readonly_fields = ('name','type','location','admin_location','owner',)
     list_filter = (
         ('location',RelatedOnlyDropdownFilter),
         ('type',RelatedOnlyDropdownFilter),
@@ -584,7 +586,6 @@ class FacilityServiceAvailabilityAdmin(OverideExport):
 
 @admin.register(FacilityServiceProvisionProxy)
 class FacilityServiceProvisionAdmin(OverideExport):
-
     change_form_template = "admin/change_form_capacity.html"
     def response_change(self, request, obj):
         if "_capacity-availability" in request.POST:
@@ -656,6 +657,8 @@ class FacilityServiceProvisionAdmin(OverideExport):
     otherwise, can only enter data for his/her country.=== modified 02/02/2021
     """
     def formfield_for_foreignkey(self, db_field, request =None, **kwargs):
+        qs = super().get_queryset(request)
+        user = request.user.email
         db_sevicedomains = StgServiceDomain.objects.all()
         db_sevicesubdomains=db_sevicedomains.exclude(
             parent_id__isnull=True).filter(category=1)
@@ -665,12 +668,15 @@ class FacilityServiceProvisionAdmin(OverideExport):
 
         if db_field.name == "user":
                 kwargs["queryset"] = CustomUser.objects.filter(
-                    email=request.user)
+                    email=user)
         return super().formfield_for_foreignkey(db_field, request,**kwargs)
 
     fieldsets = (
         ('FACILITY DETAILS', {
                 'fields':('name','type','location','admin_location','owner',) #afrocode may be null
+            }),
+            ('Logged Admin/Staff', {
+                'fields': ('user',)
             }),
         )
     inlines = [FacilityServiceCapacityInline]
@@ -740,6 +746,8 @@ class FacilityServiceReadinessAdmin(OverideExport):
     otherwise, can only enter data for his/her country.=== modified 02/02/2021
     """
     def formfield_for_foreignkey(self, db_field, request =None, **kwargs):
+        qs = super().get_queryset(request)
+        user = request.user.email
         db_sevicedomains = StgServiceDomain.objects.all()
         db_sevicesubdomains=db_sevicedomains.exclude(
             parent_id__isnull=True).filter(category=1)
@@ -750,7 +758,7 @@ class FacilityServiceReadinessAdmin(OverideExport):
 
         if db_field.name == "user":
                 kwargs["queryset"] = CustomUser.objects.filter(
-                    email=request.user)
+                    email=user)
         return super().formfield_for_foreignkey(db_field, request,**kwargs)
 
     #This method removes the add button on the admin interface
@@ -777,15 +785,17 @@ class FacilityServiceReadinessAdmin(OverideExport):
         ('FACILITY DETAILS', {
                 'fields':('name','type','location','admin_location','owner',) #afrocode may be null
             }),
+            ('Logged Admin/Staff', {
+                'fields': ('user',)
+            }),
         )
     inlines = [FacilityServiceReadinessInline]
     list_display=('name','type','location','admin_location','owner',)
     list_select_related = ('type','owner','location','owner',)
-    readonly_fields = ('name','type','location','admin_location','owner','user',)
+    readonly_fields = ('name','type','location','admin_location','owner',)
     search_fields = ('name','type__translations__name','status','shortname',
         'code',   'code','location__location__translations__name',
         'owner__translations__name')
-    readonly_fields = ('name','type','location','admin_location','owner','user',)
     list_per_page = 50 #limit records displayed on admin site to 50
     list_filter = (
         ('location',RelatedOnlyDropdownFilter),

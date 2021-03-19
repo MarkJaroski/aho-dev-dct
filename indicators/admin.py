@@ -300,7 +300,9 @@ class IndicatorFactAdmin(OverideImportExport,ExportActionModelAdmin):
     """
     def formfield_for_foreignkey(self, db_field, request =None, **kwargs):
         groups = list(request.user.groups.values_list('user', flat=True))
-        user = request.user.id
+        user = request.user.username
+        # import pdb; pdb.set_trace()
+
         if db_field.name == "location":
             if request.user.is_superuser:
                 kwargs["queryset"] = StgLocation.objects.all().order_by(
@@ -318,7 +320,7 @@ class IndicatorFactAdmin(OverideImportExport,ExportActionModelAdmin):
 
         if db_field.name == "user":
                 kwargs["queryset"] = CustomUser.objects.filter(
-                    email=request.user)
+                username=user)
 
         # Restricted permission to data source implememnted on 20/03/2020
         if db_field.name == "datasource":
@@ -330,6 +332,7 @@ class IndicatorFactAdmin(OverideImportExport,ExportActionModelAdmin):
                 'datasource_id')
             else:
                 kwargs["queryset"] = StgDatasource.objects.filter(pk__gte=2)
+
         return super().formfield_for_foreignkey(db_field, request,**kwargs)
 
     # #This method gets afrocode from  indicator model for use in list_display

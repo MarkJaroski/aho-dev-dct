@@ -52,7 +52,12 @@ class ResourceCategoryAdmin(TranslatableAdmin):
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
     }
 
-    list_display=['name','code','shortname','description']
+    fieldsets = (
+        ('Resource Categorization', {
+                'fields':('name','shortname','category','description')
+        }),
+    )
+    list_display=['name','code','shortname','category','description']
     list_display_links =('code', 'name',)
     search_fields = ('translations__name','translations__shortname','code') #display search field
     list_per_page = 15 #limit records displayed on admin site to 15
@@ -192,9 +197,9 @@ class ProductAdmin(TranslatableAdmin,ImportExportModelAdmin,
                 'fields': ('author','year_published','internal_url',
                     'external_url','cover_image','comment'),
             }),
-            # ('Logged Admin/Staff', {
-            #     'fields': ('user',)
-            # }),
+            ('Logged Admin/Staff', {
+                'fields': ('user',)
+            }),
         )
 
     def get_location(obj):

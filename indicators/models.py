@@ -13,8 +13,15 @@ from home.models import (StgDatasource,StgCategoryoption,StgMeasuremethod,
 from regions.models import StgLocation
 from authentication.models import CustomUser
 
+# These are global codes reusable in most models that require choice fiels
 def make_choices(values):
     return [(v, v) for v in values]
+
+def current_year():
+    return datetime.date.today().year
+
+def max_value_current_year(value):
+    return MaxValueValidator(current_year())(value)
 
 STATUS_CHOICES = ( #choices for approval of indicator data by authorized users
     ('pending', _('Pending')),
@@ -169,20 +176,20 @@ class FactDataIndicator(models.Model):
     fact_id = models.AutoField(primary_key=True)  # Field name made lowercase.
     uuid = uuid = models.CharField(_('Unique ID'),unique=True,max_length=36,
         blank=False, null=False,default=uuid.uuid4,editable=False)
-    user = models.ForeignKey(CustomUser, models.PROTECT,blank=False,
-		verbose_name = 'User Name (Email)',default=2) ## request helper field
+    user = models.ForeignKey(CustomUser, models.PROTECT,default=2,
+        verbose_name='User Name (Email)') ## request helper field
     indicator = models.ForeignKey(StgIndicator, models.PROTECT,
         verbose_name = _('Indicator Name'))  # Field name made lowercase.
-    location = models.ForeignKey(StgLocation, models.PROTECT,default=1,
-        blank=False,verbose_name = _('Location Name'),)  # Field name made lowercase.
+    location = models.ForeignKey(StgLocation, models.PROTECT,blank=False,
+        verbose_name = _('Location Name'),)  # Field name made lowercase.
     categoryoption = models.ForeignKey(StgCategoryoption, models.PROTECT,blank=False,
-        verbose_name =_('Disaggregation Options'), default=999)
+        verbose_name =_('Disaggregation Options'))
     # This field is used to lookup data sources e.g. routine, census and surveys
     datasource = models.ForeignKey(StgDatasource, models.PROTECT,
         verbose_name = _('Data Source'))  # Field name made lowercase.
     # This field is used to lookup the type of data required e.g.text, integer or float
-    measuremethod = models.ForeignKey(StgMeasuremethod, models.PROTECT,blank=True,
-        null=True, verbose_name =_('Measure Type'))  # Field name made lowercase.
+    measuremethod = models.ForeignKey(StgMeasuremethod,models.PROTECT,
+        blank=False,verbose_name =_('Measure Type'))  # Field name made lowercase.
     numerator_value = models.DecimalField(_('Numerator Value'),max_digits=20,
         decimal_places=3,blank=True, null=True)
     denominator_value = models.DecimalField(_('Denominator Value'),max_digits=20,
@@ -197,11 +204,13 @@ class FactDataIndicator(models.Model):
         decimal_places=3,blank=True, null=True)  # Field name made lowercase.
     string_value= models.CharField(_('String Value'),max_length=500,blank=True,
         null=True) # davy's request as of 30/4/2019
-    start_period = models.IntegerField(_('Starting period'),null=False,blank=False,
-        default=datetime.date.today().year,#extract current date year value only
+    start_period = models.PositiveIntegerField(_('Starting period'),null=False,blank=False,
+        validators=[MinValueValidator(1900),max_value_current_year],
+        default=current_year(),
         help_text=_("This marks the start of reporting period"))
-    end_period  = models.IntegerField(_('Ending Period'),null=False,blank=False,
-        default=datetime.date.today().year, #extract current date year value only
+    end_period=models.PositiveIntegerField(_('Ending Period'),null=False,blank=False,
+        validators=[MinValueValidator(1900),max_value_current_year],
+        default=current_year(),
         help_text=_("This marks the end of reporting. The value must be current \
             year or greater than the start year"))
     period = models.CharField(_('Period'),max_length=25,blank=True,null=False)
@@ -223,11 +232,10 @@ class FactDataIndicator(models.Model):
         managed = True
         unique_together = ('indicator', 'location', 'categoryoption','datasource',
             'start_period','end_period') #enforces concatenated unique constraint
-        db_table = 'fact_data_indicator'
+        db_table = 'fact_data_indicators'
         verbose_name = _('Indicator Data Record')
         verbose_name_plural = _('    Single-record Form')
         ordering = ('indicator__name',)
-
 
     def __str__(self):
          return str(self.indicator)
@@ -238,10 +246,10 @@ class FactDataIndicator(models.Model):
     message and wait until the user corrects the mistake.
     """
     def clean(self): # Don't allow end_period to be greater than the start_period.
-        if self.start_period <=1900 or self.start_period > datetime.date.today().year:
+        if self.start_period <1900 or self.start_period > datetime.date.today().year:
             raise ValidationError({'start_period':_(
                 'Sorry! Start year cannot be less than 1900 or greater than current Year ')})
-        elif self.end_period <=1900 or self.end_period > datetime.date.today().year:
+        elif self.end_period <1900 or self.end_period > datetime.date.today().year:
             raise ValidationError({'end_period':_(
                 'Sorry! The ending year cannot be lower than the start year or \
                 greater than the current Year ')})

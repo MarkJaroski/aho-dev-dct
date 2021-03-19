@@ -7,10 +7,6 @@ from home.models import (StgDatasource,StgCategoryParent, StgCategoryoption,)
 from . serializers import (StgDatasourceSerializer,
     StgDisagregationOptionsSerializer,StgDisagregationCategorySerializer,)
 from home.models import (StgDatasource,StgCategoryParent, StgCategoryoption,)
-
-from django.shortcuts import render_to_response
-from django.template import RequestContext
-
 from django.conf import settings
 
 context = {}
@@ -51,7 +47,6 @@ def handler404(request, exception):
     response = render(request, "errors/404.html", context=context)
     response.status_code = 404
     return response
-
 
 def handler500(request):
     context = {}

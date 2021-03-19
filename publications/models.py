@@ -1,15 +1,23 @@
 from django.db import models
 import uuid
-from datetime import datetime #for handling year part of date filed
+import datetime
+# from datetime import datetime #for handling year part of date filed
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _ # The _ is alias for gettext
 from parler.models import TranslatableModel,TranslatedFields
 from regions.models import StgLocation
 from authentication.models import CustomUser
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 def make_choices(values):
     return [(v, v) for v in values]
+
+def current_year():
+    return datetime.date.today().year
+
+def max_value_current_year(value):
+    return MaxValueValidator(current_year())(value)
 
 # Model to take care of resource types added 11/05/2019 courtesy of Gift
 class StgResourceType(TranslatableModel):
@@ -54,9 +62,15 @@ class StgResourceType(TranslatableModel):
 
 # New model to take care of resource types added 11/05/2019 courtesy of Gift
 class StgResourceCategory(TranslatableModel):
+    CATEGORIES = (
+        (1,'Research Products'),
+        (2,'Health Workforce')
+    )
     category_id = models.AutoField(primary_key=True)
     uuid = uuid = models.CharField(_('Unique ID'),unique=True,max_length=36,
         blank=False,null=False,default=uuid.uuid4,editable=False)
+    code = models.CharField(_('Code'),unique=True, max_length=50, blank=True,
+        null=True)  # Field name made lowercase
     translations = TranslatedFields(
         name = models.CharField(_('Category Name'),max_length=230, blank=False,
             null=False),  # Field name made lowercase.
@@ -65,8 +79,8 @@ class StgResourceCategory(TranslatableModel):
         description = models.TextField(_('Description'),blank=True,
             null=True)  # Field name made lowercase.
     )
-    code = models.CharField(_('Code'),unique=True, max_length=50, blank=True,
-        null=True)  # Field name made lowercase.
+    category = models.SmallIntegerField(choices=CATEGORIES,
+        default=CATEGORIES[0][0],verbose_name ='Classification')
     date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
         auto_now_add=True)
     date_lastupdated = models.DateTimeField(_('Date Modified'),blank=True,
@@ -103,21 +117,22 @@ class StgKnowledgeProduct(TranslatableModel):
     product_id = models.AutoField(primary_key=True)
     uuid = uuid = models.CharField(_('Unique ID'),unique=True,max_length=36,
         blank=False,null=False,default=uuid.uuid4,editable=False)
-    # user = models.ForeignKey(CustomUser, models.PROTECT,blank=False,
-	# 	verbose_name = 'User Name (Email)',default=2) ## request helper field
+    user = models.ForeignKey(CustomUser, models.PROTECT,blank=False,
+		verbose_name = 'User Name (Email)',default=2) ## request helper field
     type = models.ForeignKey(StgResourceType, models.PROTECT,blank=False,
         null=False,verbose_name = _('Resource Type'))
     categorization = models.ForeignKey(StgResourceCategory,models.PROTECT,
         blank=False,verbose_name=_('Resource Category'),default = 1)
     translations = TranslatedFields(
-        title = models.CharField(_('Title'),max_length=500,blank=False, null=False),
+        title = models.CharField(_('Title'),max_length=2000,blank=False, null=False),
         description = models.TextField(_('Brief Description'),blank=True, null=True),
         abstract = models.TextField(_('Abstract/Summary'),blank=True, null=True),
         author = models.CharField(_('Author/Owner'),max_length=200, blank=False,
             null=False),  # Field name made lowercase.
-        year_published = models.IntegerField(_('Year Published'),
-            default=datetime.now().year),
-
+        year_published=models.PositiveIntegerField(_('Year Published'),null=False,blank=False,
+            validators=[MinValueValidator(1900),max_value_current_year],
+            default=current_year(),
+            help_text=_("This marks year of publication"))
     )  # End of translatable fields
     code = models.CharField(unique=True, blank=True,null=False,max_length=45)
     internal_url = models.FileField (_('File'),upload_to='media/files',

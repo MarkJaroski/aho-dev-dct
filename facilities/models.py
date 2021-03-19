@@ -13,7 +13,6 @@ from authentication.models import CustomUser # for filtering logged in instances
 def make_choices(values):
     return [(v, v) for v in values]
 
-
 # New model to take care of resource types added 11/05/2019 courtesy of Gift
 class StgFacilityType(TranslatableModel):
     type_id = models.AutoField(primary_key=True)
@@ -60,7 +59,11 @@ class StgFacilityOwnership(TranslatableModel):
     uuid = uuid = models.CharField(_('Unique ID'),unique=True,max_length=36,
         blank=False,null=False,default=uuid.uuid4,editable=False)
     code = models.CharField(_('Code'),unique=True, max_length=50, blank=True,
-        null=True)  # Field name made lowercase.
+        null=True)
+    user = models.ForeignKey(CustomUser, models.PROTECT,blank=False,
+		verbose_name = 'Admin User (Email)',default=2) ## request helper field
+    location = models.ForeignKey(StgLocationCodes, models.PROTECT,
+        verbose_name = _('Facility Country'),default=24)
     translations = TranslatedFields(
         name = models.CharField(_('Facility Owner'),max_length=230, blank=False,
             null=False),
@@ -144,7 +147,7 @@ class StgServiceDomain(TranslatableModel):
         super(StgServiceDomain, self).save(*args, **kwargs)
 
 
-class StgHealthFacility(TranslatableModel):
+class StgHealthFacility(models.Model):
     STATUS_CHOICES = (
         ('active', _('Active')),
         ('closed', _('Closed')),
@@ -174,17 +177,15 @@ class StgHealthFacility(TranslatableModel):
         blank=True,null=True)
     # admin_location = models.ForeignKey(StgLocation, models.PROTECT,
     #     verbose_name=_('Administrative Location'),related_name='admin_location')
-    translations = TranslatedFields(
-        description = models.TextField(_('Facility Type Description'),blank=True,
-        null=True) # Field name made lowercase.
-    )  # End of translatable field(s)
+    description = models.TextField(_('Facility Type Description'),blank=True,
+        null=True)
     address = models.CharField(_('Contact Address'),max_length=500,blank=True,
         null=True)  # Field name made lowercase.
     email = models.EmailField(_('Email'),unique=True,max_length=250,
         blank=True,null=True)  # Field name made lowercase.
     phone_code = models.CharField(_('Phone Code'), max_length=5, blank=True,
         help_text=_("Specific country code for the phone number such as +242 is \
-        automatically retrieved from database of AFRO member countries"))  
+        automatically retrieved from database of AFRO member countries"))
     phone_part = models.CharField(_('Phone Number'),validators=[number_regex],
         max_length=15, blank=True) # validators should be a list
     phone_number = models.CharField(_('Telephone'),validators=[phone_regex],
@@ -367,8 +368,8 @@ class FacilityServiceAvailability(models.Model):
 		verbose_name = _('Admin User (Email)'),default=2) ## request helper field
     facility = models.ForeignKey(StgHealthFacility, models.PROTECT,
         verbose_name = _('Facility Name'))
-    domain = models.ForeignKey(StgServiceDomain, models.PROTECT,blank=False,
-        null=False,verbose_name = _('Service Area Domain'),default=2)
+    domain = models.ForeignKey(StgServiceDomain,models.PROTECT,
+        verbose_name = _('Service Area Domain'),default=2)
     intervention = models.ForeignKey(StgFacilityServiceIntervention,models.PROTECT,
         blank=False,null=False,verbose_name=_('Intervention Areas'),default=1)
     service = models.ForeignKey(StgFacilityServiceAreas,models.PROTECT,

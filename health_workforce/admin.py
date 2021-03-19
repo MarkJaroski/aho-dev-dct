@@ -488,7 +488,7 @@ class HealthworforceFactsAdmin(ImportExportModelAdmin,ImportExportActionModelAdm
     fieldsets = (
         ('Health Occulation/Cadre Data',{
                 'fields': (
-                    'cadre_id', 'location','categoryoption','datasource',)
+                    'cadre', 'location','categoryoption','datasource',)
         }),
         ('Reporting Period & Values', {
             'fields':('start_year','end_year','measuremethod','value',)
@@ -498,14 +498,14 @@ class HealthworforceFactsAdmin(ImportExportModelAdmin,ImportExportActionModelAdm
         }),
 )
     actions =[transition_to_pending, transition_to_approved, transition_to_rejected]
-    list_display=['location','cadre_id','categoryoption','period','value','status']
-    list_display_links = ('cadre_id', 'location',) #display as clickable link
-    search_fields = ('location__translations__name','cadre_id__translations__name',
+    list_display=['location','cadre','categoryoption','period','value','status']
+    list_display_links = ('cadre', 'location',) #display as clickable link
+    search_fields = ('location__translations__name','cadre__translations__name',
         'period') #display search field
     list_per_page = 30 #limit records displayed on admin site to 15
     exclude = ('date_created','date_lastupdated',)
     list_filter = (
-        ('cadre_id',RelatedOnlyDropdownFilter),
+        ('cadre',RelatedOnlyDropdownFilter),
         ('location', RelatedOnlyDropdownFilter,),
         ('period',DropdownFilter),
         ('status',DropdownFilter),
@@ -585,13 +585,13 @@ class RecurringEventsAdmin(TranslatableAdmin,ImportExportModelAdmin,OverideImpor
                 'end_year','status') #afrocode may be null
             }),
             ('Target Focus and Location', {
-                'fields': ('location', 'cadre_id',),
+                'fields': ('location', 'cadre',),
             }),
             ('Files and Web Resources', {
                 'fields': ('internal_url','external_url','cover_image'),
             }),
         )
-    filter_horizontal = ['cadre_id'] # this should display multiselect boxes
+    filter_horizontal = ['cadre'] # this should display multiselect boxes
     list_display=['name','code','shortname','theme','period','internal_url',
         'show_external_url']
     list_display_links = ['name','code']

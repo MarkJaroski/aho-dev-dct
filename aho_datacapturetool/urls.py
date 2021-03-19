@@ -21,7 +21,7 @@ from django.conf.urls.i18n import i18n_patterns #added
 from django.views.static import serve # hack to support display of uploaded files
 from django.conf import settings # Facilitate viewing on browser pdf reader
 from django.conf.urls.static import static # Facilitate display of static assets
-from django.conf.urls import handler404 # display custom 404 error page
+from django.conf.urls import handler404,handler500 # display custom 404 error page
 from rest_framework_simplejwt.views import (
 TokenObtainPairView, TokenRefreshView,)
 from rest_framework.documentation import (

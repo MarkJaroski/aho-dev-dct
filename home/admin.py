@@ -132,7 +132,8 @@ class FileSourceAdmin(ImportActionModelAdmin):
             return qs
         # returns data for AFRO and member countries
         elif user in groups and user_location==1:
-            qs_admin=db_locations.filter(locationlevel__locationlevel_id__gte=1,
+            qs_admin=db_locations.filter(
+                locationlevel__locationlevel_id__gte=1,
                 locationlevel__locationlevel_id__lte=2)
         # return data based on the location of the user logged/request location
         elif user in groups and user_location>1:
@@ -169,7 +170,8 @@ class FileSourceAdmin(ImportActionModelAdmin):
                 language_code='en')
         return super().formfield_for_foreignkey(db_field, request,**kwargs)
     fields = ('location','name','file',)
-    list_display=['name','location','date']
+    list_display=('name','location','date')
+    list_select_related = ('location',)
 admin.site.register(FileSource, FileSourceAdmin)
 
 
@@ -234,5 +236,6 @@ class URLSourceAdmin(ImportActionModelAdmin):
         return super().formfield_for_foreignkey(db_field, request,**kwargs)
 
     fields = ('location','name','url',)
-    list_display=['name','location','url','date']
+    list_display=('name','location','url','date',)
+    list_select_related = ('location',)
 admin.site.register(URLSource,URLSourceAdmin)

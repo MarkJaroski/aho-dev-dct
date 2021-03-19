@@ -2,7 +2,8 @@ from django.db import models
 import uuid
 import datetime
 from django.db.models.fields import DecimalField
-from django.core.validators import RegexValidator
+from django.core.validators import (RegexValidator,MinValueValidator,
+    MaxValueValidator)
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _ # The _ is alias for gettext
 from parler.models import TranslatableModel, TranslatedFields
@@ -16,7 +17,12 @@ from home.models import (StgDatasource,StgCategoryoption,StgMeasuremethod)
 def make_choices(values):
     return [(v, v) for v in values]
 
-YEAR_CHOICES = [(r,r) for r in range(1900, datetime.date.today().year+1)]
+def current_year():
+    return datetime.date.today().year
+
+def max_value_current_year(value):
+    return MaxValueValidator(current_year())(value)
+
 """
 Knowledge Resource proxy model.The def clean (self) method was contributed
 by Daniel Mbugua to resolve the issue of parent-child saving issue in the
@@ -252,7 +258,7 @@ class StgHealthWorkforceFacts(models.Model):
         blank=False,null=False, default=uuid.uuid4,editable=False)
     user = models.ForeignKey(CustomUser, models.PROTECT,blank=False,
 		verbose_name = 'User Name (Email)',default=2) ## request helper field
-    cadre_id = models.ForeignKey(StgHealthCadre, models.PROTECT,
+    cadre = models.ForeignKey(StgHealthCadre, models.PROTECT,
         verbose_name = _('Occupation/Cadre'),default = 1)  # disallow deletion
     location = models.ForeignKey(StgLocation, models.PROTECT,
         verbose_name = _('Location'),default = 1)
@@ -264,10 +270,15 @@ class StgHealthWorkforceFacts(models.Model):
         null=True, verbose_name = _('Measure Type'))  # Field name made lowercase.
     value = DecimalField(_('Data Value'),max_digits=20,decimal_places=3,
         blank=False, null=False)  # Field name made lowercase.
-    start_year = models.IntegerField(_('Starting Period'),null=False,blank=False,
-        default=datetime.date.today().year)
-    end_year  = models.IntegerField(_('Ending Period'),null=False,blank=False,
-        default=datetime.date.today().year)
+    start_year = models.PositiveIntegerField(_('Starting period'),null=False,blank=False,
+        validators=[MinValueValidator(1900),max_value_current_year],
+        default=current_year(),
+        help_text=_("This marks the start of reporting period"))
+    end_year  = models.PositiveIntegerField(_('Ending Period'),null=False,blank=False,
+        validators=[MinValueValidator(1900),max_value_current_year],
+        default=current_year(),
+        help_text=_("This marks the end of reporting. The value must be current \
+            year or greater than the start year"))
     period = models.CharField(_('Period'),max_length=10,blank=True,
         null=False) #try to concatenate period field
     status = models.CharField(_('Status'),max_length=10, choices= STATUS_CHOICES,
@@ -282,10 +293,10 @@ class StgHealthWorkforceFacts(models.Model):
         db_table = 'fact_health_workforce'
         verbose_name = _('Health Workforce')
         verbose_name_plural = _('    Health Workforce')
-        ordering = ('cadre_id', )
+        ordering = ('cadre', )
 
     def __str__(self):
-         return str(self.cadre_id)
+         return str(self.cadre)
     """
     The purpose of this method is to compare the start_year to the end_year. If the
     start_year is greater than the end_year athe model should show an inlines error
@@ -332,7 +343,7 @@ class StgRecurringEvent(TranslatableModel):
         blank=False,null=False, default=uuid.uuid4,editable=False)
     code = models.CharField(_('Event Code'),unique=True, blank=True,null=False,
         max_length=45)
-    cadre_id = models.ManyToManyField(StgHealthCadre,
+    cadre = models.ManyToManyField(StgHealthCadre,
         db_table='stg_recurring_event_lookup',blank=True,
         verbose_name = _('Target Focus'))
     location = models.ForeignKey(StgLocation, models.PROTECT,
@@ -350,10 +361,15 @@ class StgRecurringEvent(TranslatableModel):
         max_length=2083)
     cover_image = models.ImageField(_('Upload Picture/Banner(s)'),
         upload_to='media/images/events',blank=True,) #for thumbnail..requires pillow
-    start_year = models.IntegerField(_('Starting Period'),null=False,blank=False,
-        default=datetime.date.today().year)
-    end_year  = models.IntegerField(_('Ending Period'),null=False,blank=False,
-        default=datetime.date.today().year)
+    start_year = models.PositiveIntegerField(_('Starting period'),null=False,blank=False,
+        validators=[MinValueValidator(1900),max_value_current_year],
+        default=current_year(),
+        help_text=_("This marks the start of reporting period"))
+    end_year  = models.PositiveIntegerField(_('Ending Period'),null=False,blank=False,
+        validators=[MinValueValidator(1900),max_value_current_year],
+        default=current_year(),
+        help_text=_("This marks the end of reporting. The value must be current \
+            year or greater than the start year"))
     period = models.CharField(_('Period'),max_length=10,blank=True,
         null=False) #try to concatenate period field
     status = models.CharField(_('Status'),max_length=10, choices= STATUS_CHOICES,
@@ -432,10 +448,15 @@ class StgAnnouncements(TranslatableModel):
         max_length=2083)
     cover_image = models.ImageField(_('Upload Picture/Banner(s)'),
         upload_to='media/images/events',blank=True,) #for thumbnail..requires pillow
-    start_year = models.IntegerField(_('Starting Period'),null=False,blank=False,
-        default=datetime.date.today().year)
-    end_year  = models.IntegerField(_('Ending Period'),null=False,blank=False,
-        default=datetime.date.today().year)
+    start_year = models.PositiveIntegerField(_('Starting period'),null=False,blank=False,
+        validators=[MinValueValidator(1900),max_value_current_year],
+        default=current_year(),
+        help_text=_("This marks the start of reporting period"))
+    end_year  = models.PositiveIntegerField(_('Ending Period'),null=False,blank=False,
+        validators=[MinValueValidator(1900),max_value_current_year],
+        default=current_year(),
+        help_text=_("This marks the end of reporting. The value must be current \
+            year or greater than the start year"))
     period = models.CharField(_('Period'),max_length=10,blank=True,
         null=False) #try to concatenate period field
     status = models.CharField(_('Status'),max_length=10, choices= STATUS_CHOICES,
