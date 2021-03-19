@@ -38,14 +38,6 @@ def transition_to_rejected (modeladmin, request, queryset):
     queryset.update (comment = 'rejected')
 transition_to_rejected.short_description = "Mark selected as Rejected"
 
-# class LimitModelFormset(BaseInlineFormSet):
-#     ''' Base Inline formset to limit inline Model records'''
-#     def __init__(self, *args, **kwargs):
-#         super(LimitModelFormset, self).__init__(*args, **kwargs)
-#         instance = kwargs["instance"]
-#         self.queryset = FacilityServiceAvilability.objects.filter(
-#             availabilit_id=instance).order_by('-date_created')[:5]
-
 
 @admin.register(StgFacilityType)
 class FacilityTypeAdmin(TranslatableAdmin):
@@ -84,7 +76,6 @@ class FacilityTypeAdmin(TranslatableAdmin):
                 'fields':('name','shortname','description',) #afrocode may be null
             }),
         )
-
     list_display=['name','code','shortname','description']
     list_display_links =('code', 'name',)
     search_fields = ('code','translations__name',) #display search field
@@ -126,10 +117,10 @@ class FacilityOwnership (TranslatableAdmin):
 
     fieldsets = (
         ('Facility Ownership Details', {
-                'fields':('name','shortname','description',) #afrocode may be null
+                'fields':('name','shortname','description','location',) #afrocode may be null
             }),
         )
-    list_display=['name','code','shortname','description',]
+    list_display=['name','code','shortname','description','location',]
     list_display_links =('code', 'name',)
     search_fields = ('code','translations__name','translations__shortname',) #display search field
     list_per_page = 30 #limit records displayed on admin site to 15
@@ -348,8 +339,7 @@ class ServiceDomainAdmin(TranslatableAdmin,OverideExport):
 
 data_wizard.register(StgHealthFacility)
 @admin.register(StgHealthFacility)
-class FacilityAdmin(TranslatableAdmin,ImportExportModelAdmin,OverideImport,
-        ImportExportActionModelAdmin):
+class FacilityAdmin(ImportExportModelAdmin,OverideImport,ImportExportActionModelAdmin):
     from django.db import models
     formfield_overrides = {
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
