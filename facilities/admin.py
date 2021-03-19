@@ -121,6 +121,7 @@ class FacilityOwnership (TranslatableAdmin):
             }),
         )
     list_display=['name','code','shortname','description','location',]
+    list_select_related = ('location',)
     list_display_links =('code', 'name',)
     search_fields = ('code','translations__name','translations__shortname',) #display search field
     list_per_page = 30 #limit records displayed on admin site to 15
@@ -190,7 +191,7 @@ class FacilityServiceAvailabilityInline(admin.TabularInline):
     model = FacilityServiceAvailability
     # formset = LimitModelFormset
     extra = 1 # Used to control  number of empty rows displayed.
-
+    list_select_related = ('facility','domain','intervention','service',)
     fields = ('facility','domain','intervention','service','provided',
         'specialunit','staff','infrastructure','supplies','date_assessed',)
 
@@ -239,6 +240,7 @@ class FacilityServiceCapacityInline(admin.TabularInline):
     # formset = LimitModelFormset
     extra = 1 # Used to control  number of empty rows displayed.
 
+    list_select_related = ('facility','domain','units')
     fields = ('facility','domain','units','available','functional',
             'date_assessed',)
 
@@ -285,6 +287,7 @@ class FacilityServiceReadinessInline(admin.TabularInline):
     # formset = LimitModelFormset
     extra = 1 # Used to control  number of empty rows displayed.
 
+    list_select_related = ('facility','domain','units')
     fields = ('facility','domain','units','available','require','date_assessed',)
 
 
@@ -447,7 +450,7 @@ class FacilityAdmin(ImportExportModelAdmin,OverideImport,ImportExportActionModel
     list_display=('name','code','type','owner','location','admin_location',
     'latitude','longitude','geosource','status','phone_number')
     # make a 1 query join instead of multiple individual queries
-    list_select_related = ('type','owner','location',)
+    list_select_related = ('type','owner','location','user',)
     list_display_links = ['code','name',]
     search_fields = ('name','type__translations__name','status','shortname',
         'code',   'code','location__location__translations__name',
