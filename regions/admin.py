@@ -151,8 +151,10 @@ class LocationAdmin(TranslatableAdmin,OverideExport):
         )
     resource_class = LocationResourceExport
     list_display=['name','code','parent','special','zone',]
+    list_select_related = ('locationlevel','parent','wb_income','zone','special',)
     list_display_links = ('code', 'name',) #display as clickable link
     search_fields = ('translations__name','code',) #display search field
+
     list_per_page = 30 #limit records displayed on admin site to 15
     exclude = ('date_created','date_lastupdated',)
     list_filter = (
@@ -190,3 +192,13 @@ class LocationCodesAdmin(OverideExport):
         else: # return own data if not member of a group
             qs=qs.filter(user=request.user).distinct()
         return qs
+
+    list_display=('location','country_code',)
+    list_select_related = ('location',)
+    search_fields = ('location','country_code',) #display search field
+
+    list_per_page = 50 #limit records displayed on admin site to 15
+    exclude = ('date_created','date_lastupdated',)
+    list_filter = (
+        ('location',RelatedOnlyDropdownFilter),
+    )

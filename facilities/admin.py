@@ -119,9 +119,12 @@ class FacilityOwnership (TranslatableAdmin):
         ('Facility Ownership Details', {
                 'fields':('name','shortname','description','location',) #afrocode may be null
             }),
+            ('Logged Admin/Staff', {
+                'fields': ('user',)
+            }),
         )
     list_display=['name','code','shortname','description','location',]
-    list_select_related = ('location',)
+    list_select_related = ('location','user',)
     list_display_links =('code', 'name',)
     search_fields = ('code','translations__name','translations__shortname',) #display search field
     list_per_page = 30 #limit records displayed on admin site to 15

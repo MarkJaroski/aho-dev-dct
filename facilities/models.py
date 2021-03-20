@@ -64,7 +64,7 @@ class StgFacilityOwnership(TranslatableModel):
     user = models.ForeignKey(CustomUser, models.PROTECT,blank=False,
 		verbose_name = 'Admin User (Email)',default=2) ## request helper field
     location = models.ForeignKey(StgLocationCodes, models.PROTECT,
-        verbose_name = _('Facility Country'),default=24)
+        verbose_name = _('Owner Country'),default=24)
     translations = TranslatedFields(
         name = models.CharField(_('Facility Owner'),max_length=230, blank=False,
             null=False),
