@@ -1,0 +1,79 @@
+BEGIN
+SET @lastID = (SELECT facility_id FROM stg_health_facility ORDER BY facility_id DESC LIMIT 1);
+
+IF @lastID IS NULL OR @lastID = '' THEN
+   SET @lastID = 0;
+END IF;
+
+IF NEW.latitude < -90.0 AND NEW.latitude >90.0 THEN
+	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Sorry: Latitude must be between -90.0 and 90.0!';
+ELSEIF NEW.latitude IS NULL OR @lastID = '' THEN
+	SET NEW.latitude = NULL;
+END IF;
+	
+IF NEW.longitude < -180.0 AND NEW.longitude >180.0 THEN  
+	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Sorry: Longitude must be between -90.0 and 90.0!';	
+ELSEIF NEW.longitude IS NULL OR @lastID = '' THEN
+	SET NEW.longitude = NULL;	
+END IF;
+
+IF NEW.latitude is NULL AND NEW.longitude IS NULL THEN 
+	SET NEW.geosource = NULL;	
+END IF;
+
+IF NEW.code IS NULL OR NEW.code = '' THEN
+	SET @lastID = @lastID +1;
+	IF (@lastID >0) AND (@lastID <10) THEN 
+	  SET NEW.code = CONCAT('DFAC000',@lastID);
+	ELSEIF (@lastID>=10) AND (@lastID <100) THEN 
+	  SET NEW.code = CONCAT('DFAC00',@lastID);  
+	ELSEIF (@lastID >=100) AND (@lastID<1000) THEN 
+	  SET NEW.code = CONCAT('DFAC0',@lastID);
+	ELSEIF (@lastID >=1000) AND (@lastID<10000) THEN 
+	  SET NEW.code = CONCAT('DFAC',@lastID);
+	ELSE 
+	  SET NEW.code = CONCAT('DFC',@lastID);
+	END IF;
+END IF;
+SET @newuuid = NEW.uuid;
+IF @newuuid IS NULL OR @newuuid  = '' THEN
+    SET NEW.uuid = UUID();
+END IF;
+END
+
+
+
+
+BEGIN
+SET @lastID = (SELECT facility_id FROM stg_health_facility ORDER BY facility_id DESC LIMIT 1);
+
+IF @lastID IS NULL OR @lastID = '' THEN
+   SET @lastID = 0;
+END IF;
+
+IF NEW.latitude < -90.0 AND NEW.latitude >90.0 THEN
+	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Sorry: Latitude must be between -90.0 and 90.0!';
+ELSEIF NEW.longitude < -180.0 AND NEW.longitude >180.0 THEN  
+	SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Sorry: Longitude must be between -90.0 and 90.0!';		
+END IF;
+
+
+IF NEW.code IS NULL OR NEW.code = '' THEN
+	SET @lastID = @lastID +1;
+	IF (@lastID >0) AND (@lastID <10) THEN 
+	  SET NEW.code = CONCAT('DFAC000',@lastID);
+	ELSEIF (@lastID>=10) AND (@lastID <100) THEN 
+	  SET NEW.code = CONCAT('DFAC00',@lastID);  
+	ELSEIF (@lastID >=100) AND (@lastID<1000) THEN 
+	  SET NEW.code = CONCAT('DFAC0',@lastID);
+	ELSEIF (@lastID >=1000) AND (@lastID<10000) THEN 
+	  SET NEW.code = CONCAT('DFAC',@lastID);
+	ELSE 
+	  SET NEW.code = CONCAT('DFC',@lastID);
+	END IF;
+END IF;
+SET @newuuid = NEW.uuid;
+IF @newuuid IS NULL OR @newuuid  = '' THEN
+    SET NEW.uuid = UUID();
+END IF;
+END

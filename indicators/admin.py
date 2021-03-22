@@ -116,10 +116,13 @@ class IndicatorRefAdmin(TranslatableAdmin):
 
 @admin.register(StgIndicator)
 class IndicatorAdmin(TranslatableAdmin,OverideExport):
-    def sort_data(self, request):
-        language_code = settings.LANGUAGE_CODE
-        StgIndicator.objects.translated(language_code).order_by(
-        'translations__name')
+    language_code = settings.LANGUAGE_CODE
+    def get_queryset(self, request):
+        qs = super().get_queryset(request).filter(
+            translations__language_code='en').order_by(
+            'translations__name').distinct()
+        return qs
+
     from django.db import models
     formfield_overrides = {
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
@@ -151,6 +154,13 @@ class IndicatorAdmin(TranslatableAdmin,OverideExport):
 
 @admin.register(StgIndicatorDomain)
 class IndicatorDomainAdmin(TranslatableAdmin,OverideExport):
+    language_code = settings.LANGUAGE_CODE
+    def get_queryset(self, request):
+        qs = super().get_queryset(request).filter(
+            translations__language_code='en').order_by(
+            'translations__name').distinct()
+        return qs
+
     from django.db import models
     formfield_overrides = {
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
@@ -269,13 +279,15 @@ class IndicatorFactAdmin(OverideImportExport,ExportActionModelAdmin):
     If a user is not assigned to a group, he/she can only own data - 01/02/2021
     """
     def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        # Get a query of groups the user belongs and flatten it to list object
         groups = list(request.user.groups.values_list('user', flat=True))
         user = request.user.id
         user_location = request.user.location.location_id
         db_locations = StgLocation.objects.all().order_by('location_id')
-        # Returns data for all the locations to the lowest location level
+        qs = super().get_queryset(request).filter(
+            indicator__translations__language_code='en').order_by(
+            'indicator__translations__name').filter(
+            location__translations__language_code='en').order_by(
+            'location__translations__name').distinct()
         if request.user.is_superuser:
             qs
         # returns data for AFRO and member countries
@@ -459,6 +471,38 @@ class FactIndicatorInline(admin.TabularInline):
 
 @admin.register(IndicatorProxy)
 class IndicatorProxyAdmin(TranslatableAdmin):
+    """
+    Serge requested that a user does not see other users or groups data.
+    This method filters logged in users depending on group roles and permissions.
+    Only the superuser can see all users and locations data while a users
+    can only see data from registered location within his/her group/system role.
+    If a user is not assigned to a group, he/she can only own data - 01/02/2021
+    """
+    def get_queryset(self, request):
+        language_code = settings.LANGUAGE_CODE
+        groups = list(request.user.groups.values_list('user', flat=True))
+        user = request.user.id
+        user_location = request.user.location.location_id
+        db_locations = StgLocation.objects.all().order_by('location_id')
+        qs = super().get_queryset(request).filter(
+            translations__language_code='en').order_by(
+            'translations__name').distinct()
+        if request.user.is_superuser:
+            qs
+        # returns data for AFRO and member countries
+        elif user in groups and user_location==1:
+            qs_admin=db_locations.filter(
+				locationlevel__locationlevel_id__gte=1,
+                locationlevel__locationlevel_id__lte=2)
+        # return data based on the location of the user logged/request location
+        elif user in groups and user_location>1:
+            qs=qs.filter(location=user_location)
+        else: # return own data if not member of a group
+            qs=qs.filter(user=request.user).distinct()
+        return qs
+
+
+
     #This method removes the add button on the admin interface
     def has_add_permission(self, request, obj=None):
         return False
@@ -535,8 +579,6 @@ class IndicatorFactArchiveAdmin(OverideExport,ExportActionModelAdmin):
         facts_archive= aho_factsindicator_archive.objects.only(
             'indicator','location','categoryoption','datasource',
             'value_received','period','comment','user')[:2]
-
-        # import pdb; pdb.set_trace()
         # Returns data for all the locations to the lowest location level
         if request.user.is_superuser:
             return qs

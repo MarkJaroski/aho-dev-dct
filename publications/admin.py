@@ -84,7 +84,9 @@ class ProductAdmin(TranslatableAdmin,ImportExportModelAdmin,
     otherwise, can only enter data for his/her country.===modified 02/02/2021
     """
     def get_queryset(self, request):
-        qs = super().get_queryset(request)
+        qs = super().get_queryset(request).filter(
+            location__translations__language_code='en').order_by(
+            'translations__title').distinct()
         # Get a query of groups the user belongs and flatten it to list object
         groups = list(request.user.groups.values_list('user', flat=True))
         user = request.user.id

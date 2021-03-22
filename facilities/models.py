@@ -156,7 +156,12 @@ class StgHealthFacility(models.Model):
     number_regex = RegexValidator(
         regex=r'^[0-9]{8,15}$', message="Format:'999999999' min 8, maximum 15.")
     phone_regex = RegexValidator(
-        regex=r'^\+?1?\d{9,15}$', message="Phone format: '+999999999' maximum 15.")
+        regex=r'^\+?1?\d{9,15}$', message="Please use correct phone number format")
+    latitude_regex = RegexValidator(
+        regex=r'^[-+]?([1-8]?\d(\.\d+)?|90(\.0+)?)$', message="Enter valid Latitude")
+    longitude_regex = RegexValidator(
+        regex=r'^[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)$',
+        message="Enter valid Longitude")
     facility_id = models.AutoField(primary_key=True)
     uuid = uuid = models.CharField(_('Unique ID'),unique=True,max_length=36,
         blank=False,null=False,default=uuid.uuid4,editable=False)
@@ -191,10 +196,12 @@ class StgHealthFacility(models.Model):
         max_length=15, blank=True) # validators should be a list
     phone_number = models.CharField(_('Telephone'),validators=[phone_regex],
         max_length=15, null=True,blank=True) # validators should be a list
-    latitude = models.FloatField(_('Latitude'),blank=True, null=True,
-        validators=[MinValueValidator(-90.0),MaxValueValidator(90.0)],)
-    longitude = models.FloatField(_('Longitude'),blank=True, null=True,
-        validators=[MinValueValidator(-180.0),MaxValueValidator(180.0)],)
+    latitude = models.DecimalField(_('Latitude'),blank=True, null=True,
+        max_digits=12,decimal_places=8,validators=[latitude_regex,
+        MinValueValidator(-90.0),MaxValueValidator(90.0)],)
+    longitude = models.DecimalField(_('Longitude'),blank=True, null=True,
+        max_digits=13,decimal_places=8,validators=[longitude_regex,
+        MinValueValidator(-180.0),MaxValueValidator(180.0)],)
     altitude = models.FloatField(_('Altitude (M)'),blank=True, null=True)
     geosource = models.CharField(_('Geo-source (LL source)'),max_length=500,
         blank=True,null=True)  # Field name made lowercase.

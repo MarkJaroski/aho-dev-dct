@@ -5,6 +5,7 @@ from django.forms import BaseInlineFormSet
 from django.shortcuts import redirect
 from django import forms
 import data_wizard # Solution to data import madness that had refused to go
+from django.conf import settings # allow import of projects settings at the root
 from django.forms import TextInput,Textarea #customize textarea row and column size
 from import_export.formats import base_formats
 from .models import (StgFacilityType,StgFacilityServiceMeasureUnits,
@@ -358,7 +359,9 @@ class FacilityAdmin(ImportExportModelAdmin,OverideImport,ImportExportActionModel
     If a user is not assigned to a group, he/she can only own data - 01/02/2021
     """
     def get_queryset(self, request):
-        qs = super().get_queryset(request)
+        qs = super().get_queryset(request).filter(
+            location__location__translations__language_code='en').order_by(
+            'location__location__translations__name').distinct()
         # Get a query of groups the user belongs and flatten it to list object
         groups = list(request.user.groups.values_list('user', flat=True))
         user = request.user.id
@@ -453,7 +456,7 @@ class FacilityAdmin(ImportExportModelAdmin,OverideImport,ImportExportActionModel
     list_display=('name','code','type','owner','location','admin_location',
     'latitude','longitude','geosource','status','phone_number')
     # make a 1 query join instead of multiple individual queries
-    list_select_related = ('type','owner','location','user',)
+    list_select_related = ('type','owner','location__location','user',)
     list_display_links = ['code','name',]
     search_fields = ('name','type__translations__name','status','shortname',
         'code',   'code','location__location__translations__name',

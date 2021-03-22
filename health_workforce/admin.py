@@ -401,7 +401,11 @@ class HealthworforceFactsAdmin(ImportExportModelAdmin,ImportExportActionModelAdm
     otherwise, can only enter data for his/her country.===modified 02/02/2021
     """
     def get_queryset(self, request):
-        qs = super().get_queryset(request)
+        qs = super().get_queryset(request).filter(
+            cadre__translations__language_code='en').order_by(
+            'cadre__translations__name').filter(
+            location__translations__language_code='en').order_by(
+            'location__translations__name').distinct()
         # Get a query of groups the user belongs and flatten it to list object
         groups = list(request.user.groups.values_list('user', flat=True))
         user = request.user.id
