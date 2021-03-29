@@ -16,13 +16,15 @@ from .models import (StgFacilityType,StgFacilityServiceMeasureUnits,
     FacilityServiceProvisionProxy,FacilityServiceReadinesProxy)
 from commoninfo.admin import OverideImportExport,OverideExport,OverideImport
 # from publications.serializers import StgKnowledgeProductSerializer
-from .resources import (StgFacilityResourceExport,)
+from .resources import (StgFacilityResourceExport,FacilityTypeResourceExport,
+    FacilityServiceDomainResourceExport,StgFacilityServiceAvailabilityExport,
+    StgFacilityServiceCapacityExport,StgFacilityServiceReadinessExport,)
 from regions.models import StgLocation,StgLocationCodes
 from django_admin_listfilter_dropdown.filters import (
     DropdownFilter, RelatedDropdownFilter, ChoiceDropdownFilter,
     RelatedOnlyDropdownFilter) #custom
 from import_export.admin import (ImportExportModelAdmin, ExportMixin,
-    ImportExportActionModelAdmin)
+    ImportExportActionModelAdmin,ExportActionModelAdmin,)
 from authentication.models import CustomUser, CustomGroup
 from bootstrap_datepicker_plus import DatePickerInput # Nice date picker 06/03
 
@@ -41,7 +43,7 @@ transition_to_rejected.short_description = "Mark selected as Rejected"
 
 
 @admin.register(StgFacilityType)
-class FacilityTypeAdmin(TranslatableAdmin):
+class FacilityTypeAdmin(TranslatableAdmin,OverideExport):
     from django.db import models
     formfield_overrides = {
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
@@ -71,6 +73,9 @@ class FacilityTypeAdmin(TranslatableAdmin):
                 locationlevel__locationlevel_id__gte=1,
                 locationlevel__locationlevel_id__lte=2)
         return qs
+
+    def get_export_resource_class(self):
+        return FacilityTypeResourceExport
 
     fieldsets = (
         ('Health Facility Type', {
@@ -154,7 +159,7 @@ class FacilityServiceAvailabilityInline(admin.TabularInline):
         qs = super().get_queryset(request)
         # Get a query of groups the user belongs and flatten it to list object
         groups = list(request.user.groups.values_list('user', flat=True))
-        user = request.user.id
+        user = request.user.username
         user_location = request.user.location.location_id
         db_locations = StgLocation.objects.all().order_by('location_id')
         # Returns data for all the locations to the lowest location level
@@ -167,8 +172,17 @@ class FacilityServiceAvailabilityInline(admin.TabularInline):
                 locationlevel__locationlevel_id__lte=2)
         # return data based on the location of the user logged/request location
         elif user in groups and user_location>1:
-            qs=qs.filter(location=user_location)
+            qs=qs.filter(username=user)
         return qs
+
+    """
+    Serge requested that the form for data input be restricted to user's country.
+    Thus, this function is for filtering location to display country level.
+    The location is used to filter the dropdownlist based on the request
+    object's USER, If the user has superuser privileges or is a member of
+    AFRO-DataAdmins, he/she can enter data for all the AFRO member countries
+    otherwise, can only enter data for his/her country.=== modified 02/02/2021
+    """
 
     def formfield_for_foreignkey(self, db_field, request =None, **kwargs):
         qs = super().get_queryset(request)
@@ -212,7 +226,7 @@ class FacilityServiceCapacityInline(admin.TabularInline):
         qs = super().get_queryset(request)
         # Get a query of groups the user belongs and flatten it to list object
         groups = list(request.user.groups.values_list('user', flat=True))
-        user = request.user.id
+        user = request.user.username
         user_location = request.user.location.location_id
         db_locations = StgLocation.objects.all().order_by('location_id')
         # Returns data for all the locations to the lowest location level
@@ -223,6 +237,9 @@ class FacilityServiceCapacityInline(admin.TabularInline):
             qs_admin=db_locations.filter(
                 locationlevel__locationlevel_id__gte=1,
                 locationlevel__locationlevel_id__lte=2)
+        # return data based on the location of the user logged/request location
+        elif user in groups and user_location>1:
+            qs=qs.filter(username=user)
         return qs
 
     def formfield_for_foreignkey(self, db_field, request =None, **kwargs):
@@ -253,7 +270,7 @@ class FacilityServiceReadinessInline(admin.TabularInline):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         groups = list(request.user.groups.values_list('user', flat=True))
-        user = request.user.id
+        user = request.user.username
         user_location = request.user.location.location_id
         db_locations = StgLocation.objects.all().order_by('location_id')
         # Returns data for all the locations to the lowest location level
@@ -264,20 +281,26 @@ class FacilityServiceReadinessInline(admin.TabularInline):
             qs_admin=db_locations.filter(
                 locationlevel__locationlevel_id__gt=2,
                 locationlevel__locationlevel_id__lte=3)
+        # return data based on the location of the user logged/request location
+        elif user in groups and user_location>1:
+            qs=qs.filter(username=user)
         return qs
 
-        # Get a query of groups the user belongs and flatten it to list object
-        groups = list(request.user.groups.values_list('user', flat=True))
-        user = request.user.id
-        user_location = request.user.location.location_id
-        db_locations = StgLocation.objects.all().order_by('location_id')
+    """
+    Serge requested that the form for data input be restricted to user's country.
+    Thus, this function is for filtering location to display country level.
+    The location is used to filter the dropdownlist based on the request
+    object's USER, If the user has superuser privileges or is a member of
+    AFRO-DataAdmins, he/she can enter data for all the AFRO member countries
+    otherwise, can only enter data for his/her country.=== modified 02/02/2021
+    """
 
     def formfield_for_foreignkey(self, db_field, request =None, **kwargs):
         db_sevicedomains = StgServiceDomain.objects.all()
         db_sevicesubdomains=db_sevicedomains.exclude(
             parent_id__isnull=True).filter(category=3).filter(level='level 1')
 
-        db_provisionunits = StgFacilityServiceMeasureUnits.objects.select_related(
+        db_provisionunits=StgFacilityServiceMeasureUnits.objects.select_related(
             'domain')
 
         if db_field.name == "domain":
@@ -326,6 +349,9 @@ class ServiceDomainAdmin(TranslatableAdmin,OverideExport):
                 locationlevel__locationlevel_id__lte=3)
         return qs
 
+    def get_export_resource_class(self):
+        return FacilityServiceDomainResourceExport
+
     fieldsets = (
         ('Service Domain Attributes', {
                 'fields':('name','shortname','description','parent','category',
@@ -346,7 +372,7 @@ class ServiceDomainAdmin(TranslatableAdmin,OverideExport):
 
 data_wizard.register(StgHealthFacility)
 @admin.register(StgHealthFacility)
-class FacilityAdmin(ImportExportModelAdmin,OverideImport,ImportExportActionModelAdmin):
+class FacilityAdmin(ImportExportModelAdmin,ImportExportActionModelAdmin):
     from django.db import models
     formfield_overrides = {
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
@@ -438,7 +464,9 @@ class FacilityAdmin(ImportExportModelAdmin,OverideImport,ImportExportActionModel
         )
         return [f for f in formats if f().can_export()]
 
-    #resource_class = StgFacilityResourceExport
+    def get_export_resource_class(self):
+        return StgFacilityResourceExport
+
     fieldsets = (
         ('Health Facility Details', {
                 'fields':('name','shortname','type','description','owner',
@@ -473,7 +501,7 @@ class FacilityAdmin(ImportExportModelAdmin,OverideImport,ImportExportActionModel
 
 
 @admin.register(FacilityServiceAvailabilityProxy)
-class FacilityServiceAvailabilityAdmin(OverideExport):
+class FacilityServiceAvailabilityAdmin(ExportActionModelAdmin,OverideExport):
     change_form_template = "admin/change_form_availability.html"
     def response_change(self, request, obj):
         if "_capacity-form" in request.POST:
@@ -482,6 +510,8 @@ class FacilityServiceAvailabilityAdmin(OverideExport):
             pass #to be omplemented later to load servicereadiness form
         return super().response_change(request, obj)
 
+    def get_export_resource_class(self):
+        return StgFacilityServiceAvailabilityExport
 
     # This method removes the add button on the admin interface
     """
@@ -584,7 +614,7 @@ class FacilityServiceAvailabilityAdmin(OverideExport):
 
 
 @admin.register(FacilityServiceProvisionProxy)
-class FacilityServiceProvisionAdmin(OverideExport):
+class FacilityServiceProvisionAdmin(ExportActionModelAdmin,OverideExport):
     change_form_template = "admin/change_form_capacity.html"
     def response_change(self, request, obj):
         if "_capacity-availability" in request.POST:
@@ -592,6 +622,9 @@ class FacilityServiceProvisionAdmin(OverideExport):
         if "_readiness-form" in request.POST:
             pass #to be omplemented later to load servicereadiness form
         return super().response_change(request, obj)
+
+    def get_export_resource_class(self):
+        return StgFacilityServiceCapacityExport
 
     #This method removes the add button on the admin interface
     def has_add_permission(self, request, obj=None):
@@ -609,7 +642,6 @@ class FacilityServiceProvisionAdmin(OverideExport):
         return [f for f in formats if f().can_import()]
 
     def get_export_formats(self): #This function returns available export formats.
-
         formats = (
               base_formats.CSV,
               base_formats.XLS,
@@ -696,7 +728,7 @@ class FacilityServiceProvisionAdmin(OverideExport):
 
 
 @admin.register(FacilityServiceReadinesProxy)
-class FacilityServiceReadinessAdmin(OverideExport):
+class FacilityServiceReadinessAdmin(ExportActionModelAdmin,OverideExport):
     # This method adds custom change buttons
     change_form_template = "admin/change_form_readiness.html"
     def response_change(self, request, obj):
@@ -706,6 +738,9 @@ class FacilityServiceReadinessAdmin(OverideExport):
             pass #to be omplemented later to load servicereadiness form
         return super().response_change(request, obj)
     # This method removes the add button on the admin interface
+
+    def get_export_resource_class(self):
+        return StgFacilityServiceReadinessExport
 
     """
    Serge requested that a user does not see other users or groups data.
@@ -804,7 +839,6 @@ class FacilityServiceReadinessAdmin(OverideExport):
     )
 
 
-
 @admin.register(StgFacilityServiceMeasureUnits)
 class FacilityServiceProvisionUnitsAdmin (TranslatableAdmin):
     from django.db import models
@@ -824,7 +858,7 @@ class FacilityServiceProvisionUnitsAdmin (TranslatableAdmin):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         groups = list(request.user.groups.values_list('user', flat=True))
-        user = request.user.id
+        user = request.user.username
         user_location = request.user.location.location_id
         db_locations = StgLocation.objects.all().order_by('location_id')
 
@@ -838,7 +872,7 @@ class FacilityServiceProvisionUnitsAdmin (TranslatableAdmin):
                 locationlevel__locationlevel_id__lte=2)
         # return data based on the location of the user logged/request location
         elif user in groups and user_location>1:
-            qs=qs.filter(location=user_location)
+            qs=qs.filter(username=user)
         return qs
     fieldsets = (
         ('Unit of Service provision', {
@@ -858,7 +892,7 @@ class FacilityServiceProvisionUnitsAdmin (TranslatableAdmin):
 
 
 @admin.register(StgFacilityServiceIntervention)
-class FacilityServiceInterventionAdmin(TranslatableAdmin,OverideExport):
+class FacilityServiceInterventionAdmin(TranslatableAdmin):
     from django.db import models
     formfield_overrides = {
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
@@ -875,7 +909,7 @@ class FacilityServiceInterventionAdmin(TranslatableAdmin,OverideExport):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         groups = list(request.user.groups.values_list('user', flat=True))
-        user = request.user.id
+        user = request.user.username
         user_location = request.user.location.location_id
         db_locations = StgLocation.objects.all().order_by('location_id')
 
@@ -889,7 +923,7 @@ class FacilityServiceInterventionAdmin(TranslatableAdmin,OverideExport):
                 locationlevel__locationlevel_id__lte=2)
         # return data based on the location of the user logged/request location
         elif user in groups and user_location>1:
-            qs=qs.filter(location=user_location)
+            qs=qs.filter(username=user)
         return qs
     fieldsets = (
         ('Service Interventions Details', {
@@ -908,7 +942,7 @@ class FacilityServiceInterventionAdmin(TranslatableAdmin,OverideExport):
 
 
 @admin.register(StgFacilityServiceAreas)
-class FacilityServiceAreasAdmin(TranslatableAdmin,OverideExport):
+class FacilityServiceAreasAdmin(TranslatableAdmin):
     from django.db import models
     formfield_overrides = {
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
@@ -925,7 +959,7 @@ class FacilityServiceAreasAdmin(TranslatableAdmin,OverideExport):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         groups = list(request.user.groups.values_list('user', flat=True))
-        user = request.user.id
+        user = request.user.username
         user_location = request.user.location.location_id
         db_locations = StgLocation.objects.all().order_by('location_id')
 
@@ -939,7 +973,7 @@ class FacilityServiceAreasAdmin(TranslatableAdmin,OverideExport):
                 locationlevel__locationlevel_id__lte=2)
         # return data based on the location of the user logged/request location
         elif user in groups and user_location>1:
-            qs=qs.filter(location=user_location)
+            qs=qs.filter(username=user)
         return qs
     fieldsets = (
         ('Service Domain Areas', {

@@ -26,10 +26,10 @@ class FactDataResourceImport(resources.ModelResource):
         else:
             instance.save()
 
-    element_code = Field(column_name='Data Element Code', attribute='dataelement',
-        widget=ForeignKeyWidget(StgDataElement, 'code'))
     dataelement_name = Field(column_name='Element Name',attribute='dataelement',
         widget=ForeignKeyWidget(StgDataElement, 'name'))
+    element_code = Field(column_name='Data Element Code', attribute='dataelement',
+        widget=ForeignKeyWidget(StgDataElement, 'code'))
     location_code = Field(column_name='Country Code',attribute='location_code',
         widget=ForeignKeyWidget(StgLocation, 'code'))
     location_name = Field(column_name='Country Name',attribute='location',
@@ -77,8 +77,8 @@ class FactDataResourceExport(resources.ModelResource):
 
 
 class DataElementExport(resources.ModelResource):
-    code= Field(attribute='code', column_name='Element Code')
     name = Field(attribute='name', column_name='Element Name')
+    code= Field(attribute='code', column_name='Element Code')
     shortname = Field(attribute='shortname', column_name='Short Name')
     description = Field(attribute='description', column_name='Description')
     measuremethod = Field(attribute='measuremethod', column_name='Measure Factor')
@@ -86,7 +86,7 @@ class DataElementExport(resources.ModelResource):
 
     class Meta:
         model = StgDataElement
-        verbose_name = 'Data Element'        
+        verbose_name = 'Data Element'
         skip_unchanged = False
         report_skipped = False
         fields = ('code','name', 'location_name', 'shortname','description',

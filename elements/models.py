@@ -57,14 +57,15 @@ class FactDataElement(models.Model):
     )
 
     fact_id = models.AutoField(primary_key=True)  # Field name made lowercase.
-    uuid = uuid = models.CharField(unique=True,max_length=36, blank=False, null=False,
-        default=uuid.uuid4,editable=False, verbose_name = _('Unique ID'))  # Field name made lowercase.
+    uuid = uuid = models.CharField(unique=True,max_length=36, blank=False,
+        null=False,default=uuid.uuid4,editable=False,verbose_name=_('Unique ID'))  # Field name made lowercase.
     dataelement = models.ForeignKey(StgDataElement, models.PROTECT,
         verbose_name =_('Data Element'))  # Field name made lowercase.
-    location = models.ForeignKey(StgLocation, models.PROTECT,verbose_name = 'Location',)  # Field name made lowercase.
+    location = models.ForeignKey(StgLocation,models.PROTECT,
+        verbose_name = 'Location',)  # Field name made lowercase.
     categoryoption = models.ForeignKey(StgCategoryoption, models.PROTECT,
-        verbose_name =_('Disaggregation Option'), default = 999)  # disallow deletion of a related field
-    # This field is used to lookup sources of data such as routine systems, census and surveys
+        verbose_name =_('Disaggregation Option'), default = 999)
+    # This field is used to lookup sources of routine systems, census and surveys
     datasource = models.ForeignKey(StgDatasource, models.PROTECT,blank=False,
         null=False,verbose_name = 'Data Source', default = 4)  # Field name made lowercase.
     # This field is used to lookup the type of data required such as text, integer or float

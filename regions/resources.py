@@ -5,8 +5,8 @@ from .models import (StgLocationLevel, StgWorldbankIncomegroups, StgEconomicZone
 from import_export.widgets import ForeignKeyWidget
 
 class LocationResourceExport (resources.ModelResource):
-    code = Field(attribute='code', column_name='Location Code')
     location_name = Field(attribute='name', column_name='Location Name')
+    code = Field(attribute='code', column_name='Location Code')
     level = Field(attribute='locationlevel__name', column_name='Location Level')
     longitude = Field(attribute='longitude', column_name='Longitude')
     latitude = Field(attribute='latitude', column_name='Latitude')
@@ -38,8 +38,8 @@ class LocationResourceImport (resources.ModelResource):
         else:
             instance.save()
     #to be worked on
-    code = Field(attribute='code', column_name='Location Code',)
     location_name = Field(attribute='name', column_name='Location Name',)
+    code = Field(attribute='code', column_name='Location Code',)
     level = Field(attribute='locationlevel', column_name='Location Level',
         widget=ForeignKeyWidget(StgLocationLevel, 'code'))
 
@@ -68,8 +68,8 @@ class LocationResourceImport (resources.ModelResource):
 
 
 class LocationLevelResourceExport (resources.ModelResource):
-    code = Field(attribute='code', column_name='Level Code')
     Level_name = Field(attribute='name', column_name='Location Name')
+    code = Field(attribute='code', column_name='Level Code')
     level_type = Field(attribute='type', column_name='Type')
     description = Field(attribute='latitude', column_name='Latitude')
 
@@ -77,12 +77,12 @@ class LocationLevelResourceExport (resources.ModelResource):
         model = StgLocationLevel
         skip_unchanged = False
         report_skipped = False
-        fields = ('code','level_name','level_type', 'description',)
+        fields = ('level_name','code','level_type', 'description',)
 
 
 class IncomegroupsResourceExport (resources.ModelResource):
-    code = Field(attribute='code', column_name='Income Level Code')
     income_group = Field(attribute='name', column_name='Income Level Name')
+    code = Field(attribute='code', column_name='Income Level Code')
     shortname = Field(attribute='shortname', column_name='Short Name')
     description = Field(attribute='latitude', column_name='Description')
 
@@ -90,13 +90,13 @@ class IncomegroupsResourceExport (resources.ModelResource):
         model = StgLocationLevel
         skip_unchanged = False
         report_skipped = False
-        fields = ('code','income_group','shortname', 'description',)
+        fields = ('income_group','code','shortname', 'description',)
 
 
 
 class EconomicZoneResourceExport (resources.ModelResource):
-    code = Field(attribute='code', column_name='Economic Block Code')
     economic_zone = Field(attribute='name', column_name='Economic Block Name')
+    code = Field(attribute='code', column_name='Economic Block Code')
     shortname = Field(attribute='shortname', column_name='Short Name')
     description = Field(attribute='latitude', column_name='Description')
 
@@ -104,11 +104,11 @@ class EconomicZoneResourceExport (resources.ModelResource):
         model = StgEconomicZones
         skip_unchanged = False
         report_skipped = False
-        fields = ('code','economic_zone','shortname', 'description',)
+        fields = ('economic_zone','code','shortname', 'description',)
 
 class SpecialcategorizationResourceExport (resources.ModelResource):
-    code = Field(attribute='code', column_name='Special Category Code')
     state = Field(attribute='name', column_name='Special Category Name')
+    code = Field(attribute='code', column_name='Special Category Code')
     shortname = Field(attribute='shortname', column_name='Short Name')
     description = Field(attribute='latitude', column_name='Description')
 
@@ -116,4 +116,4 @@ class SpecialcategorizationResourceExport (resources.ModelResource):
         model = StgSpecialcategorization
         skip_unchanged = False
         report_skipped = False
-        fields = ('code','state','shortname', 'description',)
+        fields = ('state','code','shortname', 'description',)

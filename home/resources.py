@@ -75,10 +75,10 @@ class PrimaryReplicaRouter(object):
 
 
 class DisaggregateCategoryExport(resources.ModelResource):
-    category_code= Field(
-        attribute='code', column_name='Disaggregation Category Code')
     category_name = Field(
-        attribute='name', column_name='Disaggregation Category Name')
+        attribute='name', column_name='Category Name')
+    category_code= Field(
+        attribute='code', column_name='Category Code')
     shortname = Field(
         attribute='shortname', column_name='Short Name')
     description = Field(
@@ -88,14 +88,14 @@ class DisaggregateCategoryExport(resources.ModelResource):
         model = StgCategoryParent
         skip_unchanged = False
         report_skipped = False
-        fields = ('category_code','category_name', 'shortname', 'description',)
+        fields = ('category_name','category_code','shortname', 'description',)
 
 
 class DisaggregateOptionExport(resources.ModelResource):
-    disaggregation_code= Field(
-        attribute='code', column_name='Disaggregation Code')
     disaggregation_name = Field(
         attribute='name', column_name='Disaggregation Name')
+    disaggregation_code= Field(
+        attribute='code', column_name='Disaggregation Code')
     category = Field(
         attribute='category__name', column_name='Disaggregation Category')
     shortname = Field(
@@ -107,14 +107,15 @@ class DisaggregateOptionExport(resources.ModelResource):
         model = StgCategoryoption
         skip_unchanged = False
         report_skipped = False
-        fields = ('disaggregation_code','disaggregation_name', 'category', 'shortname', 'description',)
+        fields = ('disaggregation_name','disaggregation_code','category',
+            'shortname', 'description',)
 
 
 class MeasureTypeExport(resources.ModelResource):
-    measure_code= Field(
-        attribute='code', column_name='Measure Code')
     measure_name = Field(
         attribute='name', column_name='Measure Name')
+    measure_code= Field(
+        attribute='code', column_name='Measure Code')
     shortname = Field(
         attribute='shortname', column_name='Short Name')
     description = Field(
@@ -124,14 +125,14 @@ class MeasureTypeExport(resources.ModelResource):
         model = StgCategoryoption
         skip_unchanged = False
         report_skipped = False
-        fields = ('measure_code','measure_name', 'shortname', 'description',)
+        fields = ('measure_name','measure_code','shortname', 'description',)
 
 
 class DataTypeExport(resources.ModelResource):
-    datatype_code= Field(
-        attribute='code', column_name='Measure Code')
     name = Field(
         attribute='name', column_name='Measure Name')
+    datatype_code= Field(
+        attribute='code', column_name='Measure Code')
     shortname = Field(
         attribute='shortname', column_name='Short Name')
     description = Field(
@@ -141,13 +142,13 @@ class DataTypeExport(resources.ModelResource):
         model = StgValueDatatype
         skip_unchanged = False
         report_skipped = False
-        fields = ('datatype_code','name', 'shortname', 'description',)
+        fields = ('name','datatype_code','shortname', 'description',)
 
 class DataSourceExport(resources.ModelResource):
-    datasource_code= Field(
-        attribute='code', column_name='Data Source Code')
     name = Field(
         attribute='name', column_name='Data Source Name')
+    datasource_code= Field(
+        attribute='code', column_name='Data Source Code')
     shortname = Field(
         attribute='shortname', column_name='Short Name')
     description = Field(
@@ -157,4 +158,4 @@ class DataSourceExport(resources.ModelResource):
         model = StgDatasource
         skip_unchanged = False
         report_skipped = False
-        fields = ('datasource_code','name', 'shortname', 'description',)
+        fields = ('name','datasource_code','shortname','description',)

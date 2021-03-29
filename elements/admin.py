@@ -8,8 +8,8 @@ from django.forms import TextInput,Textarea
 from import_export.formats import base_formats
 from django.forms import BaseInlineFormSet
 from django.forms.models import ModelChoiceField, ModelChoiceIterator
-from import_export.admin import (
-    ImportExportModelAdmin,ExportMixin, ImportExportActionModelAdmin,)
+from import_export.admin import (ExportActionModelAdmin,ExportMixin,
+    ImportExportModelAdmin,ImportExportActionModelAdmin,)
 #This are additional imports to override the default Django forms
 from elements.serializers import FactDataElementSerializer
 from django.core.exceptions import NON_FIELD_ERRORS
@@ -170,7 +170,7 @@ class DataElementProxyForm(forms.ModelForm):
 # Register fact_data indicator to allow wizard driven import
 data_wizard.register(FactDataElement)
 @admin.register(FactDataElement)
-class DataElementFactAdmin(OverideImportExport,ImportExportActionModelAdmin):
+class DataElementFactAdmin(ExportActionModelAdmin,OverideExport):
     form = DataElementProxyForm #overrides the default django form
 
     """
@@ -182,44 +182,62 @@ class DataElementFactAdmin(OverideImportExport,ImportExportActionModelAdmin):
     because it gave the exact logic of achiving this non-functional requirement
     """
     def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        if request.user.is_superuser or request.user.groups.filter(
-            name__icontains='Admin' or request.user.location>=1):
-            return qs #provide access to all instances of fact data indicators
-        return qs.filter(location=request.user.location)
+        groups = list(request.user.groups.values_list('user', flat=True))
+        user = request.user.id
+        user_location = request.user.location.location_id
+        qs = super().get_queryset(request).filter(
+            dataelement__translations__language_code='en').order_by(
+            'dataelement__translations__name').filter(
+            location__translations__language_code='en').order_by(
+            'location__translations__name').distinct()
+
+        if request.user.is_superuser:
+            qs
+        # returns data for AFRO and member countries
+        elif user in groups and user_location==1:
+            qs_admin=db_locations.filter(
+    			locationlevel__locationlevel_id__gte=1,
+                locationlevel__locationlevel_id__lte=2)
+        # return data based on the location of the user logged/request location
+        elif user in groups and user_location>1:
+            qs=qs.filter(location=user_location)
+        elif user_location>1:
+            qs=qs.filter(location=user_location)
+        return qs
+
 
     """
-    Davy requested that the form for data input be restricted to the user's country.
+    Serge requested that the form for data input be restricted to user's country.
     Thus, this function is for filtering location to display country level.
-    The location is used to fielter the dropdownlist based on the request object's
-    USER, If the user is superuser, he/she can enter data for all AFRO member countries
-    otherwise, can only enter data for his/her country.
+    The location is used to filter the dropdownlist based on the request
+    object's USER, If the user has superuser privileges or is a member of
+    AFRO-DataAdmins, he/she can enter data for all the AFRO member countries
+    otherwise, can only enter data for his/her country.=== modified 02/02/2021
     """
     def formfield_for_foreignkey(self, db_field, request =None, **kwargs):
+        groups = list(request.user.groups.values_list('user', flat=True))
+        user = request.user.username
+
         if db_field.name == "location":
             if request.user.is_superuser:
-                kwargs["queryset"] = StgLocation.objects.filter(
-                # Looks up for the traslated location level name in related table
-                locationlevel__locationlevel_id__gte=1).order_by(
-                    'locationlevel', 'location_id') #superuser can access all countries at level 2 in the database
-            elif request.user.groups.filter(
-                name__icontains='Admin' or request.user.location>=1):
+                kwargs["queryset"] = StgLocation.objects.all().order_by(
+                'location_id')
+                # Looks up for the location level upto the country level
+            elif user in groups:
                 kwargs["queryset"] = StgLocation.objects.filter(
                 locationlevel__locationlevel_id__gte=1,
                 locationlevel__locationlevel_id__lte=2).order_by(
-                    'locationlevel', 'location_id')
+                'location_id')
             else:
                 kwargs["queryset"] = StgLocation.objects.filter(
-                location_id=request.user.location_id) #permissions to user country only
+                location_id=request.user.location_id).translated(
+                language_code='en')
 
-        # Restricted permission to data source implememnted on 20/03/2020
-        if db_field.name == "datasource":
-            if request.user.is_superuser or request.user.groups.filter(
-                name__icontains='Admin' or request.user.location>=1):
-                kwargs["queryset"] = StgDatasource.objects.all()
-            else:
-                kwargs["queryset"] = StgDatasource.objects.filter(pk__gte=2)
+        if db_field.name == "dataelement":
+                kwargs["queryset"] = FactDataElement.objects.filter(
+                dataelement__translations__language_code='en').distinct()
         return super().formfield_for_foreignkey(db_field, request,**kwargs)
+
 
     #This function is used to get the afrocode from related indicator model for use in list_display
     def get_afrocode(obj):
@@ -249,11 +267,11 @@ class DataElementFactAdmin(OverideImportExport,ImportExportActionModelAdmin):
 
     def get_actions(self, request):
         actions = super(DataElementFactAdmin, self).get_actions(request)
-        if not request.user.has_perm('indicators.approve_factdataindicator'):
+        if not request.user.has_perm('elements.approve_factdataelements'):
            actions.pop('transition_to_approved', None)
-        if not request.user.has_perm('indicators.reject_factdataindicator'):
+        if not request.user.has_perm('elements.reject_factdataelements'):
             actions.pop('transition_to_rejected', None)
-        if not request.user.has_perm('indicators.delete_factdataindicator'):
+        if not request.user.has_perm('elements.delete_factdataelements'):
             actions.pop('delete_selected', None)
         return actions
 
@@ -263,6 +281,8 @@ class DataElementFactAdmin(OverideImportExport,ImportExportActionModelAdmin):
     def get_import_resource_class(self):
         return FactDataResourceImport
 
+    actions = ExportActionModelAdmin.actions + [transition_to_pending,
+        transition_to_approved, transition_to_rejected]
 
     fieldsets = ( # used to create frameset sections on the data entry form
         ('Data Element Details', {
@@ -290,7 +310,7 @@ class DataElementFactAdmin(OverideImportExport,ImportExportActionModelAdmin):
 
     )
     readonly_fields=('comment', 'period', )
-    actions = [transition_to_pending, transition_to_approved, transition_to_rejected]
+
 
 class LimitModelFormset(BaseInlineFormSet):
     ''' Base Inline formset to limit inline Model records'''

@@ -1,31 +1,118 @@
 from import_export import resources
 from import_export.fields import Field
-from .models import StgHealthFacility
+from .models import (StgHealthFacility,StgFacilityType,StgServiceDomain,
+    FacilityServiceAvailability,FacilityServiceProvision,
+    FacilityServiceReadiness,)
 from import_export.widgets import ForeignKeyWidget
 from home.models import StgDatasource
 from regions.models import StgLocation
 
-# Davy's Skype 26/10/2018 suggestions - limit fields to be imported/exported
-# using ModelResource. This also applies to
-class StgFacilityResourceExport (resources.ModelResource):
-    code = Field(attribute='code', column_name='Facility Code')
-    name = Field(attribute='name',column_name='Facility Name',
-        widget=ForeignKeyWidget(StgHealthFacility, 'name'))
-    type = Field(attribute='type', column_name='Facility Type')
-    owner = Field(attribute='owner',column_name='Facility Ownership ',)
-    location = Field(attribute='location_name', column_name='Location Name')
-    address = Field(attribute='address', column_name='Address')
-    email = Field(attribute='email', column_name='Email')
-    phone_number = Field(attribute='phone_number', column_name='Author')
-    url = Field(attribute='url', column_name='Web Adddress (URL)')
 
+class FacilityTypeResourceExport(resources.ModelResource):
+    name = Field(attribute='name', column_name='Facility Type')
+    code= Field(attribute='code', column_name='Code')
+    shortname = Field(attribute='shortname', column_name='Short Name')
+    description = Field(attribute='description', column_name='Description')
+
+    class Meta:
+        model = StgFacilityType
+        skip_unchanged = False
+        report_skipped = False
+        fields = ('name','code','shortname', 'description',)
+
+
+class FacilityServiceDomainResourceExport(resources.ModelResource):
+    domain_name = Field(attribute='name', column_name='Service Domain')
+    domain_code= Field(attribute='code', column_name='Code')
+    shortname = Field(attribute='shortname', column_name='Short Name')
+    description = Field(attribute='description', column_name='Description')
+    category = Field(attribute='category', column_name='Service Category')
+    parent = Field(attribute='parent', column_name='Parent')
+    level = Field(attribute='level', column_name='Level')
+
+    class Meta:
+        model = StgServiceDomain
+        skip_unchanged = False
+        report_skipped = False
+        fields = ('domain_name','domain_code','shortname', 'description',
+            'category','parent','level',)
+
+
+class StgFacilityServiceAvailabilityExport (resources.ModelResource):
+    facility_name = Field(attribute='name', column_name='Facility Name')
+    domain_name = Field(attribute='domain__name', column_name='Service Domain')
+    intervention = Field(attribute='intervention__name',column_name='Inrevention Area',)
+    service = Field(attribute='service__name',column_name='Service Area') # to debug
+    provided = Field(attribute='provided',column_name='Service Provided Last 3 Months')
+    specialunit = Field(attribute='specialunit',
+        column_name='Specialized Unit Provided')
+    staff = Field(attribute='staff', column_name='Staff Appropriate')
+    infrastructure = Field(attribute='infrastructure',
+        column_name='Infrastructure Appropriate')
+    supplies = Field(attribute='supplies', column_name='Supplies Appropriate')
+
+    class Meta:
+        model = FacilityServiceAvailability
+        skip_unchanged = False
+        report_skipped = False
+        fields = ('facility_name','domain_name','intervention','service',
+            'provided','specialunit','staff','infrastructure','supplies',)
+
+
+class StgFacilityServiceCapacityExport (resources.ModelResource):
+    facility_name = Field(attribute='name', column_name='Facility Name')
+    domain_name = Field(attribute='domain__name', column_name='Service Domain')
+    units = Field(attribute='units__name',column_name='Units of Provision',)
+    available = Field(attribute='available',column_name='Number Available')
+    functional = Field(attribute='functional',column_name='Number Functional')
+    date_assessed = Field(attribute='date_assessed', column_name='Assessment Date')
+
+    class Meta:
+        model = FacilityServiceProvision
+        skip_unchanged = False
+        report_skipped = False
+        fields = ('facility_name','domain_name','units','service','available',
+            'functional','date_assessed',)
+
+
+class StgFacilityServiceReadinessExport (resources.ModelResource):
+    facility_name = Field(attribute='name', column_name='Facility Name')
+    domain_name = Field(attribute='domain__name', column_name='Service Domain')
+    units = Field(attribute='units__name',column_name='Units of Provision',)
+    available = Field(attribute='available',column_name='Number Available')
+    require = Field(attribute='require',column_name='Number Required')
+    date_assessed = Field(attribute='date_assessed', column_name='Assessment Date')
+
+    class Meta:
+        model = FacilityServiceReadiness
+        skip_unchanged = False
+        report_skipped = False
+        fields = ('facility_name','domain_name','units','service','available',
+            'require','date_assessed',)
+
+
+class StgFacilityResourceExport (resources.ModelResource):
+    facility_name = Field(attribute='name', column_name='Facility Name')
+    facility_code = Field(attribute='code', column_name='Facility Code')
+    facility_type = Field(attribute='type__name', column_name='Facility Type')
+    facility_owner = Field(attribute='owner__name',column_name='Facility Ownership ',)
+    location = Field(attribute='location__location__name',
+        column_name='Country Name') # to debug
+    admin_location = Field(attribute='admin_location',
+        column_name='Administrative Location')
+    description = Field(attribute='description', column_name='Description')
+    latitude = Field(attribute='latitude', column_name='Latitude')
+    longitude = Field(attribute='latitude', column_name='Latitude')
+    geosource = Field(attribute='geosource', column_name='Geolocation Source')
+    url = Field(attribute='url', column_name='Web Adddress (URL)')
 
     class Meta:
         model = StgHealthFacility
         skip_unchanged = False
         report_skipped = False
-        fields = ('code','name','type','owner','location','address','email',
-            'phone_number','url',)
+        fields = ('facility_name','facility_code','facility_type','facility_owner',
+            'location','admin_location','description','latitude','longitude',
+            'geosource','url',)
 
 
 class StgFacilityResourceImport (resources.ModelResource):

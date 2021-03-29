@@ -30,7 +30,7 @@ class UserAdmin (UserAdmin):
         elif user in groups: # Fetch all instances of group membership
             qs=qs.filter(location=user_location)
         else:
-            qs=qs.filter(user=request.user)
+            qs=qs.filter(username=user)
         return qs
 
     def formfield_for_foreignkey(self, db_field, request =None, **kwargs):
@@ -89,7 +89,19 @@ class GroupInline(admin.StackedInline):
 admin.site.unregister(Group) # Must unregister the group in order to use the custom one
 @admin.register(models.CustomGroup)
 class GroupAdmin(BaseGroupAdmin):
-    #inlines = (GroupInline, )
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        # Get a query of groups the user belongs and flatten it to list object
+        groups = list(request.user.groups.values_list('user', flat=True))
+        user = request.user.id
+        user_location = request.user.location
+        if request.user.is_superuser:
+            qs # return all instances of the request instances
+        elif user in groups: # Fetch all instances of group membership
+            qs=qs.filter(location=user_location)
+        else:
+            qs=qs.filter(username=user)
+        return qs
     list_display = ['name','location','roles_manager']
 
 

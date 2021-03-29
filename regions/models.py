@@ -219,7 +219,7 @@ class StgLocationCodes(models.Model):
         verbose_name = _('Country'),
         help_text=_("You are not allowed to make changes to this Field because it \
             is related to countries already registed"))  # Field name made lowercase.
-    country_code = models.CharField(_('Phone Code'),unique=True,max_length=15,
+    country_code = models.CharField(_('Dial Code'),unique=True,max_length=15,
         blank=False,null=False)
     date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
         auto_now_add=True)
@@ -229,8 +229,8 @@ class StgLocationCodes(models.Model):
     class Meta:
         managed = True
         db_table = 'stg_location_codes'
-        verbose_name = _('Phone Code') # this is important in the display on change details and the add button
-        verbose_name_plural = _('Phone Codes')
+        verbose_name = _('Dial Code') # this is important in the display on change details and the add button
+        verbose_name_plural = _('Dial Codes')
         ordering = ('location',)
 
     def __str__(self):

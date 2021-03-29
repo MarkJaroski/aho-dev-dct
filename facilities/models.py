@@ -425,10 +425,10 @@ class FacilityServiceProvision(models.Model):
     code = models.CharField(unique=True, blank=True,null=False,max_length=45)
     user = models.ForeignKey(CustomUser, models.PROTECT,blank=False,
 		verbose_name = 'Admin User (Email)',default=2) ## request helper field
-    domain = models.ForeignKey(StgServiceDomain, models.PROTECT,blank=False,
-        null=False,verbose_name = _('Service Capacity Domain'),default=2)
     facility = models.ForeignKey(StgHealthFacility, models.PROTECT,
         verbose_name = _('Facility Name'))
+    domain = models.ForeignKey(StgServiceDomain, models.PROTECT,blank=False,
+        null=False,verbose_name = _('Service Capacity Domain'),default=2)
     units = models.ForeignKey(StgFacilityServiceMeasureUnits,models.PROTECT,
         blank=False,null=False,verbose_name=_('Units of Provision'),default=1)
     available = models.PositiveIntegerField(_('Number available'),blank=False,
@@ -467,10 +467,10 @@ class FacilityServiceReadiness(models.Model):
     code = models.CharField(unique=True, blank=True,null=False,max_length=45)
     user = models.ForeignKey(CustomUser, models.PROTECT,blank=False,
 		verbose_name = 'Admin User (Email)',default=2) ## request helper field
-    domain = models.ForeignKey(StgServiceDomain, models.PROTECT,blank=False,
-        null=False,verbose_name = _('Service Readiness Domain'),default=2)
     facility = models.ForeignKey(StgHealthFacility, models.PROTECT,
         verbose_name = _('Facility Name'))
+    domain = models.ForeignKey(StgServiceDomain, models.PROTECT,blank=False,
+        null=False,verbose_name = _('Service Readiness Domain'),default=2)
     units = models.ForeignKey(StgFacilityServiceMeasureUnits,models.PROTECT,
         blank=False,null=False,verbose_name=_('Units of Provision'),default=1)
     available = models.PositiveIntegerField(_('Number available'),blank=False,

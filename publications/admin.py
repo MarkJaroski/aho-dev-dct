@@ -12,9 +12,10 @@ from django_admin_listfilter_dropdown.filters import (
     DropdownFilter, RelatedDropdownFilter, ChoiceDropdownFilter,
     RelatedOnlyDropdownFilter) #custom
 from .resources import (StgKnowledgeProductResourceExport,
-    StgKnowledgeProductResourceImport)
+    StgKnowledgeProductResourceImport,ProductDomainResourceExport,
+    ProductTypeResourceExport,ProductCategoryResourceExport,)
 from import_export.admin import (ImportExportModelAdmin, ExportMixin,
-    ImportExportActionModelAdmin)
+    ExportActionModelAdmin)
 from authentication.models import CustomUser, CustomGroup
 #Methods used to register global actions performed on data. See actions listbox
 def transition_to_pending (modeladmin, request, queryset):
@@ -31,12 +32,23 @@ transition_to_rejected.short_description = "Mark selected as Rejected"
 
 
 @admin.register(StgResourceType)
-class ResourceTypeAdmin(TranslatableAdmin):
+class ResourceTypeAdmin(TranslatableAdmin,OverideExport):
     from django.db import models
     formfield_overrides = {
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
     }
+
+    def get_export_resource_class(self):
+        return ProductTypeResourceExport
+
+    def get_queryset(self, request):
+        # Get a query of groups the user belongs and flatten it to list object
+        groups = list(request.user.groups.values_list('user', flat=True))
+        user = request.user.id
+        user_location = request.user.location.location_id
+        db_locations = StgLocation.objects.all().order_by('location_id')
+
     list_display=['name','code','shortname','description']
     list_display_links =('code', 'name',)
     search_fields = ('translations__name','translations__shortname','code',) #display search field
@@ -45,12 +57,15 @@ class ResourceTypeAdmin(TranslatableAdmin):
 
 
 @admin.register(StgResourceCategory)
-class ResourceCategoryAdmin(TranslatableAdmin):
+class ResourceCategoryAdmin(TranslatableAdmin,OverideExport):
     from django.db import models
     formfield_overrides = {
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
     }
+
+    def get_export_resource_class(self):
+        return ProductCategoryResourceExport
 
     fieldsets = (
         ('Resource Categorization', {
@@ -67,8 +82,7 @@ class ResourceCategoryAdmin(TranslatableAdmin):
 # data_wizard.register(StgKnowledgeProduct)
 #     "Import Knowledge Resource List",StgKnowledgeProductSerializer)
 @admin.register(StgKnowledgeProduct)
-class ProductAdmin(TranslatableAdmin,ImportExportModelAdmin,
-    ImportExportActionModelAdmin):
+class ProductAdmin(TranslatableAdmin,OverideExport,ExportActionModelAdmin):
     from django.db import models
     formfield_overrides = {
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
@@ -85,8 +99,11 @@ class ProductAdmin(TranslatableAdmin,ImportExportModelAdmin,
     """
     def get_queryset(self, request):
         qs = super().get_queryset(request).filter(
+            translations__language_code='en').order_by(
+            'translations__title').filter(
             location__translations__language_code='en').order_by(
-            'translations__title').distinct()
+            'location__translations__name').distinct()
+
         # Get a query of groups the user belongs and flatten it to list object
         groups = list(request.user.groups.values_list('user', flat=True))
         user = request.user.id
@@ -97,7 +114,8 @@ class ProductAdmin(TranslatableAdmin,ImportExportModelAdmin,
             qs
         # returns data for AFRO and member countries
         elif user in groups and user_location==1:
-            qs_admin=db_locations.filter(locationlevel__locationlevel_id__gte=1,
+            qs_admin=db_locations.filter(
+                locationlevel__locationlevel_id__gte=1,
                 locationlevel__locationlevel_id__lte=2)
         # return data based on the location of the user logged/request location
         elif user in groups and user_location>1:
@@ -116,7 +134,7 @@ class ProductAdmin(TranslatableAdmin,ImportExportModelAdmin,
     """
     def formfield_for_foreignkey(self, db_field, request =None, **kwargs):
         groups = list(request.user.groups.values_list('user', flat=True))
-        user = request.user.id
+        user = request.user.username
         if db_field.name == "location":
             if request.user.is_superuser:
                 kwargs["queryset"] = StgLocation.objects.all().order_by(
@@ -131,6 +149,18 @@ class ProductAdmin(TranslatableAdmin,ImportExportModelAdmin,
                 kwargs["queryset"] = StgLocation.objects.filter(
                 location_id=request.user.location_id).translated(
                 language_code='en')
+
+        if db_field.name == "type":
+                kwargs["queryset"] = StgResourceType.objects.filter(
+                translations__language_code='en').distinct()
+
+        if db_field.name == "categorization":
+                kwargs["queryset"] = StgResourceCategory.objects.filter(
+                translations__language_code='en').distinct()
+
+        if db_field.name == "user":
+                kwargs["queryset"] = CustomUser.objects.filter(
+                username=user)
         return super().formfield_for_foreignkey(db_field, request,**kwargs)
 
     #to make URl clickable, I changed show_url to just url in the list_display tuple
@@ -221,8 +251,8 @@ class ProductAdmin(TranslatableAdmin,ImportExportModelAdmin,
     search_fields = ('translations__title','type__translations__name',
         'location__translations__name',) #display search field
     list_per_page = 50 #limit records displayed on admin site to 30
-    actions = [transition_to_pending,transition_to_approved,
-        transition_to_rejected]
+    actions = ExportActionModelAdmin.actions + [transition_to_pending,
+        transition_to_approved,transition_to_rejected]
     exclude = ('date_created','date_lastupdated','code','comment')
     list_filter = (
         ('location',RelatedOnlyDropdownFilter),
@@ -239,6 +269,9 @@ class ProductDomainAdmin(TranslatableAdmin,OverideExport):
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
     }
 
+    def get_export_resource_class(self):
+        return ProductDomainResourceExport
+
     fieldsets = (
         ('Resource Attributes', {
                 'fields':('name','shortname','description','parent','level') #afrocode may be null
@@ -248,12 +281,12 @@ class ProductDomainAdmin(TranslatableAdmin,OverideExport):
             }),
         )
 
+    list_select_related = ('parent',)
     list_display=['name','code','shortname','parent','level']
     list_display_links =('name','shortname','code',)
     search_fields = ('translations__name','translations__shortname','code',) #display search field
 
     filter_horizontal = ('publications',) # should display multiselect records
-
     exclude = ('date_created','date_lastupdated','code',)
     list_per_page = 50 #limit records displayed on admin site to 15
     list_filter = (

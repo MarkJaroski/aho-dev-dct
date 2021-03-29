@@ -8,12 +8,14 @@ from django_admin_listfilter_dropdown.filters import (
     DropdownFilter, RelatedDropdownFilter, ChoiceDropdownFilter,
     RelatedOnlyDropdownFilter) #custom
 from import_export.admin import (ImportExportModelAdmin, ExportMixin,
-    ImportExportActionModelAdmin)
+    ImportExportActionModelAdmin,ExportActionModelAdmin)
 from commoninfo.admin import OverideImportExport,OverideExport,OverideImport
 from .models import (ResourceTypeProxy,HumanWorkforceResourceProxy,
     StgInstitutionType,StgTrainingInstitution,StgHealthWorkforceFacts,
     ResourceCategoryProxy,StgHealthCadre,StgInstitutionProgrammes,
     StgRecurringEvent,StgAnnouncements)
+from .resources import (HealthWorkforceResourceExport,HealthCadreResourceExport,
+    TrainingInstitutionResourceExport,HealthWorkforceProductResourceExport,)
 from facilities.models import (StgHealthFacility,)
 from regions.models import StgLocation
 from home.models import StgDatasource
@@ -94,14 +96,15 @@ class ProgrammesAdmin(TranslatableAdmin):
 
 
 @admin.register(HumanWorkforceResourceProxy)
-class ResourceAdmin(TranslatableAdmin,ImportExportModelAdmin,
-    ImportExportActionModelAdmin):
+class ResourceAdmin(TranslatableAdmin,ExportActionModelAdmin):
     from django.db import models
     formfield_overrides = {
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
     }
 
+    def get_export_resource_class(self):
+        return HealthWorkforceProductResourceExport
     """
     Serge requested that the form for data input be restricted to user's location.
     Thus, this function is for filtering location to display country level.
@@ -111,8 +114,12 @@ class ResourceAdmin(TranslatableAdmin,ImportExportModelAdmin,
     otherwise, can only enter data for his/her country.===modified 02/02/2021
     """
     def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        # Get a query of groups the user belongs and flatten it to list object
+        qs = super().get_queryset(request).filter(
+            translations__language_code='en').order_by(
+            'translations__title').filter(
+            location__translations__language_code='en').order_by(
+            'location__translations__name').distinct()
+
         groups = list(request.user.groups.values_list('user', flat=True))
         user = request.user.id
         user_location = request.user.location.location_id
@@ -205,11 +212,7 @@ class ResourceAdmin(TranslatableAdmin,ImportExportModelAdmin,
             actions.pop('delete_selected', None)
         return actions
 
-    def get_export_resource_class(self):
-        return StgKnowledgeProductResourceExport
 
-    def get_import_resource_class(self):
-        return StgKnowledgeProductResourceImport
 
     fieldsets = (
         ('Publication Attributes', {
@@ -232,7 +235,9 @@ class ResourceAdmin(TranslatableAdmin,ImportExportModelAdmin,
            return obj.type.name
     get_type.short_description = 'Type'
 
-    # To display the choice field values use the helper method get_foo_display where foo is the field name
+    actions = ExportActionModelAdmin.actions + [transition_to_pending,
+        transition_to_approved,transition_to_rejected]
+
     list_display=['title','code','author',get_type,get_location,'year_published',
         'internal_url','show_external_url','cover_image','get_comment_display']
     list_display_links = ['code','title',]
@@ -240,8 +245,6 @@ class ResourceAdmin(TranslatableAdmin,ImportExportModelAdmin,
     search_fields = ('translations__title','type__translations__name',
         'location__translations__name',) #display search field
     list_per_page = 30 #limit records displayed on admin site to 30
-    actions = [transition_to_pending,transition_to_approved,
-        transition_to_rejected]
     exclude = ('date_created','date_lastupdated','code',)
     list_filter = (
         ('location',RelatedOnlyDropdownFilter),
@@ -257,6 +260,9 @@ class TrainingInsitutionAdmin(TranslatableAdmin,OverideExport):
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
     }
+
+    def get_export_resource_class(self):
+        return TrainingInstitutionResourceExport
 
     """
     Serge requested that the form for data input be restricted to user's location.
@@ -357,6 +363,9 @@ class HealthCadreAdmin(TranslatableAdmin,OverideExport):
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
     }
 
+    def get_export_resource_class(self):
+        return HealthCadreResourceExport
+
     fieldsets = (
         ('Occulation/Cadre Details',{
                 'fields': (
@@ -375,7 +384,7 @@ class HealthCadreAdmin(TranslatableAdmin,OverideExport):
 
 data_wizard.register(StgHealthWorkforceFacts)
 @admin.register(StgHealthWorkforceFacts)
-class HealthworforceFactsAdmin(ImportExportModelAdmin,ImportExportActionModelAdmin):
+class HealthworforceFactsAdmin(ExportActionModelAdmin,OverideExport):
     from django.db import models
     formfield_overrides = {
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
@@ -391,6 +400,9 @@ class HealthworforceFactsAdmin(ImportExportModelAdmin,ImportExportActionModelAdm
         if not request.user.has_perm('health_workforce.delete_stghealthworkforcefacts'):
             actions.pop('delete_selected', None)
         return actions
+
+    def get_export_resource_class(self):
+        return HealthWorkforceResourceExport
 
     """
     Serge requested that the form for data input be restricted to user's location.
@@ -454,7 +466,6 @@ class HealthworforceFactsAdmin(ImportExportModelAdmin,ImportExportActionModelAdm
         if db_field.name == "user":
                 kwargs["queryset"] = CustomUser.objects.filter(
                     email=request.user)
-
         # Restricted permission to data source implememnted on 20/03/2020
         if db_field.name == "datasource":
             if request.user.is_superuser:
@@ -492,7 +503,7 @@ class HealthworforceFactsAdmin(ImportExportModelAdmin,ImportExportActionModelAdm
     fieldsets = (
         ('Health Occulation/Cadre Data',{
                 'fields': (
-                    'cadre', 'location','categoryoption','datasource',)
+                    'cadre','categoryoption','datasource','location',)
         }),
         ('Reporting Period & Values', {
             'fields':('start_year','end_year','measuremethod','value',)
@@ -501,7 +512,9 @@ class HealthworforceFactsAdmin(ImportExportModelAdmin,ImportExportActionModelAdm
             'fields': ('user',)
         }),
 )
-    actions =[transition_to_pending, transition_to_approved, transition_to_rejected]
+    actions = ExportActionModelAdmin.actions + [transition_to_pending,
+        transition_to_approved, transition_to_rejected]
+
     list_display=['location','cadre','categoryoption','period','value','status']
     list_display_links = ('cadre', 'location',) #display as clickable link
     search_fields = ('location__translations__name','cadre__translations__name',
@@ -518,8 +531,7 @@ class HealthworforceFactsAdmin(ImportExportModelAdmin,ImportExportActionModelAdm
 
 
 @admin.register(StgRecurringEvent)
-class RecurringEventsAdmin(TranslatableAdmin,ImportExportModelAdmin,OverideImport,
-        ImportExportActionModelAdmin):
+class RecurringEventsAdmin(TranslatableAdmin):
     from django.db import models
     formfield_overrides = {
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
@@ -608,8 +620,7 @@ class RecurringEventsAdmin(TranslatableAdmin,ImportExportModelAdmin,OverideImpor
 
 
 @admin.register(StgAnnouncements)
-class EventsAnnouncementAdmin(TranslatableAdmin,ImportExportModelAdmin,
-    OverideImport,ImportExportActionModelAdmin):
+class EventsAnnouncementAdmin(TranslatableAdmin):
     from django.db import models
     formfield_overrides = {
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
