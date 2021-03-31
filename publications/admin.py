@@ -246,6 +246,7 @@ class ProductAdmin(TranslatableAdmin,OverideExport,ExportActionModelAdmin):
     # To display the choice field values use the helper method get_foo_display where foo is the field name
     list_display=['title','code',get_type,'author','year_published',get_location,
         'internal_url','show_external_url','get_comment_display']
+    list_select_related = ('user','type','categorization','location',)
     list_display_links = ['code','title',]
     readonly_fields = ('comment',)
     search_fields = ('translations__title','type__translations__name',

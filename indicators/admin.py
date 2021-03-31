@@ -403,7 +403,7 @@ class IndicatorFactAdmin(ExportActionModelAdmin,OverideExport):
         'measuremethod',)
 
     list_display_links = ('location',get_afrocode, 'indicator',) #display as clickable link
-    search_fields = ('indicator__translations__name', 'location__translations__name',
+    search_fields = ('indicator__translations__name','location__translations__name',
         'period','indicator__afrocode') #display search field
     list_per_page = 50 #limit records displayed on admin site to 30
      #this field need to be controlled for data entry. Active for the approving authority
