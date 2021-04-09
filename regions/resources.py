@@ -64,7 +64,8 @@ class LocationResourceImport (resources.ModelResource):
         report_skipped = False
         exclude = ('location_name',)
         fields = ('code','level','iso_apha','iso_number','description',
-            'latitude','longitude','wb_incomegroup','economic_zone','special_state',)
+            'latitude','longitude','wb_incomegroup','economic_zone',
+            'special_state',)
 
 
 class LocationLevelResourceExport (resources.ModelResource):
@@ -91,7 +92,6 @@ class IncomegroupsResourceExport (resources.ModelResource):
         skip_unchanged = False
         report_skipped = False
         fields = ('income_group','code','shortname', 'description',)
-
 
 
 class EconomicZoneResourceExport (resources.ModelResource):

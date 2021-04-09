@@ -30,7 +30,7 @@ STATUS_CHOICES = ( #choices for approval of indicator data by authorized users
 )
 
 class StgIndicatorReference(TranslatableModel):
-    reference_id = models.AutoField(primary_key=True)  # Field name made lowercase
+    reference_id = models.AutoField(primary_key=True)
     uuid = uuid = models.CharField(_('Unique ID'),unique=True,max_length=36,
         blank=False, null=False,default=uuid.uuid4,editable=False)
     translations = TranslatedFields(
@@ -38,7 +38,7 @@ class StgIndicatorReference(TranslatableModel):
             null=False,default=_("Global List of 100 Core Health Indicators")),
         shortname = models.CharField(_('Short Name'),max_length=50,
             blank=True, null=True),
-        description = models.TextField(_('Brief Description'),blank=True, null=True)
+        description = models.TextField(_('Brief Description'),blank=True,null=True)
     )
     code = models.CharField(unique=True, max_length=50, blank=True,null=True)
     date_created = models.DateTimeField(_('Date Created'),blank=True,null=True,
@@ -71,25 +71,25 @@ class StgIndicator(TranslatableModel):
         blank=False, null=False,default=uuid.uuid4,editable=False)
     translations = TranslatedFields(any_language=True,
         name = models.CharField(_('Indicator Name'),max_length=500,
-            blank=False, null=False),  # Field name made lowercase.
-        shortname = models.CharField(_('Short Name'),unique=True, max_length=120,
-            blank=False,null=True),  # Field name made lowercase.
+            blank=False, null=False),
+        shortname = models.CharField(_('Short Name'),unique=True,max_length=120,
+            blank=False,null=True),
         definition = models.TextField(_('Indicator Definition'),blank=False,
             null=True,),  # Field name made lowercase.
         preferred_datasources = models.CharField(_('Primary Sources'),
-            max_length=5000,blank=True, null=True,),  # Field name made lowercase.
+            max_length=5000,blank=True, null=True,),
         numerator_description = models.TextField(_('Numerator Description'),
-            blank=True,null=True,),  # Field name made lowercase.
+            blank=True,null=True,),
         denominator_description = models.TextField(_('Denominator Description'),
             blank=True,null=True)
     )
     afrocode = models.CharField(_('Regional Code'),max_length=10,blank=True,
         null=False,unique=True)  # Field name made lowercase.
-    gen_code = models.CharField(_('Global Code'),max_length=10, blank=True,
+    gen_code = models.CharField(_('Global Code'),max_length=10,blank=True,
         null=True,)  # Field name made lowercase.
     reference = models.ForeignKey(StgIndicatorReference, models.PROTECT,
-        default=1, verbose_name =_('Indicator Reference'))  # Field name made lowercase.
-    date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
+        default=1, verbose_name =_('Indicator Reference'))
+    date_created = models.DateTimeField(_('Date Created'),blank=True,null=True,
         auto_now_add=True)
     date_lastupdated = models.DateTimeField(_('Date Modified'),blank=True,
         null=True, auto_now=True)
@@ -101,8 +101,10 @@ class StgIndicator(TranslatableModel):
         verbose_name_plural = _('  Indicators')
         ordering = ('translations__name',)
 
-    # This method makes it possible to enter multi-records in the Tabular form
-    # without returning the language code error! resolved on 10th August 2020
+    """
+    This method makes it possible to enter multi-records in the Tabular form
+    without returning the language code error! resolved on 10th August 2020
+    """
     def __str__(self):
         return self.safe_translation_getter(
             'name', any_language=True,language_code=settings.LANGUAGE_CODE)
@@ -111,7 +113,8 @@ class StgIndicator(TranslatableModel):
     def clean(self): # Don't allow end_period to be greater than the start_period.
         if StgIndicator.objects.filter(
             translations__name=self.name).count() and not self.indicator_id:
-            raise ValidationError({'name':_('Sorry! Indicator with this name exists')})
+            raise ValidationError(
+                {'name':_('Sorry! Indicator with this name exists')})
 
     def save(self, *args, **kwargs):
         super(StgIndicator, self).save(*args, **kwargs)
@@ -134,19 +137,19 @@ class StgIndicatorDomain(TranslatableModel):
         null=False),
         shortname = models.CharField(_('Short Name'),max_length=45,blank=False,
             null=False),
-        description = models.TextField(_('Brief Description'),blank=True, null=True,)
+        description = models.TextField(_('Brief Description'),blank=True,null=True,)
     )
     level =models.SmallIntegerField(_('Theme Level'),choices=LEVEL,
         default=LEVEL[0][0])
     code = models.CharField(unique=True, max_length=45, blank=True,
-        null=True, verbose_name = _('Code'))
+        null=True,verbose_name = _('Code'))
     parent = models.ForeignKey('self', models.PROTECT, blank=True, null=True,
         verbose_name = _('Parent Theme'))  # Field name made lowercase.
     # this field establishes a many-to-many relationship with the domain table
     indicators = models.ManyToManyField(StgIndicator,
         db_table='stg_indicator_domain_members',blank=True,
         verbose_name = _('Indicators'))  # Field name made lowercase.
-    date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
+    date_created = models.DateTimeField(_('Date Created'),blank=True,null=True,
         auto_now_add=True)
     date_lastupdated = models.DateTimeField(_('Date Modified'),blank=True,
         null=True, auto_now=True)
@@ -173,39 +176,39 @@ class StgIndicatorDomain(TranslatableModel):
 
 class FactDataIndicator(models.Model):
   # discriminator for ownership of data this was decided on 13/12/2019 with Gift
-    fact_id = models.AutoField(primary_key=True)  # Field name made lowercase.
+    fact_id = models.AutoField(primary_key=True)
     uuid = uuid = models.CharField(_('Unique ID'),unique=True,max_length=36,
         blank=False, null=False,default=uuid.uuid4,editable=False)
     user = models.ForeignKey(CustomUser, models.PROTECT,default=2,
-        verbose_name='User Name (Email)') ## request helper field
+        verbose_name='User Name (Email)') # request helper field
     indicator = models.ForeignKey(StgIndicator, models.PROTECT,
-        verbose_name = _('Indicator Name'))  # Field name made lowercase.
+        verbose_name = _('Indicator Name'))
     location = models.ForeignKey(StgLocation, models.PROTECT,blank=False,
-        verbose_name = _('Location Name'),)  # Field name made lowercase.
-    categoryoption = models.ForeignKey(StgCategoryoption, models.PROTECT,blank=False,
-        verbose_name =_('Disaggregation Options'))
+        verbose_name = _('Location Name'),)
+    categoryoption = models.ForeignKey(StgCategoryoption, models.PROTECT,
+        blank=False,verbose_name =_('Disaggregation Options'))
     # This field is used to lookup data sources e.g. routine, census and surveys
     datasource = models.ForeignKey(StgDatasource, models.PROTECT,
-        verbose_name = _('Data Source'))  # Field name made lowercase.
+        verbose_name = _('Data Source'))
     # This field is used to lookup the type of data required e.g.text, integer or float
     measuremethod = models.ForeignKey(StgMeasuremethod,models.PROTECT,
-        blank=False,verbose_name =_('Measure Type'))  # Field name made lowercase.
+        blank=False,verbose_name =_('Measure Type'))
     numerator_value = models.DecimalField(_('Numerator Value'),max_digits=20,
         decimal_places=3,blank=True, null=True)
     denominator_value = models.DecimalField(_('Denominator Value'),max_digits=20,
-        decimal_places=3,blank=True, null=True)  # Field name made lowercase.
-    value_received = DecimalField(_('Numeric Value'),max_digits=20,decimal_places=3,
-        blank=True,null=True)  # Field name made lowercase.
+        decimal_places=3,blank=True, null=True)
+    value_received = DecimalField(_('Numeric Value'),max_digits=20,
+        decimal_places=3,blank=True,null=True)
     min_value = models.DecimalField(_('Minimum Value'),max_digits=20,
-        decimal_places=3,blank=True, null=True)  # Field name made lowercase.
+        decimal_places=3,blank=True, null=True)
     max_value = models.DecimalField(_('Maximum Value'),max_digits=20,
-        decimal_places=3,blank=True, null=True)  # Field name made lowercase.
+        decimal_places=3,blank=True, null=True)
     target_value = models.DecimalField(_('Target Value'),max_digits=20,
-        decimal_places=3,blank=True, null=True)  # Field name made lowercase.
+        decimal_places=3,blank=True, null=True)
     string_value= models.CharField(_('String Value'),max_length=500,blank=True,
         null=True) # davy's request as of 30/4/2019
-    start_period = models.PositiveIntegerField(_('Starting period'),null=False,blank=False,
-        validators=[MinValueValidator(1900),max_value_current_year],
+    start_period = models.PositiveIntegerField(_('Starting period'),null=False,
+        blank=False,validators=[MinValueValidator(1900),max_value_current_year],
         default=current_year(),
         help_text=_("This marks the start of reporting period"))
     end_period=models.PositiveIntegerField(_('Ending Period'),null=False,blank=False,
@@ -220,7 +223,6 @@ class FactDataIndicator(models.Model):
         auto_now_add=True)
     date_lastupdated = models.DateTimeField(_('Date Modified'),blank=True,
         null=True, auto_now=True)
-
 
     class Meta:
         permissions = (
@@ -264,7 +266,7 @@ class FactDataIndicator(models.Model):
                 raise ValidationError({'max_value':_(
                     'Data Integrity Problem! You must provide a Maximum that is \
                      greater that Minimum value ')})
-            elif self.value_received is not None and self.value_received <= self.min_value:
+            elif self.value_received is not None and self.value_received <=self.min_value:
                 raise ValidationError({'min_value':_(
                     'Data Integrity Problem! Minimum value cannot be greater \
                      that the nominal value')})
@@ -315,16 +317,17 @@ class IndicatorProxy(StgIndicator):
         for model in app_models:
             opts = model._meta
             if opts.proxy:
-                # Can't use 'get_for_model' here since it doesn't return correct 'ContentType' for proxy models
-                # See https://code.djangoproject.com/ticket/17648
+                # Can't use 'get_for_model' here since it doesn't return correct
+                # 'ContentType' for proxy models
                 app_label, model = opts.app_label, opts.object_name.lower()
                 ctype = ContentType.objects.get_by_natural_key(app_label, model)
                 ctypes.add(ctype)
                 for perm in _get_all_permissions(opts, ctype):
                     searched_perms.append((ctype, perm))
 
-        # Find all the Permissions that have a content_type for a model we're looking for.
-        #We don't need to check for codenames since we already have a list of the ones we're going to create.
+        # Find all the Permissions that have a content_type for a model we're
+        # looking for.We don't need to check for codenames since we already
+        # have a list of the ones we're going to create.
         all_perms = set(Permission.objects.filter(
             content_type__in=ctypes,
         ).values_list(
@@ -358,9 +361,10 @@ class IndicatorProxy(StgIndicator):
         pass
 
 
-#This model class maps to a database view that looks up the django_admin logs, location, customuser and group
+#This model class maps to a database view that looks up the django_admin logs,
+# location, customuser and group
 class AhoDoamain_Lookup(models.Model):
-    indicator_id = models.AutoField(primary_key=True)  # Field name made lowercase.
+    indicator_id = models.AutoField(primary_key=True)
     indicator_name = models.CharField(_("Indicator Name"),blank=False,null=False,
         max_length=500)
     code = models.CharField(_("Indicator Code"),max_length=10, blank=True)
@@ -379,45 +383,45 @@ class AhoDoamain_Lookup(models.Model):
 
 
 class aho_factsindicator_archive(models.Model):
-    fact_id = models.AutoField(primary_key=True)  # Field name made lowercase.
+    fact_id = models.AutoField(primary_key=True)
     uuid =models.CharField(_('Unique ID'),unique=True,max_length=36, blank=False,
         null=False,default=uuid.uuid4,editable=False)
     user = models.ForeignKey(CustomUser, models.PROTECT,blank=False,
-		verbose_name = 'User Name (Email)',default=2) ## request helper field
+		verbose_name = 'User Name (Email)',default=2) # request helper field
     indicator = models.ForeignKey('StgIndicator',models.PROTECT,blank=False,
-        null=False, verbose_name = _('Indicator Name'))  # Field name made lowercase.
+        null=False, verbose_name = _('Indicator Name'))
     location = models.ForeignKey(StgLocation, models.PROTECT,
         blank=False,verbose_name = _('Location Name'))
-    categoryoption = models.ForeignKey(StgCategoryoption, models.PROTECT,blank=False,
-        verbose_name = _('Disaggregation Option'), default=99)  # Field name made lowercase.
+    categoryoption = models.ForeignKey(StgCategoryoption, models.PROTECT,
+        blank=False,verbose_name = _('Disaggregation Option'), default=99)
     datasource = models.ForeignKey(StgDatasource, models.PROTECT,blank=False,
-        null=False, verbose_name = _('Data Source'))  # Field name made lowercase.
-    measuremethod = models.ForeignKey(StgMeasuremethod, models.PROTECT,blank=True,
-        null=True, verbose_name = _('Measure Type'))  # Field name made lowercase.
-    value_received = models.DecimalField(_('Value'),max_digits=20,decimal_places=3,
-        blank=False,null=True)  # Field name made lowercase.
+        null=False, verbose_name = _('Data Source'))
+    measuremethod = models.ForeignKey(StgMeasuremethod, models.PROTECT,
+        blank=True,null=True, verbose_name = _('Measure Type'))
+    value_received = models.DecimalField(_('Value'),max_digits=20,
+        decimal_places=3,blank=False,null=True)
     numerator_value = models.DecimalField(_('Numerator Value'),max_digits=20,
-        decimal_places=3,blank=True, null=True)  # Field name made lowercase.
+        decimal_places=3,blank=True, null=True)
     denominator_value = models.DecimalField(_('Denominator Value'),max_digits=20,
-        decimal_places=3,blank=True, null=True)  # Field name made lowercase.
+        decimal_places=3,blank=True, null=True)
     min_value = models.DecimalField(_('Minimum Value'),max_digits=20,
-        decimal_places=3,blank=True, null=True)  # Field name made lowercase.
+        decimal_places=3,blank=True, null=True)
     max_value = models.DecimalField(_('Maximum Value'),max_digits=20,
-        decimal_places=3,blank=True, null=True)  # Field name made lowercase.
+        decimal_places=3,blank=True, null=True)
     target_value = models.DecimalField(_('Target Value'),max_digits=20,
         decimal_places=3,blank=True, null=True)
     string_value=models.CharField(_('String Value'),max_length=500,blank=True,
         null=True) # davy's request as of 30/4/2019
     start_period = models.IntegerField(_('Starting Period',),null=False,
-        blank=False,default=datetime.date.today().year,#extract current date year value only
+        blank=False,default=datetime.date.today().year,#extract current date
         help_text=_("This Year marks the start of the reporting period"))
     end_period  = models.IntegerField(_('Ending Year'),null=False,blank=False,
         default=datetime.date.today().year, #extract current date year value only
         help_text=_("This Year marks the end of reporting. \
         The value must be current year or greater than the start year"))
-    period = models.CharField(_('Period'),max_length=25,blank=True,null=False) #try to concatenate period field
-    comment = models.CharField(_('Status'),max_length=10,choices= STATUS_CHOICES,
-        default=STATUS_CHOICES[0][0])
+    period = models.CharField(_('Period'),max_length=25,blank=True,null=False)
+    comment = models.CharField(_('Status'),choices= STATUS_CHOICES,
+        max_length=10,default=STATUS_CHOICES[0][0])
     date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
         auto_now_add=True)
     date_lastupdated = models.DateTimeField(_('Date Modified'),blank=True,
@@ -435,16 +439,17 @@ class aho_factsindicator_archive(models.Model):
 
 
 class StgNarrative_Type(TranslatableModel):
-    type_id = models.AutoField(primary_key=True)  # Field name made lowercase.
+    type_id = models.AutoField(primary_key=True)
     uuid = uuid = models.CharField(_('Unique ID'),unique=True,max_length=36,
         blank=False, null=False,default=uuid.uuid4,editable=False)
     code = models.CharField(unique=True, max_length=50, blank=True, null=False,
-        verbose_name = 'Code')  # Field name made lowercase.
+        verbose_name = 'Code')
     translations = TranslatedFields(
-        name = models.CharField(_('Name'),max_length=500, blank=False, null=False),
-        shortname = models.CharField(_('Short Name'),unique=True, max_length=120,
-            blank=False,null=True),  # Field name made lowercase.
-        description = models.TextField(_('Brief Description'),blank=False,null=True)
+        name = models.CharField(_('Name'),max_length=500,blank=False,null=False),
+        shortname = models.CharField(_('Short Name'),unique=True,
+            max_length=120,blank=False,null=True),
+        description = models.TextField(_('Brief Description'),blank=False,
+            null=True)
     )
     date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
         auto_now_add=True)
@@ -484,7 +489,7 @@ class StgAnalyticsNarrative(models.Model):
         null=False,verbose_name = _('Location'), default = 1)
     code = models.CharField(unique=True, max_length=50, blank=True, null=False,
         verbose_name = _('Code'))  # Field name made lowercase.
-    narrative_text = models.TextField(_('Narrative Text'),blank=False, null=False)
+    narrative_text = models.TextField(_('Narrative Text'),blank=False,null=False)
     date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
         auto_now_add=True)
     date_lastupdated = models.DateTimeField(_('Date Modified'),blank=True,
@@ -509,11 +514,11 @@ class StgIndicatorNarrative(models.Model):
         verbose_name = _('Narrative Type'))
     indicator = models.ForeignKey('StgIndicator', models.PROTECT,blank=False,
         null=False,verbose_name = _('Indicator'))
-    location = models.ForeignKey(StgLocation, models.PROTECT, blank=False, null=False,
-         verbose_name = _('Location'), default = 1)
+    location = models.ForeignKey(StgLocation, models.PROTECT, blank=False,
+        null=False,verbose_name = _('Location'), default = 1)
     code = models.CharField(unique=True, max_length=50, blank=True, null=False,
         verbose_name = _('Code'))  # Field name made lowercase.
-    narrative_text = models.TextField(_('Narrative Text'),blank=False, null=False)
+    narrative_text = models.TextField(_('Narrative Text'),blank=False,null=False)
     date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
         auto_now_add=True)
     date_lastupdated = models.DateTimeField(_('Date Modified'),blank=True,

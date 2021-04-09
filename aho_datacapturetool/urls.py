@@ -51,6 +51,8 @@ urlpatterns += i18n_patterns ( # must be python immutable list () and not []
     path('admin/', admin.site.urls,name='dashboard'),
     path('accounts/login/', views.login_view, name='login'),
     path('datawizard/', include('data_wizard.urls')), #for data import wizard
+    #Daniel support to validate A->B->C pupolated selection in facility services
+    path('chaining/', include('smart_selects.urls')),
    #Reset and Changepassword urls
     path('password-reset/', auth_views.PasswordResetView.as_view(),
         name='password_reset'),
@@ -78,7 +80,6 @@ urlpatterns += i18n_patterns ( # must be python immutable list () and not []
     prefix_default_language=False # Hide default language code (en) on all urls
 
 )
-
-# Routes for error handlers served by home view and htmls in templates/home/errors
+# Routes for error handlers served by home view and templates/home/errors
 handler404 = 'home.views.handler404'
 handler500 = 'home.views.handler500'

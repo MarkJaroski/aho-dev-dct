@@ -10,6 +10,7 @@ from django.utils.translation import gettext_lazy as _ # The _ is alias for gett
 from parler.models import TranslatableModel,TranslatedFields
 from regions.models import StgLocation,StgLocationCodes
 from authentication.models import CustomUser # for filtering logged in instances
+from smart_selects.db_fields import ChainedForeignKey # supports A->-B->C lookup
 
 def make_choices(values):
     return [(v, v) for v in values]
@@ -27,7 +28,7 @@ class StgFacilityType(TranslatableModel):
             ),  # Field name made lowercase.
         shortname = models.CharField(_('Short Name'),unique=True,max_length=50,
             blank=False,null=False),  # Field name made lowercase.
-        description = models.TextField(_('Brief Description'),blank=True, null=True)  # Field name made lowercase.
+        description = models.TextField(_('Brief Description'),blank=True,null=True)
     )
     date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
         auto_now_add=True)
@@ -70,7 +71,7 @@ class StgFacilityOwnership(TranslatableModel):
             null=False),
         shortname = models.CharField(_('Short Name'),unique=True,max_length=50,
             blank=False,null=False),  # Field name made lowercase.
-        description = models.TextField(_('Description'),blank=True, null=True)  # Field name made lowercase.
+        description = models.TextField(_('Description'),blank=True, null=True)
     )
     date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
         auto_now_add=True)
@@ -112,8 +113,8 @@ class StgServiceDomain(TranslatableModel):
     translations = TranslatedFields(
         name = models.CharField(_('Service Name'),max_length=230, blank=False,
             null=False),  # Field name made lowercase.
-        shortname = models.CharField(_('Short Name'),max_length=45,null=True),  # Field name made lowercase.
-        description = models.TextField(_('Service Description'),blank=True, null=True)
+        shortname = models.CharField(_('Short Name'),max_length=45,null=True),
+        description = models.TextField(_('Service Description'),blank=True,null=True)
     )
     category = models.SmallIntegerField(_('Service Category'),choices=(CATEGORY),
         blank=False,null=False)
@@ -122,7 +123,7 @@ class StgServiceDomain(TranslatableModel):
     code = models.CharField(_('Code'),unique=True, max_length=50, blank=True,
             null=True)  # Field name made lowercase.
     parent = models.ForeignKey('self',on_delete=models.CASCADE,
-        blank=True,null=True,verbose_name =_('Parent Domain'),)  # Field name made lowercase.
+        blank=True,null=True,verbose_name =_('Parent Domain'),)
     date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
         auto_now_add=True)
     date_lastupdated = models.DateTimeField(_('Date Modified'),blank=True,
@@ -131,8 +132,8 @@ class StgServiceDomain(TranslatableModel):
     class Meta:
         managed = True # must be true to create the model table in mysql
         db_table = 'stg_facility_services'
-        verbose_name = _('Facility Service')
-        verbose_name_plural = _(' Facility Services')
+        verbose_name = _('Service Domain')
+        verbose_name_plural = _(' Service Domains')
         ordering = ('translations__name',)
 
     def __str__(self):
@@ -275,7 +276,7 @@ class StgFacilityServiceMeasureUnits(TranslatableModel):
             blank=False, null=False),  # Field name made lowercase.
         shortname = models.CharField(_('Short Name'),unique=True,max_length=50,
             blank=True,null=True),  # Field name made lowercase.
-        description = models.TextField(_('Description'),blank=True, null=True)  # Field name made lowercase.
+        description = models.TextField(_('Description'),blank=True, null=True)
     )
     date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
         auto_now_add=True)
@@ -351,7 +352,7 @@ class StgFacilityServiceAreas(TranslatableModel):
             ),  # Field name made lowercase.
         shortname = models.CharField(_('Short Name'),unique=True,max_length=50,
             blank=False,null=False),  # Field name made lowercase.
-        description = models.TextField(_('Description'),blank=True, null=True)  # Field name made lowercase.
+        description = models.TextField(_('Description'),blank=True, null=True)  
     )
     date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
         auto_now_add=True)
@@ -380,9 +381,13 @@ class FacilityServiceAvailability(models.Model):
         verbose_name = _('Facility Name'))
     domain = models.ForeignKey(StgServiceDomain,models.PROTECT,
         verbose_name = _('Service Area Domain'),default=2)
-    intervention = models.ForeignKey(StgFacilityServiceIntervention,models.PROTECT,
-        blank=False,null=False,verbose_name=_('Intervention Areas'),default=1)
-    service = models.ForeignKey(StgFacilityServiceAreas,models.PROTECT,
+    intervention = ChainedForeignKey(StgFacilityServiceIntervention,
+        chained_field="domain",chained_model_field="domain",show_all=False,
+        auto_choose=True,on_delete=models.PROTECT,sort=True,blank=False,
+        null=False,verbose_name=_('Intervention Areas'),default=1)
+    service = ChainedForeignKey(StgFacilityServiceAreas,
+        chained_field="intervention",chained_model_field="intervention",
+        show_all=False,auto_choose=True,sort=True,on_delete=models.PROTECT,
         blank=False,null=False,verbose_name=_('Service provision Areas'),default=1)
     provided = models.BooleanField(_('Service Provided last 3 Months?'),
         default=False)
@@ -429,8 +434,10 @@ class FacilityServiceProvision(models.Model):
         verbose_name = _('Facility Name'))
     domain = models.ForeignKey(StgServiceDomain, models.PROTECT,blank=False,
         null=False,verbose_name = _('Service Capacity Domain'),default=2)
-    units = models.ForeignKey(StgFacilityServiceMeasureUnits,models.PROTECT,
-        blank=False,null=False,verbose_name=_('Units of Provision'),default=1)
+    units = ChainedForeignKey(StgFacilityServiceMeasureUnits,
+        chained_field="domain",chained_model_field="domain",show_all=False,
+        auto_choose=True,on_delete=models.PROTECT,sort=True,blank=False,
+        null=False,verbose_name=_('Units of Provision'),default=1)
     available = models.PositiveIntegerField(_('Number available'),blank=False,
         null=False,help_text=_("The input must be a zero or positive integer"))
     functional = models.PositiveIntegerField(_('Number Functional'),blank=False,
@@ -471,8 +478,10 @@ class FacilityServiceReadiness(models.Model):
         verbose_name = _('Facility Name'))
     domain = models.ForeignKey(StgServiceDomain, models.PROTECT,blank=False,
         null=False,verbose_name = _('Service Readiness Domain'),default=2)
-    units = models.ForeignKey(StgFacilityServiceMeasureUnits,models.PROTECT,
-        blank=False,null=False,verbose_name=_('Units of Provision'),default=1)
+    units = ChainedForeignKey(StgFacilityServiceMeasureUnits,
+        chained_field="domain",chained_model_field="domain",show_all=False,
+        auto_choose=True,on_delete=models.PROTECT,sort=True,blank=False,
+        null=False,verbose_name=_('Units of Provision'),default=1)
     available = models.PositiveIntegerField(_('Number available'),blank=False,
         null=False,help_text=_("The input must be a zero or positive integer"))
     require = models.PositiveIntegerField(_('Number needed'),blank=False,

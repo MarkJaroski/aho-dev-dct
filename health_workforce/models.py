@@ -68,10 +68,10 @@ class StgInstitutionType(TranslatableModel):
     code = models.CharField(_('Code'),unique=True, max_length=50, blank=True,
         null=True)  # Field name made lowercase.
     translations = TranslatedFields(
-        name = models.CharField(_('Name'),max_length=230, blank=False, null=False),  # Field name made lowercase.
+        name = models.CharField(_('Name'),max_length=230, blank=False, null=False),
         shortname = models.CharField(_('Short Name'),max_length=230, blank=True,
             null=True),  # Field name made lowercase.
-        description = models.TextField(_('Brief Description'),blank=True, null=True)  # Field name made lowercase.
+        description = models.TextField(_('Brief Description'),blank=True, null=True)
     )
     date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
         auto_now_add=True)
@@ -101,7 +101,7 @@ class StgInstitutionProgrammes(TranslatableModel):
             null=False),  # Field name made lowercase.
         shortname = models.CharField(_('Short Name'),max_length=230, blank=True,
             null=True),  # Field name made lowercase.
-        description = models.TextField(_('Brief Description'),blank=True, null=True)  # Field name made lowercase.
+        description = models.TextField(_('Brief Description'),blank=True, null=True)
     )
     date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
         auto_now_add=True)
@@ -156,7 +156,7 @@ class StgTrainingInstitution(TranslatableModel):
         email = models.EmailField(_('Email'),unique=True,max_length=150,blank=True,
             null=True),  # Field name made lowercase.
         phone_number = models.CharField(_('Phone Number'),
-            validators=[phone_regex], max_length=15, blank=True), # validators should be a list
+            validators=[phone_regex], max_length=15, blank=True),#validators list
         url = models.URLField(_('Web Address'),blank=True, null=True,
             max_length=2083),
         latitude = models.FloatField(_('Latitude'),blank=True, null=True),
@@ -165,9 +165,9 @@ class StgTrainingInstitution(TranslatableModel):
     code = models.CharField(unique=True, max_length=15, blank=True, null=False,
         verbose_name = _('Institution Code'))  # Field name made lowercase.
     location = models.ForeignKey(StgLocation, models.PROTECT,blank=False,
-        null=False, verbose_name = _('Location'), default='1')  # Field name made lowercase.
+        null=False, verbose_name = _('Location'), default='1')
     type = models.ForeignKey(StgInstitutionType, models.PROTECT, blank=False,
-        null=False, verbose_name = _('Institution Type'),default=6)  # Field name made lowercase.
+        null=False, verbose_name = _('Institution Type'),default=6)
     date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
         auto_now_add=True)
     date_lastupdated = models.DateTimeField(_('Date Modified'),blank=True,
@@ -176,14 +176,17 @@ class StgTrainingInstitution(TranslatableModel):
     class Meta:
         managed = True
         db_table = 'stg_traininginstitution'
-        verbose_name = _('Institution') # this is important in the display on change details and the add button
+        verbose_name = _('Institution')
         verbose_name_plural = _('  Training Institutions')
         ordering = ('translations__name',)
 
     def __str__(self):
         return self.name #display the location name such as country
 
-    # This function makes sure the location name is unique instead of enforcing unque constraint on DB
+    """
+    This function makes sure the location name is unique instead of enforcing
+    unque constraint on DB
+    """
     def clean(self): # Don't allow end_year to be greater than the start_year.
         if StgTrainingInstitution.objects.filter(
             translations__name=self.name).count() and not self.institution_id:
@@ -217,8 +220,8 @@ class StgHealthCadre(TranslatableModel):
         shortname = models.CharField(_('Short Name'),max_length=230,blank=False,
             null=False),  # Field name made lowercase.
         academic = models.CharField(_('Academic Qualification'),max_length=10,
-            choices= STATUS_CHOICES,default=STATUS_CHOICES[0][0]),  # Field name made lowercase.
-        description = models.TextField(_('Brief Description'),blank=True, null=True)  # Field name made lowercase.
+            choices= STATUS_CHOICES,default=STATUS_CHOICES[0][0]),
+        description = models.TextField(_('Brief Description'),blank=True, null=True)
     )  # End of translatable fields
     date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
         auto_now_add=True)
@@ -270,13 +273,12 @@ class StgHealthWorkforceFacts(models.Model):
         null=True, verbose_name = _('Measure Type'))  # Field name made lowercase.
     value = DecimalField(_('Data Value'),max_digits=20,decimal_places=3,
         blank=False, null=False)  # Field name made lowercase.
-    start_year = models.PositiveIntegerField(_('Starting period'),null=False,blank=False,
-        validators=[MinValueValidator(1900),max_value_current_year],
+    start_year = models.PositiveIntegerField(_('Starting period'),null=False,
+        blank=False,validators=[MinValueValidator(1900),max_value_current_year],
         default=current_year(),
         help_text=_("This marks the start of reporting period"))
-    end_year  = models.PositiveIntegerField(_('Ending Period'),null=False,blank=False,
-        validators=[MinValueValidator(1900),max_value_current_year],
-        default=current_year(),
+    end_year  = models.PositiveIntegerField(_('Ending Period'),null=False,
+        blank=False,validators=[MinValueValidator(1900)],default=current_year(),
         help_text=_("This marks the end of reporting. The value must be current \
             year or greater than the start year"))
     period = models.CharField(_('Period'),max_length=10,blank=True,
@@ -350,7 +352,7 @@ class StgRecurringEvent(TranslatableModel):
         verbose_name = _('Event Location'),default = 1)
     translations = TranslatedFields(
         name = models.CharField(_('Name of Event'),max_length=230,blank=False,
-            null=False,default=_('International Year of the Nurse and the Midwife')),  # Field name made lowercase.
+            null=False,default=_('International Year of the Nurse and the Midwife')),
         shortname = models.CharField(_('Short Name'),max_length=230,blank=False,
             null=False),  # Field name made lowercase.
         theme = models.TextField(_('Theme'),blank=True, null=True)
@@ -361,13 +363,12 @@ class StgRecurringEvent(TranslatableModel):
         max_length=2083)
     cover_image = models.ImageField(_('Upload Picture/Banner(s)'),
         upload_to='media/images/events',blank=True,) #for thumbnail..requires pillow
-    start_year = models.PositiveIntegerField(_('Starting period'),null=False,blank=False,
-        validators=[MinValueValidator(1900),max_value_current_year],
+    start_year = models.PositiveIntegerField(_('Starting period'),null=False,
+        blank=False,validators=[MinValueValidator(1900),max_value_current_year],
         default=current_year(),
         help_text=_("This marks the start of reporting period"))
-    end_year  = models.PositiveIntegerField(_('Ending Period'),null=False,blank=False,
-        validators=[MinValueValidator(1900),max_value_current_year],
-        default=current_year(),
+    end_year  = models.PositiveIntegerField(_('Ending Period'),null=False,
+        blank=False,validators=[MinValueValidator(1900)],default=current_year(),
         help_text=_("This marks the end of reporting. The value must be current \
             year or greater than the start year"))
     period = models.CharField(_('Period'),max_length=10,blank=True,
@@ -448,12 +449,12 @@ class StgAnnouncements(TranslatableModel):
         max_length=2083)
     cover_image = models.ImageField(_('Upload Picture/Banner(s)'),
         upload_to='media/images/events',blank=True,) #for thumbnail..requires pillow
-    start_year = models.PositiveIntegerField(_('Starting period'),null=False,blank=False,
-        validators=[MinValueValidator(1900),max_value_current_year],
+    start_year = models.PositiveIntegerField(_('Starting period'),null=False,
+        blank=False,validators=[MinValueValidator(1900),max_value_current_year],
         default=current_year(),
         help_text=_("This marks the start of reporting period"))
-    end_year  = models.PositiveIntegerField(_('Ending Period'),null=False,blank=False,
-        validators=[MinValueValidator(1900),max_value_current_year],
+    end_year  = models.PositiveIntegerField(_('Ending Period'),null=False,
+        blank=False,validators=[MinValueValidator(1900),max_value_current_year],
         default=current_year(),
         help_text=_("This marks the end of reporting. The value must be current \
             year or greater than the start year"))

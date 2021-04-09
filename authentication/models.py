@@ -16,13 +16,15 @@ This model class overrides the original Django user model.
 class CustomUser(AbstractUser):
     GENDER = ( 'Male','Female', 'Other')
     TITLE = ( 'Mr.','Ms.', 'Mrs.','Dr.', 'Prof.', 'Other')
-    title = models.CharField(_('title'),max_length=45, choices=make_choices(TITLE),
-        default=GENDER[0])  # Field name made lowercase.
-    gender = models.CharField(_('gender'),max_length=45, choices=make_choices(GENDER),
-        default=GENDER[0])  # Field name made lowercase.
-    email = models.EmailField(_('e-mail'),unique=True,blank=False, null=False)
-    postcode = models.CharField(_('postal code'),blank=True, null=True,max_length=6)
-    username = models.CharField(_('user name'),blank=False, null=False, max_length=150)
+    title = models.CharField(_('title'),choices=make_choices(TITLE),
+        max_length=45,default=GENDER[0])  # Field name made lowercase.
+    gender = models.CharField(_('gender'),choices=make_choices(GENDER),
+        max_length=45,default=GENDER[0])  # Field name made lowercase.
+    email = models.EmailField(_('e-mail'),unique=True,blank=False,null=False)
+    postcode = models.CharField(_('postal code'),blank=True, null=True,
+        max_length=6)
+    username = models.CharField(_('user name'),blank=False, null=False,
+        max_length=150)
     location = models.ForeignKey(StgLocation, models.PROTECT,default=1,
         verbose_name = _('Location Name'))  # Field name made lowercase.
     date_created = models.DateTimeField(blank=True, null=True, auto_now_add=True,
@@ -31,7 +33,7 @@ class CustomUser(AbstractUser):
         verbose_name = _('Date Modified'))
 
     REQUIRED_FIELDS = ['location', 'username']
-    USERNAME_FIELD = 'email' #can also be replaced using username as unique identifier but issue is controlling redundancy
+    USERNAME_FIELD = 'email' # Replaced using username as unique identifier
 
     class Meta:
         managed = True
@@ -49,13 +51,13 @@ This model class overrides the original Django Users Group auth model.
 class CustomGroup(Group):
     role = models.OneToOneField('auth.Group', parent_link=True,unique=True,
         on_delete=models.CASCADE,verbose_name=_('System Role'))
-    roles_manager = models.CharField(_('Roles Manager'),max_length=70, blank=False,
+    roles_manager = models.CharField(_('Roles Manager'),max_length=70,blank=False,
         default="Staff")
     location = models.ForeignKey(StgLocation, models.PROTECT,
         verbose_name = _('Location Name'))  # Field name made lowercase.
-    date_created = models.DateTimeField(blank=True, null=True, auto_now_add=True,
+    date_created = models.DateTimeField(blank=True, null=True,auto_now_add=True,
         verbose_name = _('Date Created'))
-    date_lastupdated = models.DateTimeField(blank=True, null=True, auto_now=True,
+    date_lastupdated = models.DateTimeField(blank=True, null=True,auto_now=True,
         verbose_name = _('Date Modified'))
 
     class Meta:

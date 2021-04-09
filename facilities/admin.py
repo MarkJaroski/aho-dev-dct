@@ -58,7 +58,10 @@ class FacilityTypeAdmin(TranslatableAdmin,OverideExport):
     If a user is not assigned to a group, he/she can only own data - 01/02/2021
     """
     def get_queryset(self, request):
-        qs = super().get_queryset(request)
+        language = request.LANGUAGE_CODE
+        qs = super().get_queryset(request).filter(
+            translations__language_code=language).order_by(
+            'translations__name').distinct()
         # Get a query of groups the user belongs and flatten it to list object
         groups = list(request.user.groups.values_list('user', flat=True))
         user = request.user.id
@@ -105,8 +108,10 @@ class FacilityOwnership (TranslatableAdmin):
     If a user is not assigned to a group, he/she can only own data - 01/02/2021
     """
     def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        # Get a query of groups the user belongs and flatten it to list object
+        language = request.LANGUAGE_CODE
+        qs = super().get_queryset(request).filter(
+            translations__language_code=language).order_by(
+            'translations__name').distinct()
         groups = list(request.user.groups.values_list('user', flat=True))
         user = request.user.id
         user_location = request.user.location.location_id
@@ -120,6 +125,28 @@ class FacilityOwnership (TranslatableAdmin):
                 locationlevel__locationlevel_id__gte=1,
                 locationlevel__locationlevel_id__lte=2)
         return qs
+
+    def formfield_for_foreignkey(self, db_field, request =None, **kwargs):
+        qs = super().get_queryset(request)
+        groups = list(request.user.groups.values_list('user', flat=True))
+        user = request.user.username
+        countrycodes=StgLocationCodes.objects.values_list(
+            'country_code',flat=True)
+        # This queryset is used to load specific phone code for logged in user
+        if db_field.name == "location":
+            if request.user.is_superuser:
+                kwargs["queryset"] = StgLocationCodes.objects.all().order_by(
+                'location_id')
+                # Looks up for the location level upto the country level
+            else:
+                kwargs["queryset"] = StgLocationCodes.objects.filter(
+                location_id=request.user.location_id).order_by(
+                'location_id')
+
+        if db_field.name == "user":
+                kwargs["queryset"] = CustomUser.objects.filter(
+                username=user)
+        return super().formfield_for_foreignkey(db_field, request,**kwargs)
 
     fieldsets = (
         ('Facility Ownership Details', {
@@ -190,19 +217,10 @@ class FacilityServiceAvailabilityInline(admin.TabularInline):
         db_sevicesubdomains=db_sevicedomains.exclude(
             parent_id__isnull=True).filter(category=1)
 
-        db_seviceareas = StgFacilityServiceAreas.objects.select_related(
-            'intervention__domain').distinct() #good
-        db_interventions=StgFacilityServiceIntervention.objects.select_related(
-            'domain').distinct()
 
         if db_field.name == "domain":
             kwargs["queryset"]=db_sevicesubdomains
 
-        if db_field.name == "intervention":
-            kwargs["queryset"]=db_interventions
-
-        if db_field.name == "service":
-                kwargs["queryset"]=db_seviceareas
         return super().formfield_for_foreignkey(db_field, request,**kwargs)
 
     # form = FacilityServiceAvailabilityProxyForm #overrides the default model form
@@ -245,16 +263,12 @@ class FacilityServiceCapacityInline(admin.TabularInline):
     def formfield_for_foreignkey(self, db_field, request =None, **kwargs):
         db_sevicedomains = StgServiceDomain.objects.all()
         db_sevicesubdomains=db_sevicedomains.exclude(
-            parent_id__isnull=True).filter(category=2).filter(level='Level 2')
-
-        db_provisionunits = StgFacilityServiceMeasureUnits.objects.select_related(
+            parent_id__isnull=True).filter(category=2).filter(
+            level='Level 2')
+        db_provisionunits=StgFacilityServiceMeasureUnits.objects.select_related(
             'domain') #good
-
         if db_field.name == "domain":
             kwargs["queryset"]=db_sevicesubdomains
-
-        if db_field.name == "units":
-            kwargs["queryset"]=db_provisionunits.exclude(domain__parent_id=5) # very sgood
         return super().formfield_for_foreignkey(db_field, request,**kwargs)
 
     model = FacilityServiceProvision
@@ -299,15 +313,10 @@ class FacilityServiceReadinessInline(admin.TabularInline):
         db_sevicedomains = StgServiceDomain.objects.all()
         db_sevicesubdomains=db_sevicedomains.exclude(
             parent_id__isnull=True).filter(category=3).filter(level='level 1')
-
         db_provisionunits=StgFacilityServiceMeasureUnits.objects.select_related(
             'domain')
-
         if db_field.name == "domain":
             kwargs["queryset"]=db_sevicesubdomains
-
-        if db_field.name == "units":
-            kwargs["queryset"]=db_provisionunits.filter(domain__parent_id=5) #good!
         return super().formfield_for_foreignkey(db_field, request,**kwargs)
 
     model = FacilityServiceReadiness
@@ -333,7 +342,10 @@ class ServiceDomainAdmin(TranslatableAdmin,OverideExport):
     If a user is not assigned to a group, he/she can only own data - 01/02/2021
     """
     def get_queryset(self, request):
-        qs = super().get_queryset(request)
+        language = request.LANGUAGE_CODE
+        qs = super().get_queryset(request).filter(
+            translations__language_code=language).order_by(
+            'translations__name').distinct()
         # Get a query of groups the user belongs and flatten it to list object
         groups = list(request.user.groups.values_list('user', flat=True))
         user = request.user.id
@@ -361,7 +373,7 @@ class ServiceDomainAdmin(TranslatableAdmin,OverideExport):
     list_display=('name','code','shortname','parent','category','level',)
     list_select_related = ('parent',)
     list_display_links =('code', 'name','shortname',)
-    search_fields = ('translations__name','translations__shortname','code',) #display search field
+    search_fields = ('translations__name','translations__shortname','code',)
     exclude = ('date_created','date_lastupdated','code',)
     list_per_page = 30 #limit records displayed on admin site to 15
     list_filter = (
@@ -385,8 +397,9 @@ class FacilityAdmin(ImportExportModelAdmin,ImportExportActionModelAdmin):
     If a user is not assigned to a group, he/she can only own data - 01/02/2021
     """
     def get_queryset(self, request):
+        language = request.LANGUAGE_CODE
         qs = super().get_queryset(request).filter(
-            location__location__translations__language_code='en').order_by(
+            location__location__translations__language_code=language).order_by(
             'location__location__translations__name').distinct()
         # Get a query of groups the user belongs and flatten it to list object
         groups = list(request.user.groups.values_list('user', flat=True))
@@ -409,7 +422,7 @@ class FacilityAdmin(ImportExportModelAdmin,ImportExportActionModelAdmin):
         return qs
 
     """
-    Serge requested that the form for data input be restricted to user's location.
+    Serge requested that the form for data input be restricted to user location.
     Thus, this function is for filtering location to display country level.
     The location is used to filter the dropdownlist based on the request
     object's USER, If the user has superuser privileges or is a member of
@@ -419,7 +432,7 @@ class FacilityAdmin(ImportExportModelAdmin,ImportExportActionModelAdmin):
     def formfield_for_foreignkey(self, db_field, request =None, **kwargs):
         qs = super().get_queryset(request)
         groups = list(request.user.groups.values_list('user', flat=True))
-        user = request.user.email        # This queryset is used to load country phone code as a list
+        user = request.user.email
         countrycodes=StgLocationCodes.objects.values_list(
             'country_code',flat=True)
         # This queryset is used to load specific phone code for logged in user
@@ -522,7 +535,7 @@ class FacilityServiceAvailabilityAdmin(ExportActionModelAdmin,OverideExport):
     If a user is not assigned to a group, he/she can only own data - 01/02/2021
     """
     def get_queryset(self, request):
-        qs = super().get_queryset(request)        # Get a query of groups the user belongs and flatten it to list object
+        qs = super().get_queryset(request)
         groups = list(request.user.groups.values_list('user', flat=True))
         user = request.user.id
         user_location = request.user.location.location_id
@@ -596,7 +609,7 @@ class FacilityServiceAvailabilityAdmin(ExportActionModelAdmin,OverideExport):
 
     fieldsets = (
         ('FACILITY DETAILS', {
-                'fields':('name','type','location','admin_location','owner',) #afrocode may be null
+                'fields':('name','type','location','admin_location','owner',)
             }),
             ('Logged Admin/Staff', {
                 'fields': ('user',)
@@ -630,7 +643,7 @@ class FacilityServiceProvisionAdmin(ExportActionModelAdmin,OverideExport):
     def has_add_permission(self, request, obj=None):
         return False
 
-    def get_import_formats(self):  #This method limits import to CSV, XML and XLSX
+    def get_import_formats(self): #This method limits import to CSV, XML and XLSX
         """
         This function returns available export formats.
         """
@@ -680,7 +693,7 @@ class FacilityServiceProvisionAdmin(ExportActionModelAdmin,OverideExport):
         return qs
 
     """
-    Serge requested that the form for data input be restricted to user's country.
+    Serge requested that the form for data input be restricted to use country.
     Thus, this function is for filtering location to display country level.
     The location is used to filter the dropdownlist based on the request
     object's USER, If the user has superuser privileges or is a member of
@@ -693,10 +706,8 @@ class FacilityServiceProvisionAdmin(ExportActionModelAdmin,OverideExport):
         db_sevicedomains = StgServiceDomain.objects.all()
         db_sevicesubdomains=db_sevicedomains.exclude(
             parent_id__isnull=True).filter(category=1)
-
         if db_field.name == "domain":
             kwargs["queryset"]=db_sevicesubdomains
-
         if db_field.name == "user":
                 kwargs["queryset"] = CustomUser.objects.filter(
                     email=user)
@@ -704,7 +715,7 @@ class FacilityServiceProvisionAdmin(ExportActionModelAdmin,OverideExport):
 
     fieldsets = (
         ('FACILITY DETAILS', {
-                'fields':('name','type','location','admin_location','owner',) #afrocode may be null
+                'fields':('name','type','location','admin_location','owner',)
             }),
             ('Logged Admin/Staff', {
                 'fields': ('user',)
@@ -724,7 +735,6 @@ class FacilityServiceProvisionAdmin(ExportActionModelAdmin,OverideExport):
         ('owner',RelatedOnlyDropdownFilter),
         ('status',DropdownFilter),
     )
-
 
 
 @admin.register(FacilityServiceReadinesProxy)
@@ -755,7 +765,6 @@ class FacilityServiceReadinessAdmin(ExportActionModelAdmin,OverideExport):
         user = request.user.id
         user_location = request.user.location.location_id
         db_locations = StgLocation.objects.all().order_by('location_id')
-
         # Returns data for all the locations to the lowest location level
         if request.user.is_superuser:
             return qs
@@ -789,7 +798,6 @@ class FacilityServiceReadinessAdmin(ExportActionModelAdmin,OverideExport):
         if request.user.is_superuser:
             if db_field.name == "domain":
                 kwargs["queryset"]=db_sevicesubdomains
-
         if db_field.name == "user":
                 kwargs["queryset"] = CustomUser.objects.filter(
                     email=user)
@@ -817,7 +825,7 @@ class FacilityServiceReadinessAdmin(ExportActionModelAdmin,OverideExport):
 
     fieldsets = (
         ('FACILITY DETAILS', {
-                'fields':('name','type','location','admin_location','owner',) #afrocode may be null
+                'fields':('name','type','location','admin_location','owner',)
             }),
             ('Logged Admin/Staff', {
                 'fields': ('user',)
@@ -847,7 +855,7 @@ class FacilityServiceProvisionUnitsAdmin (TranslatableAdmin):
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
     }
 
-    # This method removes the add button on the admin interface
+    # This method removes the add button on the admin user interface
     """
    Serge requested that a user does not see other users or groups data.
     This method filters logged in users depending on group roles and permissions.
@@ -856,12 +864,14 @@ class FacilityServiceProvisionUnitsAdmin (TranslatableAdmin):
     If a user is not assigned to a group, he/she can only own data - 01/02/2021
     """
     def get_queryset(self, request):
-        qs = super().get_queryset(request)
+        language = request.LANGUAGE_CODE
+        qs = super().get_queryset(request).filter(
+            translations__language_code=language).order_by(
+            'translations__name').distinct()
         groups = list(request.user.groups.values_list('user', flat=True))
         user = request.user.username
         user_location = request.user.location.location_id
         db_locations = StgLocation.objects.all().order_by('location_id')
-
         # Returns data for all the locations to the lowest location level
         if request.user.is_superuser:
             return qs
@@ -876,7 +886,7 @@ class FacilityServiceProvisionUnitsAdmin (TranslatableAdmin):
         return qs
     fieldsets = (
         ('Unit of Service provision', {
-                'fields':('name','shortname','description','domain',) #afrocode may be null
+                'fields':('name','shortname','description','domain',)
             }),
         )
     list_display=('name','code','shortname','domain','description')
@@ -907,12 +917,14 @@ class FacilityServiceInterventionAdmin(TranslatableAdmin):
     If a user is not assigned to a group, he/she can only own data - 01/02/2021
     """
     def get_queryset(self, request):
-        qs = super().get_queryset(request)
+        language = request.LANGUAGE_CODE
+        qs = super().get_queryset(request).filter(
+            translations__language_code=language).order_by(
+            'translations__name').distinct()
         groups = list(request.user.groups.values_list('user', flat=True))
         user = request.user.username
         user_location = request.user.location.location_id
         db_locations = StgLocation.objects.all().order_by('location_id')
-
         # Returns data for all the locations to the lowest location level
         if request.user.is_superuser:
             return qs
@@ -927,13 +939,13 @@ class FacilityServiceInterventionAdmin(TranslatableAdmin):
         return qs
     fieldsets = (
         ('Service Interventions Details', {
-                'fields':('name','shortname','description','domain',) #afrocode may be null
+                'fields':('name','shortname','description','domain',)
             }),
         )
     list_display=('name','code','shortname','description','domain',)
     list_select_related = ('domain',)
     list_display_links =('code', 'name','shortname',)
-    search_fields = ('translations__name','translations__shortname','code',) #display search field
+    search_fields = ('translations__name','translations__shortname','code',)
     exclude = ('date_created','date_lastupdated','code',)
     list_per_page = 30 #limit records displayed on admin site to 15
     list_filter = (
@@ -957,12 +969,14 @@ class FacilityServiceAreasAdmin(TranslatableAdmin):
     If a user is not assigned to a group, he/she can only own data - 01/02/2021
     """
     def get_queryset(self, request):
-        qs = super().get_queryset(request)
+        language = request.LANGUAGE_CODE
+        qs = super().get_queryset(request).filter(
+            translations__language_code=language).order_by(
+            'translations__name').distinct()
         groups = list(request.user.groups.values_list('user', flat=True))
         user = request.user.username
         user_location = request.user.location.location_id
         db_locations = StgLocation.objects.all().order_by('location_id')
-
         # Returns data for all the locations to the lowest location level
         if request.user.is_superuser:
             return qs
@@ -977,14 +991,14 @@ class FacilityServiceAreasAdmin(TranslatableAdmin):
         return qs
     fieldsets = (
         ('Service Domain Areas', {
-                'fields':('name','shortname','description','intervention',) #afrocode may be null
+                'fields':('name','shortname','description','intervention',)
             }),
         )
 
     list_display=('name','code','shortname','description','intervention',)
     list_select_related = ('intervention',)
     list_display_links =('code', 'name','shortname',)
-    search_fields = ('translations__name','translations__shortname','code',) #display search field
+    search_fields = ('translations__name','translations__shortname','code',)
     exclude = ('date_created','date_lastupdated','code',)
     list_per_page = 30 #limit records displayed on admin site to 15
     list_filter = (

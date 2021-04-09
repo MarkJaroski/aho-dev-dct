@@ -12,9 +12,10 @@ from .resources import (LocationLevelResourceExport,IncomegroupsResourceExport,
     LocationResourceExport,LocationResourceImport)
 from import_export.admin import (ExportMixin, ImportExportModelAdmin,
     ImportExportActionModelAdmin,)
-from import_export import resources #This is required to limit the import/export fields 26/10/2018
+#This is required to limit the import/export fields 26/10/2018
+from import_export import resources
 
-#the following 3 functions are used to register global actions performed on the data. See actions listbox
+#the following 3 functions are used to register global actions performed on data
 def pending (modeladmin, request, queryset):
     queryset.update(comment = 'pending')
 pending.short_description = "Mark selected as Pending"
@@ -27,6 +28,7 @@ def rejected (modeladmin, request, queryset):
     queryset.update (comment = 'rejected')
 rejected.short_description = "Mark selected as Rejected"
 
+
 @admin.register(StgLocationLevel)
 class RegionAdmin(TranslatableAdmin,OverideExport):
     from django.db import models
@@ -34,10 +36,17 @@ class RegionAdmin(TranslatableAdmin,OverideExport):
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
     }
+    def get_queryset(self, request):
+        language = request.LANGUAGE_CODE
+        qs = super().get_queryset(request).filter(
+            translations__language_code=language).order_by(
+            'translations__name').distinct()
+        return qs
+
     resource_class = LocationLevelResourceExport
     list_display=['name','code','type','description',]
     list_display_links = ('code', 'name',)
-    search_fields = ('code','translations__name','translations__type') #display search field
+    search_fields = ('code','translations__name','translations__type')
     list_per_page = 15 #limit records displayed on admin site to 15
     exclude = ('date_created','date_lastupdated','code',)
     list_filter = (
@@ -51,10 +60,18 @@ class EconomicBlocksAdmin(TranslatableAdmin,OverideExport):
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
     }
+
+    def get_queryset(self, request):
+        language = request.LANGUAGE_CODE
+        qs = super().get_queryset(request).filter(
+            translations__language_code=language).order_by(
+            'translations__name').distinct()
+        return qs
+
     resource_class = EconomicZoneResourceExport
     list_display=['name','code','shortname','description',]
     list_display_links = ('code', 'name',)
-    search_fields = ('translations__name','translations__shortname','code') #display search field
+    search_fields = ('translations__name','translations__shortname','code')
     list_per_page = 15 #limit records displayed on admin site to 15
     exclude = ('date_created','date_lastupdated','code')
 
@@ -66,10 +83,18 @@ class WBGroupsAdmin(TranslatableAdmin,OverideExport):
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
     }
+
+    def get_queryset(self, request):
+        language = request.LANGUAGE_CODE
+        qs = super().get_queryset(request).filter(
+            translations__language_code=language).order_by(
+            'translations__name').distinct()
+        return qs
+
     resource_class = IncomegroupsResourceExport
     list_display=['name','code','shortname','description',]
     list_display_links = ('code', 'name',)
-    search_fields = ('code','translations__name','translations__shortname') #display search field
+    search_fields = ('code','translations__name','translations__shortname')
     list_per_page = 15 #limit records displayed on admin site to 15
     exclude = ('date_created','date_lastupdated','code',)
 
@@ -81,10 +106,18 @@ class SpecialStatesAdmin(TranslatableAdmin,OverideExport):
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
     }
+
+    def get_queryset(self, request):
+        language = request.LANGUAGE_CODE
+        qs = super().get_queryset(request).filter(
+            translations__language_code=language).order_by(
+            'translations__name').distinct()
+        return qs
+        
     resource_class = SpecialcategorizationResourceExport
     list_display=['name','code','shortname','description',]
     list_display_links = ('code', 'name',)
-    search_fields = ('translations__name','translations__shortname','code') #display search field
+    search_fields = ('translations__name','translations__shortname','code')
     list_per_page = 15 #limit records displayed on admin site to 15
     exclude = ('date_created','date_lastupdated','code')
 
@@ -106,18 +139,16 @@ class LocationAdmin(TranslatableAdmin,OverideExport):
     otherwise, can only enter data for his/her country.===modified 02/02/2021
     """
     def get_queryset(self, request):
-        qs = super().get_queryset(request).filter(
-            translations__language_code='en').order_by(
-            'translations_name').filter(
-            locationlevel__translations__language_code='en').order_by(
-            'locationlevel__translations__name').distinct()
-
-        # Get a query of groups the user belongs and flatten it to list object
+        language = request.LANGUAGE_CODE
         groups = list(request.user.groups.values_list('user', flat=True))
         user = request.user.id
         user_location = request.user.location.location_id
-        db_locations = StgLocation.objects.all().order_by('location_id')
-        # Returns data for all the locations to the lowest location level
+        qs = super().get_queryset(request).filter(
+            translations__language_code=language).order_by(
+            'translations_name').distinct().filter(
+            locationlevel__translations__language_code=language).order_by(
+            'locationlevel__translations__name').distinct()
+        # Get a query of groups the user belongs and flatten it to list object
         if request.user.is_superuser:
             qs
         # returns data for AFRO and member countries
@@ -125,11 +156,8 @@ class LocationAdmin(TranslatableAdmin,OverideExport):
             qs_admin=db_locations.filter(
                 locationlevel__locationlevel_id__gte=1,
                 locationlevel__locationlevel_id__lte=2)
-        # return data based on the location of the user logged/request location
-        elif user in groups and user_location>1:
-            qs=qs.filter(location_id=user_location)
         else: # return own data if not member of a group
-            qs=qs.filter(location_id=user_location) #to be reconsidered for privacy
+            qs=qs.filter(location_id=user_location)
         return qs
 
     """
@@ -142,7 +170,9 @@ class LocationAdmin(TranslatableAdmin,OverideExport):
     """
     def formfield_for_foreignkey(self, db_field, request =None, **kwargs):
         groups = list(request.user.groups.values_list('user', flat=True))
+        language = request.LANGUAGE_CODE # get the en, fr or pt from the request
         user = request.user.id
+        user_location = request.user.location.location_id
         if db_field.name == "parent":
             if request.user.is_superuser:
                 kwargs["queryset"] = StgLocation.objects.filter(
@@ -150,21 +180,21 @@ class LocationAdmin(TranslatableAdmin,OverideExport):
                 locationlevel__locationlevel_id__lte=3).order_by(
                 'location_id')
                 # Looks up for the location level upto the country level
-            elif user in groups:
+            elif user in groups and user_location==1:
                 kwargs["queryset"] = StgLocation.objects.filter(
                 locationlevel__locationlevel_id__gte=1,
                 locationlevel__locationlevel_id__lte=2).order_by(
                 'location_id')
             else:
                 kwargs["queryset"] = StgLocation.objects.filter(
-                location=request.user.location).translated(
-                language_code='en')
+                location_id=user_location).translated(
+                language_code=language)
         return super().formfield_for_foreignkey(db_field, request,**kwargs)
 
     fieldsets = (
         ('Location Details',{
                 'fields': (
-                    'locationlevel','name', 'iso_alpha','iso_number','description', )
+                    'locationlevel','name','iso_alpha','iso_number','description', )
             }),
             ('Geo-map Info', {
                 'fields': ('parent','longitude','latitude', 'cordinate',),
@@ -189,7 +219,6 @@ class LocationAdmin(TranslatableAdmin,OverideExport):
 
 @admin.register(StgLocationCodes)
 class LocationCodesAdmin(admin.ModelAdmin):
-
     """
     This method filters logged in users depending on group roles and permissions.
     Only the superuser can see all users and locations data while a users
@@ -207,7 +236,7 @@ class LocationCodesAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             qs
         # returns data for AFRO and member countries
-        elif user in groups and user_location<=2:
+        elif user in groups and user_location==1:
             qs_admin=db_locations.filter(
                 locationlevel__locationlevel_id__gt=2,
                 locationlevel__locationlevel_id__lte=3)

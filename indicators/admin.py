@@ -29,8 +29,7 @@ from regions.models import StgLocation,StgLocationLevel
 from authentication.models import CustomUser, CustomGroup
 from home.models import ( StgDatasource,StgCategoryoption,StgMeasuremethod)
 
-
-#The following 3 functions are used to register global actions performed on the data. See action listbox
+#These 3 functions are used to register global actions performed on the data.
 def transition_to_pending (modeladmin, request, queryset):
     queryset.update(comment = 'pending')
 transition_to_pending.short_description = "Mark selected as Pending"
@@ -51,7 +50,7 @@ class GroupedModelChoiceIterator(ModelChoiceIterator):
         if self.field.cache_choices:
             if self.field.choice_cache is None:
                 self.field.choice_cache = [
-                    (self.field.group_label(group), [self.choice(ch) for ch in choices])
+                    (self.field.group_label(group),[self.choice(ch) for ch in choices])
                         for group,choices in groupby(self.queryset.all(),
                             key=lambda row: getattr(row, self.field.group_by_field))
                 ]
@@ -92,15 +91,18 @@ class GroupedModelChoiceField(ModelChoiceField):
 
 @admin.register(StgIndicatorReference)
 class IndicatorRefAdmin(TranslatableAdmin):
-    def sort_data(self, request):
-        language_code = settings.LANGUAGE_CODE
-        StgIndicatorReference.objects.translated(language_code).order_by(
-        'translations__code')
     from django.db import models
     formfield_overrides = {
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
     }
+    def get_queryset(self, request):
+        language = request.LANGUAGE_CODE
+        qs = super().get_queryset(request).filter(
+            translations__language_code=language).order_by(
+            'translations__name').distinct()
+        return qs
+
 
     fieldsets = (
         ('Reference Attributes', {
@@ -112,17 +114,17 @@ class IndicatorRefAdmin(TranslatableAdmin):
         )
     list_display=['name','code','shortname','description',]
     list_display_links = ('code', 'name',)
-    search_fields = ('code','translations__name','translations__shortname',) #display search field
+    search_fields = ('code','translations__name','translations__shortname',)
     list_per_page = 30 #limit records displayed on admin site to 15
     exclude = ('date_created','date_lastupdated',)
 
 
 @admin.register(StgIndicator)
 class IndicatorAdmin(TranslatableAdmin,OverideExport):
-    language_code = settings.LANGUAGE_CODE
     def get_queryset(self, request):
+        language = request.LANGUAGE_CODE
         qs = super().get_queryset(request).filter(
-            translations__language_code='en').order_by(
+            translations__language_code=language).order_by(
             'translations__name').distinct()
         return qs
 
@@ -134,7 +136,7 @@ class IndicatorAdmin(TranslatableAdmin,OverideExport):
 
     fieldsets = (
         ('Primary Attributes', {
-                'fields': ('name','shortname','definition','reference') #afrocode may be null
+                'fields': ('name','shortname','definition','reference')
             }),
             ('Secondary Attributes', {
                 'fields': ('numerator_description','denominator_description',
@@ -143,25 +145,24 @@ class IndicatorAdmin(TranslatableAdmin,OverideExport):
         )
     resource_class = IndicatorResourceExport
     # actions = ExportActionModelAdmin.actions
-    list_display=['name','afrocode','shortname','numerator_description',
-        'denominator_description','reference',]
+    list_display=['name','afrocode','shortname','reference',]
     list_display_links = ('afrocode', 'name',) #display as clickable link
-    search_fields = ('translations__name','translations__shortname','afrocode') #display search field
+    search_fields = ('translations__name','translations__shortname','afrocode')
     list_per_page = 50 #limit records displayed on admin site to 30
     list_filter = (
         ('reference', RelatedOnlyDropdownFilter),
     )
 
     class Media:
-        exclude = ('date_created','date_lastupdated',) #show only related records
+        exclude = ('date_created','date_lastupdated',)
 
 
 @admin.register(StgIndicatorDomain)
 class IndicatorDomainAdmin(TranslatableAdmin,OverideExport):
-    language_code = settings.LANGUAGE_CODE
     def get_queryset(self, request):
+        language = request.LANGUAGE_CODE
         qs = super().get_queryset(request).filter(
-            translations__language_code='en').order_by(
+            translations__language_code=language).order_by(
             'translations__name').distinct()
         return qs
 
@@ -173,7 +174,7 @@ class IndicatorDomainAdmin(TranslatableAdmin,OverideExport):
 
     fieldsets = (
         ('Domain Attributes', {
-                'fields': ('name', 'shortname','parent','level') #afrocode may be null
+                'fields': ('name', 'shortname','parent','level')
             }),
             ('Domain Description', {
                 'fields': ('description','indicators'),
@@ -181,10 +182,10 @@ class IndicatorDomainAdmin(TranslatableAdmin,OverideExport):
         )
     resource_class = DomainResourceExport
     # actions = ExportActionModelAdmin.actions
-    list_display=['name','code','level','parent',]
+    list_display=('name','code','parent','level',)
     list_select_related = ('parent',)
     list_display_links = ('code', 'name',)
-    search_fields = ('translations__name','translations__shortname','code') #display search field
+    search_fields = ('translations__name','translations__shortname','code')
     list_per_page = 50 #limit records displayed on admin site to 15
     filter_horizontal = ('indicators',) # this should display  inline with multiselect
     exclude = ('date_created','date_lastupdated',)
@@ -287,11 +288,13 @@ class IndicatorFactAdmin(ExportActionModelAdmin,OverideExport):
         groups = list(request.user.groups.values_list('user', flat=True))
         user = request.user.id
         user_location = request.user.location.location_id
+        language = request.LANGUAGE_CODE # get the en, fr or pt from the request
+        # language = request.session['language']
         db_locations = StgLocation.objects.all().order_by('location_id')
         qs = super().get_queryset(request).filter(
-            indicator__translations__language_code='en').order_by(
+            indicator__translations__language_code=language).order_by(
             'indicator__translations__name').filter(
-            location__translations__language_code='en').order_by(
+            location__translations__language_code=language).order_by(
             'location__translations__name').distinct()
         if request.user.is_superuser:
             qs
@@ -318,6 +321,7 @@ class IndicatorFactAdmin(ExportActionModelAdmin,OverideExport):
     def formfield_for_foreignkey(self, db_field, request =None, **kwargs):
         groups = list(request.user.groups.values_list('user', flat=True))
         user = request.user.username
+        language = request.LANGUAGE_CODE # get the en, fr or pt from the request
         if db_field.name == "location":
             if request.user.is_superuser:
                 kwargs["queryset"] = StgLocation.objects.all().order_by(
@@ -331,11 +335,11 @@ class IndicatorFactAdmin(ExportActionModelAdmin,OverideExport):
             else:
                 kwargs["queryset"] = StgLocation.objects.filter(
                 location_id=request.user.location_id).translated(
-                language_code='en')
+                language_code=language)
 
         if db_field.name == "indicator":
                 kwargs["queryset"] = StgIndicator.objects.filter(
-                translations__language_code='en').distinct()
+                translations__language_code=language).distinct()
 
         if db_field.name == "user":
                 kwargs["queryset"] = CustomUser.objects.filter(
@@ -344,24 +348,24 @@ class IndicatorFactAdmin(ExportActionModelAdmin,OverideExport):
         if db_field.name == "datasource":
             if request.user.is_superuser:
                 kwargs["queryset"] = StgDatasource.objects.filter(
-                translations__language_code='en').distinct()
+                translations__language_code=language).distinct()
             elif user in groups:
                 kwargs["queryset"] = StgDatasource.objects.filter(
-                translations__language_code='en').distinct()
+                translations__language_code=language).distinct()
             else:
                 kwargs["queryset"] = StgDatasource.objects.filter(
                     pk__gte=2).filter(
-                    translations__language_code='en').distinct()
+                    translations__language_code=language).distinct()
 
         if db_field.name == "measuremethod":
                 kwargs["queryset"] = StgMeasuremethod.objects.filter(
-                translations__language_code='en').distinct()
+                translations__language_code=language).distinct()
         return super().formfield_for_foreignkey(db_field, request,**kwargs)
 
     # #This method gets afrocode from  indicator model for use in list_display
     def get_afrocode(obj):
         return obj.indicator.afrocode
-    get_afrocode.admin_order_field  = 'indicator__afrocode'  #For sorting by AFROCODE
+    get_afrocode.admin_order_field  = 'indicator__afrocode'#Sort by AFROCODE
     get_afrocode.short_description = 'Indicator Code'  #Renames the column header
 
     def get_actions(self, request):
@@ -402,11 +406,11 @@ class IndicatorFactAdmin(ExportActionModelAdmin,OverideExport):
     list_select_related = ('indicator','location','categoryoption','datasource',
         'measuremethod',)
 
-    list_display_links = ('location',get_afrocode, 'indicator',) #display as clickable link
+    list_display_links = ('location',get_afrocode, 'indicator',)
     search_fields = ('indicator__translations__name','location__translations__name',
         'period','indicator__afrocode') #display search field
     list_per_page = 50 #limit records displayed on admin site to 30
-     #this field need to be controlled for data entry. Active for the approving authority
+    #This field needed for controlled approval of resource before ETL process
     readonly_fields=('comment',)
     actions = ExportActionModelAdmin.actions + [transition_to_pending,
         transition_to_approved,transition_to_rejected,]
@@ -445,12 +449,14 @@ class FactIndicatorInline(admin.TabularInline):
     def formfield_for_foreignkey(self, db_field, request =None, **kwargs):
         groups = list(request.user.groups.values_list('user', flat=True))
         user = request.user.id
+        user_location = request.user.location.location_id
+        language = request.LANGUAGE_CODE # get the en, fr or pt from the request
         if db_field.name == "location":
             if request.user.is_superuser:
                 kwargs["queryset"] = StgLocation.objects.all().order_by(
                 'location_id')
                 # Looks up for the location level upto the country level
-            elif user in groups:
+            elif user in groups and user_location==1:
                 kwargs["queryset"] = StgLocation.objects.filter(
                 locationlevel__locationlevel_id__gte=1,
                 locationlevel__locationlevel_id__lte=2).order_by(
@@ -458,7 +464,7 @@ class FactIndicatorInline(admin.TabularInline):
             else:
                 kwargs["queryset"] = StgLocation.objects.filter(
                 location_id=request.user.location_id).translated(
-                language_code='en')
+                language_code=language)
 
         if db_field.name == "user":
                 kwargs["queryset"] = CustomUser.objects.filter(
@@ -467,7 +473,7 @@ class FactIndicatorInline(admin.TabularInline):
         # Restricted permission to data source implememnted on 20/03/2020
         if db_field.name == "datasource":
             kwargs["queryset"] = StgDatasource.objects.filter(
-            translations__language_code='en').distinct()
+            translations__language_code=language).distinct()
         return super().formfield_for_foreignkey(db_field, request,**kwargs)
 
     fields = ('indicator','location','datasource','measuremethod','start_period',
@@ -489,11 +495,12 @@ class IndicatorProxyAdmin(TranslatableAdmin):
         # language_code = settings.LANGUAGE_CODE
         groups = list(request.user.groups.values_list('user', flat=True))
         user = request.user.username
+        language = request.LANGUAGE_CODE # get the en, fr or pt from the request
         user_location = request.user.location.location_id
         db_locations = StgLocation.objects.all().order_by('location_id')
         db_user=list(CustomUser.objects.values_list('username', flat=True))
         qs = super().get_queryset(request).filter(
-            translations__language_code='en').order_by(
+            translations__language_code=language).order_by(
             'translations__name').distinct()
         if request.user.is_superuser:
             qs
@@ -504,13 +511,11 @@ class IndicatorProxyAdmin(TranslatableAdmin):
                 locationlevel__locationlevel_id__lte=2)
         return qs
 
-
-
     #This method removes the add button on the admin interface
     def has_add_permission(self, request, obj=None):
         return False
-
-    def get_import_formats(self):  #This function limits the export format to CSV, XML and XLSX
+    # This function limits the export format to CSV, XML and XLSX
+    def get_import_formats(self):
         """
         This function returns available export formats.
         """
@@ -532,12 +537,12 @@ class IndicatorProxyAdmin(TranslatableAdmin):
         )
         return [f for f in formats if f().can_export()]
 
-    inlines = [FactIndicatorInline] #try tabular form
-    readonly_fields = ('afrocode', 'name',) # Make it read-only for referential integrity constraunts
+    inlines = [FactIndicatorInline]
+    readonly_fields = ('afrocode', 'name',)
     fields = ('afrocode', 'name',)
     list_display=['name','afrocode','reference',]
     list_display_links=['afrocode', 'name']
-    search_fields = ('afrocode','translations__name', 'translations__shortname',) #display search field
+    search_fields = ('afrocode','translations__name','translations__shortname',)
     list_filter = (
         ('translations__name',DropdownFilter),
     )
@@ -545,7 +550,8 @@ class IndicatorProxyAdmin(TranslatableAdmin):
 
 @admin.register(aho_factsindicator_archive)
 class IndicatorFactArchiveAdmin(OverideExport):
-    def has_add_permission(self, request): #removes the add button because no data entry is needed
+    # This method removes the add button because no data entry is needed
+    def has_add_permission(self, request):
         return False
 
     def has_delete_permission(self, request, obj=None):
@@ -561,8 +567,8 @@ class IndicatorFactArchiveAdmin(OverideExport):
 
     def get_afrocode(obj):
         return obj.indicator.afrocode
-    get_afrocode.admin_order_field  = 'indicator__afrocode'  #Lookup to allow column sorting by AFROCODE
-    get_afrocode.short_description = 'Indicator Code'  #Renames the column head
+    get_afrocode.admin_order_field  = 'indicator__afrocode'
+    get_afrocode.short_description = 'Indicator Code'
 
     """
     Serge requested that the form for data input be restricted to user's location.
@@ -581,7 +587,7 @@ class IndicatorFactArchiveAdmin(OverideExport):
         db_locations = StgLocation.objects.all().order_by('location_id')
         facts_archive= aho_factsindicator_archive.objects.only(
             'indicator','location','categoryoption','datasource',
-            'value_received','period','comment','user')[:2]
+            'value_received','period','comment','user')
         # Returns data for all the locations to the lowest location level
         if request.user.is_superuser:
             return qs
@@ -597,13 +603,44 @@ class IndicatorFactArchiveAdmin(OverideExport):
             qs=qs.filter(user=request.user).distinct()
         return qs
 
+    def formfield_for_foreignkey(self, db_field, request =None, **kwargs):
+        groups = list(request.user.groups.values_list('user', flat=True))
+        user = request.user.username
+        language = request.LANGUAGE_CODE # get the en, fr or pt from the request
+        if db_field.name == "location":
+            if request.user.is_superuser:
+                kwargs["queryset"] = StgLocation.objects.all().order_by(
+                'location_id')
+                # Looks up for the location level upto the country level
+            elif user in groups and user_location==1:
+                kwargs["queryset"] = StgLocation.objects.filter(
+                locationlevel__locationlevel_id__gte=1,
+                locationlevel__locationlevel_id__lte=2).order_by(
+                'location_id')
+            else:
+                kwargs["queryset"] = StgLocation.objects.filter(
+                location_id=request.user.location_id).translated(
+                language_code=language)
+
+        if db_field.name == "indicator":
+                kwargs["queryset"] = StgIndicator.objects.filter(
+                translations__language_code=language).distinct()
+
+        if db_field.name == "measuremethod":
+                kwargs["queryset"] = StgMeasuremethod.objects.filter(
+                translations__language_code=language).distinct()
+
+        if db_field.name == "user":
+                kwargs["queryset"] = CustomUser.objects.filter(
+                    email=request.user)
+        return super().formfield_for_foreignkey(db_field, request,**kwargs)
+
+
     resource_class = AchivedIndicatorResourceExport
     actions = ExportActionModelAdmin.actions
     list_display=('indicator','location','categoryoption','datasource',
     'value_received','period','comment')
-
     list_select_related = ('indicator','location','categoryoption','datasource',)
-
     search_fields = ('indicator__translations__name','location__translations__name',
         'period') #display search field
     list_per_page = 100 #limit records displayed on admin site to 50
@@ -622,10 +659,18 @@ class NarrativeTypeAdmin(TranslatableAdmin,OverideExport):
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
     }
+
+    def get_queryset(self, request):
+        language = request.LANGUAGE_CODE
+        qs = super().get_queryset(request).filter(
+            translations__language_code=language).order_by(
+            'translations__name').distinct()
+        return qs
+
     resource_class = NarrativeTypeResourceExport
     list_display=['name','code','shortname','description',]
     list_display_links =('code','name',)
-    search_fields = ('code','translations__name','translations__shortname') #display search field
+    search_fields = ('code','translations__name','translations__shortname')
     list_per_page = 30 #limit records displayed on admin site to 15
     exclude = ('date_lastupdated','code',)
 
@@ -641,13 +686,15 @@ class AnalyticsNarrativeAdmin(OverideExport):
     def get_queryset(self, request):
         groups = list(request.user.groups.values_list('user', flat=True))
         user = request.user.id
+        language = request.LANGUAGE_CODE
         user_location = request.user.location.location_id
         db_locations = StgLocation.objects.all().order_by('location_id')
         qs = super().get_queryset(request).filter(
-            domain__translations__language_code='en').order_by(
+            domain__translations__language_code=language).order_by(
             'domain__translations__name').filter(
-            location__translations__language_code='en').order_by(
-            'location__translations__name').distinct()
+            location__translations__language_code=language).order_by(
+            'location__translations__name').filter(
+                narrative_type__translations__language_code=language).distinct()
         if request.user.is_superuser:
             qs
         # returns data for AFRO and member countries
@@ -663,6 +710,7 @@ class AnalyticsNarrativeAdmin(OverideExport):
     def formfield_for_foreignkey(self, db_field, request =None, **kwargs):
         groups = list(request.user.groups.values_list('user', flat=True))
         user = request.user.username
+        language = request.LANGUAGE_CODE
         if db_field.name == "location":
             if request.user.is_superuser:
                 kwargs["queryset"] = StgLocation.objects.all().order_by(
@@ -676,11 +724,11 @@ class AnalyticsNarrativeAdmin(OverideExport):
             else:
                 kwargs["queryset"] = StgLocation.objects.filter(
                 location_id=request.user.location_id).translated(
-                language_code='en')
+                language_code=language)
 
         if db_field.name == "domain":
                 kwargs["queryset"] = StgIndicatorDomain.objects.filter(
-                translations__language_code='en').filter(
+                translations__language_code=language).filter(
                 level=4).distinct()
         return super().formfield_for_foreignkey(db_field, request,**kwargs)
     resource_class = ThematicNarrativeResourceExport
@@ -696,6 +744,7 @@ class AnalyticsNarrativeAdmin(OverideExport):
     )
     exclude = ('date_lastupdated','code',)
 
+
 @admin.register(StgIndicatorNarrative)
 class IndicatorNarrativeAdmin(OverideExport):
     from django.db import models
@@ -707,12 +756,13 @@ class IndicatorNarrativeAdmin(OverideExport):
     def get_queryset(self, request):
         groups = list(request.user.groups.values_list('user', flat=True))
         user = request.user.id
+        language = request.LANGUAGE_CODE
         user_location = request.user.location.location_id
         db_locations = StgLocation.objects.all().order_by('location_id')
         qs = super().get_queryset(request).filter(
-            indicator__translations__language_code='en').order_by(
+            indicator__translations__language_code=language).order_by(
             'indicator__translations__name').filter(
-            location__translations__language_code='en').order_by(
+            location__translations__language_code=language).order_by(
             'location__translations__name').distinct()
         if request.user.is_superuser:
             qs
@@ -729,6 +779,7 @@ class IndicatorNarrativeAdmin(OverideExport):
     def formfield_for_foreignkey(self, db_field, request =None, **kwargs):
         groups = list(request.user.groups.values_list('user', flat=True))
         user = request.user.username
+        language = request.LANGUAGE_CODE
         if db_field.name == "location":
             if request.user.is_superuser:
                 kwargs["queryset"] = StgLocation.objects.all().order_by(
@@ -742,11 +793,11 @@ class IndicatorNarrativeAdmin(OverideExport):
             else:
                 kwargs["queryset"] = StgLocation.objects.filter(
                 location_id=request.user.location_id).translated(
-                language_code='en')
+                language_code=language)
 
         if db_field.name == "indicator":
                 kwargs["queryset"] = StgIndicator.objects.filter(
-                translations__language_code='en').distinct()
+                translations__language_code=language).distinct()
         return super().formfield_for_foreignkey(db_field, request,**kwargs)
 
     resource_class = IndicatorNarrativeResourceExport
@@ -783,6 +834,8 @@ class AhoDoamain_LookupAdmin(OverideExport,ExportActionModelAdmin):
         db_locations = StgLocation.objects.all().order_by('location_id')
         qs = super().get_queryset(request).distinct()
         return qs
+
+
 
     resource_class = DomainLookupResourceExport
     actions = ExportActionModelAdmin.actions

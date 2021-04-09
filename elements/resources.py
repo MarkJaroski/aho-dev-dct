@@ -35,7 +35,7 @@ class FactDataResourceImport(resources.ModelResource):
     location_name = Field(column_name='Country Name',attribute='location',
         widget=ForeignKeyWidget(StgLocation, 'name'))
     categoryoption = Field( column_name='Disaggregation Code',
-        attribute='categoryoption',widget=ForeignKeyWidget(StgCategoryoption, 'code'))
+        attribute='categoryoption',widget=ForeignKeyWidget(StgCategoryoption,'code'))
     categoryoption_name = Field(
         column_name='Disaggregation Type',attribute='categoryoption__name',
         widget=ForeignKeyWidget(StgCategoryoption, 'name'))

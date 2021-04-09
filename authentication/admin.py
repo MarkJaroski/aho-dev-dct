@@ -6,7 +6,7 @@ from regions.models import StgLocation
 from django.contrib.admin.models import LogEntry
 from .models import CustomUser, CustomGroup,AhodctUserLogs
 from . import models
-from django.forms import TextInput,Textarea #for customizing textarea row and column size
+from django.forms import TextInput,Textarea # customize textarea row and column
 from django_admin_listfilter_dropdown.filters import (
     DropdownFilter, RelatedDropdownFilter, ChoiceDropdownFilter,
     RelatedOnlyDropdownFilter) #custom
@@ -19,6 +19,53 @@ class UserAdmin (UserAdmin):
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
     }
 
+    """
+    We don't need to show list of permissions for non superuser admins. They
+    just need to assign the groups which already are linked to the permissions
+    """
+    def get_fieldsets(self, request, obj=None):
+          fieldsets = super(UserAdmin, self).get_fieldsets(request, obj)
+         # This method hides permsions and super use attributes on the model form
+          remove_fields = ['user_permissions','is_superuser']
+          if not request.user.is_superuser:
+              if len(fieldsets) > 0:
+                  for f in fieldsets:
+                      if f[0] == 'Account Permissions':
+                          fieldsets[2][1]['fields'] = tuple(
+                              x for x in fieldsets[2][1]['fields']
+                              if not x in remove_fields)
+                          break
+          return fieldsets
+
+    """
+    For non superusers, eg. Country admins, if they need to assign groups to
+    other users, we only need to show groups in the Country admins location
+    """
+    def get_form(self, request, obj=None, **kwargs):
+          form = super(UserAdmin, self).get_form(request, obj, **kwargs)
+          if not request.user.is_superuser:
+              filtered_groups = CustomGroup.objects.filter(
+                  location=request.user.location)
+              if form.base_fields.get('groups'):
+                  form.base_fields['groups'].queryset=CustomGroup.objects.filter(
+                      location=request.user.location)
+          return form
+
+    """
+    The purpose of this method is to delegate limited role of creatting users
+    and groups to a non-superuser. This is achieved by assigning logged in user
+    location to the user being created.
+    """
+    def save_model(self, request, obj, form, change):
+        req_user = request.user
+        if not req_user.is_superuser:
+            obj.location = req_user.location
+        super().save_model(request, obj, form, change)
+
+    """
+    The purpose of this method is to filter displayed list of users to location
+    of logged in user
+    """
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         # Get a query of groups the user belongs and flatten it to list object
@@ -36,9 +83,10 @@ class UserAdmin (UserAdmin):
     def formfield_for_foreignkey(self, db_field, request =None, **kwargs):
         groups = list(request.user.groups.values_list('user', flat=True))
         user = request.user.id
+
         user_location = request.user.location.location_id
         db_locations = StgLocation.objects.all().order_by('location_id')
-
+        language = request.LANGUAGE_CODE
         if db_field.name == "location":
             if request.user.is_superuser:
                 kwargs["queryset"] = StgLocation.objects.all().order_by(
@@ -51,15 +99,15 @@ class UserAdmin (UserAdmin):
                 'location_id')
             else:
                 kwargs["queryset"] = StgLocation.objects.filter(
-                location_id=request.user.location_id).translated(
-                language_code='en')
+                location_id=request.user.location_id).filter(
+                translations__language_code=language).distinct()
         return super().formfield_for_foreignkey(db_field, request,**kwargs)
 
     readonly_fields = ('last_login','date_joined',)
     fieldsets = (
         ('Personal info', {'fields': ('title','first_name', 'last_name',
             'gender','location')}),
-        ('Login Credentials', {'fields': ('email', 'username','password',)}),
+        ('Login Credentials', {'fields': ('email', 'username',)}),
         ('Account Permissions', {'fields': ('is_active', 'is_staff',
             'is_superuser', 'groups', 'user_permissions')}),
         ('Login Details', {'fields': ('last_login',)}),
@@ -80,13 +128,8 @@ class UserAdmin (UserAdmin):
         'location','last_login']
     list_display_links = ['first_name','last_name','username','email']
 
-class GroupInline(admin.StackedInline):
-    model = CustomGroup
-    can_delete = False
-    verbose_name_plural = 'Group Roles'
 
-
-admin.site.unregister(Group) # Must unregister the group in order to use the custom one
+admin.site.unregister(Group)# Unregister the group in order to use custom group
 @admin.register(models.CustomGroup)
 class GroupAdmin(BaseGroupAdmin):
     def get_queryset(self, request):
@@ -102,10 +145,37 @@ class GroupAdmin(BaseGroupAdmin):
         else:
             qs=qs.filter(username=user)
         return qs
+
+    """
+    The purpose of this method is to restrict display of permission selections
+    in the listbox. Only permissions asigned to logged in user group are loaded.
+    """
+    def get_form(self, request, obj=None, **kwargs):
+        form = super(GroupAdmin, self).get_form(request, obj, **kwargs)
+        if not request.user.is_superuser:
+            filtered_groups = CustomGroup.objects.filter(
+                location=request.user.location)
+            user_permissions = [f.permissions.all() for f in filtered_groups][0]
+            if form.base_fields.get('permissions'):
+                form.base_fields['permissions'].queryset = user_permissions
+        return form
+
+    def formfield_for_foreignkey(self, db_field, request =None, **kwargs):
+        language = request.LANGUAGE_CODE # get anguage code e.g. fr from request
+        if not request.user.is_superuser:
+            user_location = request.user.location
+            if db_field.name == "location":
+                kwargs["queryset"] = StgLocation.objects.filter(
+                    location_id=user_location.location_id).filter(
+                    translations__language_code=language).distinct()
+
+        return super().formfield_for_foreignkey(db_field, request,**kwargs)
+
     list_display = ['name','location','roles_manager']
+    list_select_related = ('role','location',)
 
 
-# This is the admin interface that allows the super admin to track user activities!
+# This query unmanaged class allows the super admin to track user activities!
 @admin.register(AhodctUserLogs)
 class AhoDCT_LogsAdmin(admin.ModelAdmin):
     # This function removes the add button on the admin interface
@@ -115,19 +185,22 @@ class AhoDCT_LogsAdmin(admin.ModelAdmin):
     def has_add_permission(self, request, obj=None):
         return False
     #This method removes the save buttons from the model form
-    def changeform_view(self,request,object_id=None, form_url='',extra_context=None):
+    def changeform_view(self,request,object_id=None,form_url='',
+        extra_context=None):
         extra_context = extra_context or {}
         extra_context['show_save_and_continue'] = False
         extra_context['show_save'] = False
         return super(AhoDCT_LogsAdmin, self).changeform_view(
             request, object_id, extra_context=extra_context)
 
-    list_display=['username','email','first_name', 'last_name','location_translation',
-        'app_label','record_name','action','action_time','last_login',]
-    readonly_fields = ('username','email','first_name', 'last_name','location_translation',
-        'app_label','record_name','action','action_time','last_login',)
-    search_fields = ('username','email','first_name', 'last_name','location_translation',
-        'app_label','record_name','action',)
+    list_display=['username','email','first_name', 'last_name',
+        'location_translation','app_label','record_name','action','action_time',
+        'last_login',]
+    readonly_fields = ('username','email','first_name', 'last_name',
+        'location_translation','app_label','record_name','action','action_time',
+        'last_login',)
+    search_fields = ('username','email','first_name', 'last_name',
+        'location_translation','app_label','record_name','action',)
     list_filter = (
         ('record_name', DropdownFilter,),
         ('app_label', DropdownFilter,),

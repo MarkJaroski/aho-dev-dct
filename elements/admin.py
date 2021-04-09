@@ -25,7 +25,8 @@ from commoninfo.admin import OverideImportExport, OverideExport
 from commoninfo.fields import RoundingDecimalFormField # For fixing rounded decimal
 from django_admin_listfilter_dropdown.filters import (
     DropdownFilter, RelatedDropdownFilter, ChoiceDropdownFilter,
-    RelatedOnlyDropdownFilter) #custom
+    RelatedOnlyDropdownFilter)
+from authentication.models import CustomUser, CustomGroup
 from home.models import ( StgDatasource,StgCategoryoption)
 
 # The following 3 functions are used to register admin actions
@@ -97,6 +98,14 @@ class DataElementAdmin(TranslatableAdmin,OverideExport):
         models.CharField: {'widget': TextInput(attrs={'size':'100'})},
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
     }
+
+    def get_queryset(self, request):
+        language = request.LANGUAGE_CODE
+        qs = super().get_queryset(request).filter(
+            translations__language_code=language).order_by(
+            'translations__name').distinct()
+        return qs
+
     fieldsets = (
         ('Primary Attributes', {
                 'fields': ('name','shortname', 'description')
@@ -113,6 +122,7 @@ class DataElementAdmin(TranslatableAdmin,OverideExport):
     search_fields = ('translations__name', 'translations__shortname','code',) #display search field
     list_per_page = 30 #limit records displayed on admin site to 30
     exclude = ('date_created','date_lastupdated',)
+
 
 class DataElementProxyForm(forms.ModelForm):
     categoryoption = GroupedModelChoiceField(group_by_field='category',
@@ -184,11 +194,12 @@ class DataElementFactAdmin(ExportActionModelAdmin,OverideExport):
     def get_queryset(self, request):
         groups = list(request.user.groups.values_list('user', flat=True))
         user = request.user.id
+        language = request.LANGUAGE_CODE
         user_location = request.user.location.location_id
         qs = super().get_queryset(request).filter(
-            dataelement__translations__language_code='en').order_by(
+            dataelement__translations__language_code=language).order_by(
             'dataelement__translations__name').filter(
-            location__translations__language_code='en').order_by(
+            location__translations__language_code=language).order_by(
             'location__translations__name').distinct()
 
         if request.user.is_superuser:
@@ -217,7 +228,7 @@ class DataElementFactAdmin(ExportActionModelAdmin,OverideExport):
     def formfield_for_foreignkey(self, db_field, request =None, **kwargs):
         groups = list(request.user.groups.values_list('user', flat=True))
         user = request.user.username
-
+        language = request.LANGUAGE_CODE
         if db_field.name == "location":
             if request.user.is_superuser:
                 kwargs["queryset"] = StgLocation.objects.all().order_by(
@@ -226,16 +237,17 @@ class DataElementFactAdmin(ExportActionModelAdmin,OverideExport):
             elif user in groups:
                 kwargs["queryset"] = StgLocation.objects.filter(
                 locationlevel__locationlevel_id__gte=1,
-                locationlevel__locationlevel_id__lte=2).order_by(
+                locationlevel__locationlevel_id__lte=2).filter(
+                location__translations__language_code=language).order_by(
                 'location_id')
             else:
                 kwargs["queryset"] = StgLocation.objects.filter(
                 location_id=request.user.location_id).translated(
-                language_code='en')
+                language_code=language)
 
         if db_field.name == "dataelement":
-                kwargs["queryset"] = FactDataElement.objects.filter(
-                dataelement__translations__language_code='en').distinct()
+                kwargs["queryset"] = StgDataElement.objects.filter(
+                translations__language_code=language).distinct()
         return super().formfield_for_foreignkey(db_field, request,**kwargs)
 
 
@@ -293,21 +305,23 @@ class DataElementFactAdmin(ExportActionModelAdmin,OverideExport):
                 'fields': ('valuetype','value','target_value',),
             }),
         )
-    #The list display includes a callable get_afrocode that returns data element code for display on admin pages
+    # Display includes a callable get_afrocode that returns data element code
     list_display=['dataelement','location',get_afrocode,'categoryoption','period',
         'value','datasource','get_comment_display',]
+    list_select_related = ('dataelement','location','categoryoption','datasource',
+        'valuetype',)
     list_display_links = ('dataelement','location', get_afrocode,) #For making the code and name clickable
     search_fields = ('dataelement__translations__name','location__translations__name',
         'period','dataelement__code') #display search field
     list_per_page = 30 #limit records displayed on admin site to 30
     #this field need to be controlled for data entry. should only be active for the approving authority
+
     list_filter = (
         ('location', RelatedOnlyDropdownFilter,),
         ('dataelement', RelatedOnlyDropdownFilter,),
         ('period',DropdownFilter),
-        ('comment',DropdownFilter),
         ('categoryoption', RelatedOnlyDropdownFilter,),
-
+        ('comment',DropdownFilter),
     )
     readonly_fields=('comment', 'period', )
 
@@ -335,41 +349,63 @@ class FactElementInline(admin.TabularInline):
     a special case that works with tuples in Python.
     """
     def formfield_for_foreignkey(self, db_field, request =None, **kwargs):
+        groups = list(request.user.groups.values_list('user', flat=True))
+        user = request.user.username
+        language = request.LANGUAGE_CODE
         if db_field.name == "location":
             if request.user.is_superuser:
-                kwargs["queryset"] = StgLocation.objects.filter(
-                # Looks up for the traslated location level name in related table
-                locationlevel__locationlevel_id__gte=1).order_by(
-                    'locationlevel', 'location_id') #superuser can access all countries at level 2 in the database
-            elif request.user.groups.filter(
-                name__icontains='Admin' or request.user.location>=1):
+                kwargs["queryset"] = StgLocation.objects.all().order_by(
+                'location_id')
+                # Looks up for the location level upto the country level
+            elif user in groups:
                 kwargs["queryset"] = StgLocation.objects.filter(
                 locationlevel__locationlevel_id__gte=1,
-                locationlevel__locationlevel_id__lte=2).order_by(
-                    'locationlevel', 'location_id')
+                locationlevel__locationlevel_id__lte=2).filter(
+                location__translations__language_code=language).order_by(
+                'location_id')
             else:
                 kwargs["queryset"] = StgLocation.objects.filter(
-                location_id=request.user.location_id) #permissions to user country only
+                location_id=request.user.location_id).translated(
+                language_code=language)
 
-        # Restricted permission to data source implememnted on 20/03/2020
-        if db_field.name == "datasource":
-            if request.user.is_superuser or request.user.groups.filter(
-                name__icontains='Admin' or request.user.location>=1):
-                kwargs["queryset"] = StgDatasource.objects.all()
-            else:
-                kwargs["queryset"] = StgDatasource.objects.filter(pk__gte=2)
+        if db_field.name == "dataelement":
+                kwargs["queryset"] = StgDataElement.objects.filter(
+                translations__language_code=language).distinct()
         return super().formfield_for_foreignkey(db_field, request,**kwargs)
 
+    list_select_related = ('dataelement','location','categoryoption','datasource',
+        'valuetype',)
     fields = ('dataelement','location','datasource', 'valuetype','categoryoption',
             'start_year', 'end_year','value',)
 
 
 @admin.register(DataElementProxy)
+#This function removes the add button on the admin interface
 class DataElementProxyAdmin(TranslatableAdmin):
-    def has_add_permission(self, request, obj=None): #This function removes the add button on the admin interface
-        return False
+    def get_queryset(self, request):
+        # language_code = settings.LANGUAGE_CODE
+        groups = list(request.user.groups.values_list('user', flat=True))
+        user = request.user.username
+        language = request.LANGUAGE_CODE # get the en, fr or pt from the request
+        user_location = request.user.location.location_id
+        db_locations = StgLocation.objects.all().order_by('location_id')
+        db_user=list(CustomUser.objects.values_list('username', flat=True))
+        qs = super().get_queryset(request).filter(
+            translations__language_code=language).order_by(
+            'translations__name').distinct()
+        if request.user.is_superuser:
+            qs
+        # returns data for AFRO and member countries
+        elif user in groups and user_location==1:
+            qs_admin=db_locations.filter(
+				locationlevel__locationlevel_id__gte=1,
+                locationlevel__locationlevel_id__lte=2)
+        return qs
 
-    def get_import_formats(self):  #This function limits the export format to only 3 types -CSV, XML and XLSX
+    def has_add_permission(self, request, obj=None):
+        return False
+    #This function limits the export format to only 3 types -CSV, XML and XLSX
+    def get_import_formats(self):
         """
         This function returns available export formats.
         """
@@ -391,10 +427,11 @@ class DataElementProxyAdmin(TranslatableAdmin):
         )
         return [f for f in formats if f().can_export()]
     list_display_links = ('code', 'name',)
+    # Added to customize fields displayed on the import window
     resource_class = FactDataResourceExport #added to customize fields displayed on the import window
     list_display_links = ('code', 'name',)
-    inlines = [FactElementInline] # Use tabular form within the data element modelform
-
+    # Use tabular form within the data element modelform
+    inlines = [FactElementInline]
     fields = ('code', 'name')
     list_display=['name','code','description',]
     list_display_links = ('code', 'name',)
@@ -410,6 +447,13 @@ class DataElementGoupAdmin(TranslatableAdmin,OverideExport):
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
     }
 
+    def get_queryset(self, request):
+        language = request.LANGUAGE_CODE
+        qs = super().get_queryset(request).filter(
+            translations__language_code=language).order_by(
+            'translations__name').distinct()
+        return qs
+
     fieldsets = (
         (' Data Elements Group Attributes',{
                 'fields': (
@@ -419,9 +463,9 @@ class DataElementGoupAdmin(TranslatableAdmin,OverideExport):
                 'fields':('dataelement',)
             }),
     )
-
-    field = ('name','code','shortname', 'description',) # used to create frameset sections on the data entry form
+    # Used to create frameset sections on the data entry form
+    field = ('name','code','shortname', 'description',)
     list_display=['name','code','shortname', 'description',]
     search_fields = ('code','translations__name',) #display search field
-    filter_horizontal = ('dataelement',) # this should display an inline with multiselect
+    filter_horizontal = ('dataelement',) # Display an inline with multiselect
     exclude = ('code',)

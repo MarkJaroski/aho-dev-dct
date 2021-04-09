@@ -135,13 +135,13 @@ class StgKnowledgeProduct(TranslatableModel):
             help_text=_("This marks year of publication"))
     )  # End of translatable fields
     code = models.CharField(unique=True, blank=True,null=False,max_length=45)
-    internal_url = models.FileField (_('File'),upload_to='media/files',
+    internal_url = models.FileField (_('File'),upload_to='files',
         blank=True,)  # For uploading the resource into products repository.
     external_url = models.CharField(blank=True, null=True, max_length=2083)
-    cover_image = models.ImageField(_('Cover Picture'),upload_to='media/images',
+    cover_image = models.ImageField(_('Cover Picture'),upload_to='images',
         blank=True,) #for thumbnail..requires pillow
     location = models.ForeignKey(StgLocation, models.PROTECT, blank=False,
-        null=False,verbose_name = _('Resource Location'), default = 1)  # Field cannot be deleted without deleting its dependants
+        null=False,verbose_name = _('Resource Location'), default = 1)
     comment = models.CharField(_('Status'),max_length=10, choices= STATUS_CHOICES,
         default=STATUS_CHOICES[0][0])
     date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
@@ -196,19 +196,19 @@ class StgProductDomain(TranslatableModel):
     translations = TranslatedFields(
         name = models.CharField(_('Resource Theme'),max_length=230, blank=False,
             null=False),
-        shortname = models.CharField(_('Short Name'),max_length=45,null=True),  # Field name made lowercase.
+        shortname = models.CharField(_('Short Name'),max_length=45,null=True),
         description = models.TextField(_('Brief Description'),blank=True,
             null=True),
         level =models.SmallIntegerField(_('Theme Level'),choices=LEVEL,
             default=LEVEL[0][0])
         )
-    code = models.CharField(_('Theme Code'),unique=True, max_length=50, blank=True,
+    code = models.CharField(_('Theme Code'),unique=True,max_length=50,blank=True,
             null=True)  # Field name made lowercase.
     parent = models.ForeignKey('self',on_delete=models.CASCADE,
-        blank=True,null=True,verbose_name = _('Parent Theme'))  # Field name made lowercase.
+        blank=True,null=True,verbose_name = _('Parent Theme'))
     publications = models.ManyToManyField(StgKnowledgeProduct,
         db_table='stg_product_domain_members',
-        blank=True,verbose_name = _('Resources'))  # Field name made lowercase.
+        blank=True,verbose_name = _('Resources'))  
     date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
         auto_now_add=True)
     date_lastupdated = models.DateTimeField(_('Date Modified'),blank=True,

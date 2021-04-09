@@ -15,12 +15,12 @@ class StgLocationLevel(TranslatableModel):
         blank=False,null=False,default=uuid.uuid4,editable=False)
     translations = TranslatedFields(
         type = models.CharField(_('Location Level'),max_length=50,
-            choices=make_choices(LEVEL),default=LEVEL[0]),  # Field name made lowercase.
+            choices=make_choices(LEVEL),default=LEVEL[0]),
         name = models.CharField(_('Level Name'),max_length=230, blank=False,
             null=False),  # Field name made lowercase.
-        description = models.TextField(_('Description'),blank=True, null=True)  # Field name made lowercase.
+        description = models.TextField(_('Description'),blank=True, null=True)
     )
-    code = models.CharField(unique=True, max_length=50, blank=True,null=False)  # Field name made lowercase.
+    code = models.CharField(unique=True, max_length=50, blank=True,null=False)
     date_created = models.DateTimeField(_('Date Created'),blank=True,null=True,
         auto_now_add=True)
     date_lastupdated = models.DateTimeField(_('Date Modified'),blank=True,
@@ -55,9 +55,9 @@ class StgWorldbankIncomegroups(TranslatableModel):
             null=False),  # Field name made lowercase.
         shortname = models.CharField(_('Short Name'),unique=True,max_length=50,
             blank=False,null=False),
-        description = models.TextField(_('Brief Description'),blank=True, null=True)  # Field name made lowercase.
+        description = models.TextField(_('Brief Description'),blank=True, null=True)
     )
-    code = models.CharField(max_length=50, unique=True,blank=True, null=False)  # Field name made lowercase.
+    code = models.CharField(max_length=50, unique=True,blank=True, null=False)
     date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
         auto_now_add=True)
     date_lastupdated = models.DateTimeField(_('Date Modified'),blank=True,
@@ -91,7 +91,7 @@ class StgEconomicZones(TranslatableModel):
         null=False),
     shortname = models.CharField(_('Short Name'),unique=True,max_length=50,
         blank=True, null=True),  # Field name made lowercase.
-    description = models.TextField(blank=True, null=True)  # Field name made lowercase.
+    description = models.TextField(blank=True, null=True)
     )
     code = models.CharField(max_length=50, unique=True, blank=True, null=False)
     date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
@@ -127,7 +127,7 @@ class StgSpecialcategorization(TranslatableModel):
             blank=False, null=False),  # Field name made lowercase.
         shortname = models.CharField(_('Short Name'),unique=True,max_length=50,
             blank=False,null=False),  # Field name made lowercase.
-        description = models.TextField(_('Brief Description'),blank=True, null=True)  # Field name made lowercase.
+        description = models.TextField(_('Brief Description'),blank=True,null=True)
     )
     code = models.CharField(max_length=50, unique=True, blank=True,null=False)
     date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
@@ -149,7 +149,8 @@ class StgSpecialcategorization(TranslatableModel):
     def clean(self): # Don't allow end_period to be greater than the start_period.
         if StgSpecialcategorization.objects.filter(
             translations__name=self.name).count() and not self.specialstates_id:
-            raise ValidationError({'name':_('Sorry! This states categorization exists')})
+            raise ValidationError(
+                {'name':_('Sorry! This states categorization exists')})
 
     def save(self, *args, **kwargs):
         super(StgSpecialcategorization, self).save(*args, **kwargs)
@@ -166,7 +167,7 @@ class StgLocation(TranslatableModel):
     translations = TranslatedFields(
         name = models.CharField(_('Location Name'),max_length=230,blank=False,
             null=False),  # Field name made lowercase.
-        description = models.TextField(_('Brief Description'),blank=True, null=True),
+        description = models.TextField(_('Brief Description'),blank=True,null=True),
         latitude = models.FloatField(_('Latitude'),blank=True, null=True),
         longitude = models.FloatField(_('Longitude'),blank=True, null=True),
         cordinate = models.TextField(_('Cordinates'),blank=True, null=True)
@@ -181,12 +182,12 @@ class StgLocation(TranslatableModel):
         verbose_name = _('Parent Location'),default=1,
         help_text=_("You are not allowed to edit this field because it is\
         related to other records"))
-    wb_income = models.ForeignKey(StgWorldbankIncomegroups, models.PROTECT,blank=False,
-        null=False, verbose_name = _('Income level'), default='99')  # Field name made lowercase.
+    wb_income = models.ForeignKey(StgWorldbankIncomegroups, models.PROTECT,
+        blank=False,null=False, verbose_name = _('Income level'), default='99')
     zone = models.ForeignKey(StgEconomicZones, models.PROTECT, blank=False,
-        null=False, verbose_name = _('Economic Block'),default=6)  # Field name made lowercase.
+        null=False, verbose_name = _('Economic Block'),default=6)
     special = models.ForeignKey(StgSpecialcategorization, models.PROTECT,
-        blank=False, null=False, verbose_name = _('Special Categorization'))  # Field name made lowercase.
+        blank=False, null=False, verbose_name = _('Special Categorization'))
     date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
         auto_now_add=True)
     date_lastupdated = models.DateTimeField(_('Date Modified'),blank=True,
@@ -195,14 +196,14 @@ class StgLocation(TranslatableModel):
     class Meta:
         managed = True
         db_table = 'stg_location'
-        verbose_name = _('Location') # this is important in the display on change details and the add button
+        verbose_name = _('Location')
         verbose_name_plural = _('   Locations')
         ordering = ('translations__name',)
 
     def __str__(self):
         return self.name #display the location name such as country
 
-    # This function makes sure the location name is unique instead of enforcing unque constraint on DB
+    # Make location name unique instead of enforcing unque constraint on DB
     def clean(self): # Don't allow end_period to be greater than the start_period.
         if StgLocation.objects.filter(
             translations__name=self.name).count() and not self.location_id:
@@ -229,16 +230,17 @@ class StgLocationCodes(models.Model):
     class Meta:
         managed = True
         db_table = 'stg_location_codes'
-        verbose_name = _('Dial Code') # this is important in the display on change details and the add button
+        verbose_name = _('Dial Code')
         verbose_name_plural = _('Dial Codes')
         ordering = ('location',)
 
     def __str__(self):
         return str(self.location) #display the location name such as country
 
-    # This function makes sure the location name is unique instead of enforcing unque constraint on DB
+    # Make location name unique instead of enforcing unque constraint on DB
     def clean(self): # Don't allow end_period to be greater than the start_period.
-        if StgLocationCodes.objects.filter(country_code=self.country_code).count() and not self.location_id:
+        if StgLocationCodes.objects.filter(
+            country_code=self.country_code).count() and not self.location_id:
             raise ValidationError(
                 {'country_code':_('Country with similar code exists')})
 

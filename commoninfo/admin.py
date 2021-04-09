@@ -33,7 +33,7 @@ def get_app_list(context, order=True):
         try:
             has_module_perms = model_admin.has_module_permission(request)
         except AttributeError:
-            has_module_perms = request.user.has_module_perms(app_label) # Fix Django < 1.8 issue
+            has_module_perms = request.user.has_module_perms(app_label)
 
         if has_module_perms:
             perms = model_admin.get_model_perms(request)
@@ -51,7 +51,7 @@ def get_app_list(context, order=True):
                 if perms.get('change', False):
                     try:
                         model_dict['admin_url'] = reverse(
-                        'admin:%s_%s_changelist' % info, current_app=admin_site.name)
+                        'admin:%s_%s_changelist'%info,current_app=admin_site.name)
                     except NoReverseMatch:
                         pass
                 if perms.get('add', False):

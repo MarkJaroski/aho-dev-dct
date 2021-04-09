@@ -34,6 +34,7 @@ def login_view(request):
     user = authenticate(request, username=username, password=password)
     if user is not None:
         login(request, user)
+        # request.session['language'] = request.POST['language']
         return redirect('admin:index') # Changed 25/10/2020 for multi-lingo login
     else:
         return render(

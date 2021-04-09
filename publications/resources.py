@@ -16,7 +16,7 @@ class StgKnowledgeProductResourceExport (resources.ModelResource):
         column_name='Reseource Categorization',)
     location = Field(attribute='location__name', column_name='Location Name')
     author = Field(attribute='author', column_name='Author')
-    year_published = Field(attribute='year_published', column_name='Year Published')
+    year_published = Field(attribute='year_published',column_name='Year Published')
     external_url = Field(attribute='external_url', column_name='Hyperlink (URL)')
 
 

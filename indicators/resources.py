@@ -32,7 +32,7 @@ class IndicatorFactsResourceImport(resources.ModelResource):
     location_name = Field(column_name='Location Name',attribute='location__name',
         widget=ForeignKeyWidget(StgLocation, 'name'))
     categoryoption_code = Field( column_name='Disaggregaton Code',
-        attribute='categoryoption',widget=ForeignKeyWidget(StgCategoryoption, 'code'))
+        attribute='categoryoption',widget=ForeignKeyWidget(StgCategoryoption,'code'))
     categoryoption_name = Field(column_name='Disaggregation Option',
         attribute='categoryoption__name',widget=ForeignKeyWidget(
         StgCategoryoption,'name'))
@@ -184,7 +184,7 @@ class NarrativeTypeResourceExport(resources.ModelResource):
         model = StgNarrative_Type
         skip_unchanged = False
         report_skipped = False
-        fields = ('narrative_type','narrative_code', 'shortname', 'description',)
+        fields = ('narrative_type','narrative_code', 'shortname','description',)
 
 class IndicatorNarrativeResourceExport(resources.ModelResource):
     narrative_type = Field(attribute='narrative_type__name',
@@ -217,7 +217,7 @@ class ThematicNarrativeResourceExport(resources.ModelResource):
             'parent','level',)
 
 class DomainLookupResourceExport(resources.ModelResource):
-    indicator_name = Field(attribute='indicator_name', column_name='Theme/Domain Name')
+    indicator_name = Field(attribute='indicator_name', column_name='Theme Name')
     indicator_code= Field(attribute='code', column_name='Theme Code')
     domain = Field(attribute='domain_name', column_name='Short Name')
     level = Field(attribute='domain_level', column_name='Level')

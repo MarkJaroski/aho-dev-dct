@@ -39,15 +39,25 @@ class ResourceTypeAdmin(TranslatableAdmin,OverideExport):
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
     }
 
-    def get_export_resource_class(self):
-        return ProductTypeResourceExport
-
     def get_queryset(self, request):
-        # Get a query of groups the user belongs and flatten it to list object
-        groups = list(request.user.groups.values_list('user', flat=True))
+        language = request.LANGUAGE_CODE
+        qs = super().get_queryset(request).filter(
+            translations__language_code=language).order_by(
+            'translations__name').distinct()
+        groups = list(request.user.groups.values_list('user',flat=True))
         user = request.user.id
         user_location = request.user.location.location_id
         db_locations = StgLocation.objects.all().order_by('location_id')
+        if request.user.is_superuser:
+            return qs
+        elif user in groups:
+            qs_admin=db_locations.filter(
+                locationlevel__locationlevel_id__gte=1,
+                locationlevel__locationlevel_id__lte=2)
+        return qs
+
+    def get_export_resource_class(self):
+        return ProductTypeResourceExport
 
     list_display=['name','code','shortname','description']
     list_display_links =('code', 'name',)
@@ -64,6 +74,23 @@ class ResourceCategoryAdmin(TranslatableAdmin,OverideExport):
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
     }
 
+    def get_queryset(self, request):
+        language = request.LANGUAGE_CODE
+        qs = super().get_queryset(request).filter(
+            translations__language_code=language).order_by(
+            'translations__name').distinct()
+        groups = list(request.user.groups.values_list('user', flat=True))
+        user = request.user.id
+        user_location = request.user.location.location_id
+        db_locations = StgLocation.objects.all().order_by('location_id')
+        if request.user.is_superuser:
+            return qs
+        elif user in groups:
+            qs_admin=db_locations.filter(
+                locationlevel__locationlevel_id__gte=1,
+                locationlevel__locationlevel_id__lte=2)
+        return qs
+
     def get_export_resource_class(self):
         return ProductCategoryResourceExport
 
@@ -74,7 +101,7 @@ class ResourceCategoryAdmin(TranslatableAdmin,OverideExport):
     )
     list_display=['name','code','shortname','category','description']
     list_display_links =('code', 'name',)
-    search_fields = ('translations__name','translations__shortname','code') #display search field
+    search_fields = ('translations__name','translations__shortname','code')
     list_per_page = 15 #limit records displayed on admin site to 15
     exclude = ('date_created','date_lastupdated','code',)
 
@@ -98,10 +125,11 @@ class ProductAdmin(TranslatableAdmin,OverideExport,ExportActionModelAdmin):
     otherwise, can only enter data for his/her country.===modified 02/02/2021
     """
     def get_queryset(self, request):
+        language = request.LANGUAGE_CODE
         qs = super().get_queryset(request).filter(
-            translations__language_code='en').order_by(
+            translations__language_code=language).order_by(
             'translations__title').filter(
-            location__translations__language_code='en').order_by(
+            location__translations__language_code=language).order_by(
             'location__translations__name').distinct()
 
         # Get a query of groups the user belongs and flatten it to list object
@@ -220,7 +248,7 @@ class ProductAdmin(TranslatableAdmin,OverideExport,ExportActionModelAdmin):
 
     fieldsets = (
         ('Publication Attributes', {
-                'fields':('title','type','categorization','location',) #afrocode may be null
+                'fields':('title','type','categorization','location',)
             }),
             ('Description & Abstract', {
                 'fields': ('description', 'abstract',),
@@ -243,7 +271,7 @@ class ProductAdmin(TranslatableAdmin,OverideExport,ExportActionModelAdmin):
     get_type.short_description = 'Type'
 
 
-    # To display the choice field values use the helper method get_foo_display where foo is the field name
+    # To display the choice field values use the helper method get_foo_display
     list_display=['title','code',get_type,'author','year_published',get_location,
         'internal_url','show_external_url','get_comment_display']
     list_select_related = ('user','type','categorization','location',)
@@ -270,12 +298,29 @@ class ProductDomainAdmin(TranslatableAdmin,OverideExport):
         models.TextField: {'widget': Textarea(attrs={'rows':3, 'cols':100})},
     }
 
+    def get_queryset(self, request):
+        language = request.LANGUAGE_CODE
+        qs = super().get_queryset(request).filter(
+            translations__language_code=language).order_by(
+            'translations__name').distinct()
+        groups = list(request.user.groups.values_list('user', flat=True))
+        user = request.user.id
+        user_location = request.user.location.location_id
+        db_locations = StgLocation.objects.all().order_by('location_id')
+        if request.user.is_superuser:
+            return qs
+        elif user in groups:
+            qs_admin=db_locations.filter(
+                locationlevel__locationlevel_id__gte=1,
+                locationlevel__locationlevel_id__lte=2)
+        return qs
+
     def get_export_resource_class(self):
         return ProductDomainResourceExport
 
     fieldsets = (
         ('Resource Attributes', {
-                'fields':('name','shortname','description','parent','level') #afrocode may be null
+                'fields':('name','shortname','description','parent','level')
             }),
         ('Resource Publications', {
                 'fields':('publications',) #afrocode may be null
@@ -285,12 +330,12 @@ class ProductDomainAdmin(TranslatableAdmin,OverideExport):
     list_select_related = ('parent',)
     list_display=['name','code','shortname','parent','level']
     list_display_links =('name','shortname','code',)
-    search_fields = ('translations__name','translations__shortname','code',) #display search field
+    search_fields = ('translations__name','translations__shortname','code',)
 
     filter_horizontal = ('publications',) # should display multiselect records
     exclude = ('date_created','date_lastupdated','code',)
     list_per_page = 50 #limit records displayed on admin site to 15
     list_filter = (
         ('parent',RelatedOnlyDropdownFilter),
-        ('publications',RelatedOnlyDropdownFilter,),# Added 16/12/2019 for M2M lookup
+        ('publications',RelatedOnlyDropdownFilter,),#Added 16/12/2019 for lookup
     )

@@ -20,11 +20,12 @@ class StgDataElement(TranslatableModel):
     AGGREGATION_TYPE = ('Count','Sum','Average','Standard Deviation',
         'Variance', 'Min', 'max','None')
     dataelement_id = models.AutoField(primary_key=True)  # Field name made lowercase.
-    uuid = uuid = models.CharField(unique=True,max_length=36, blank=False, null=False,
-        default=uuid.uuid4,editable=False, verbose_name = _('Unique ID'))  # Field name made lowercase.
+    uuid = uuid = models.CharField(unique=True,max_length=36, blank=False,
+        null=False,default=uuid.uuid4,editable=False,verbose_name=_('Unique ID'))  # Field name made lowercase.
     code = models.CharField( unique=True, max_length=45,blank=True, null=False)
     translations = TranslatedFields(
-        name = models.CharField(_('Data Element Name'),max_length=230, blank=False,null=False),  # Field name made lowercase.
+        name = models.CharField(_('Data Element Name'),max_length=230,
+                blank=False,null=False),  # Field name made lowercase.
         shortname = models.CharField(_('short name'), max_length=50),  # Field name made lowercase.
         description = models.TextField(_('Description'),blank=True, null=True),  # Field name made lowercase.
     )
@@ -58,7 +59,7 @@ class FactDataElement(models.Model):
 
     fact_id = models.AutoField(primary_key=True)  # Field name made lowercase.
     uuid = uuid = models.CharField(unique=True,max_length=36, blank=False,
-        null=False,default=uuid.uuid4,editable=False,verbose_name=_('Unique ID'))  # Field name made lowercase.
+        null=False,default=uuid.uuid4,editable=False,verbose_name=_('Unique ID'))
     dataelement = models.ForeignKey(StgDataElement, models.PROTECT,
         verbose_name =_('Data Element'))  # Field name made lowercase.
     location = models.ForeignKey(StgLocation,models.PROTECT,
@@ -67,7 +68,7 @@ class FactDataElement(models.Model):
         verbose_name =_('Disaggregation Option'), default = 999)
     # This field is used to lookup sources of routine systems, census and surveys
     datasource = models.ForeignKey(StgDatasource, models.PROTECT,blank=False,
-        null=False,verbose_name = 'Data Source', default = 4)  # Field name made lowercase.
+        null=False,verbose_name = 'Data Source', default = 4)
     # This field is used to lookup the type of data required such as text, integer or float
     valuetype = models.ForeignKey(StgValueDatatype, models.PROTECT,
         verbose_name=_('Data Type'),  default = 1)  # Field name made lowercase.
@@ -176,12 +177,12 @@ class StgDataElementGroup(TranslatableModel):
     code = models.CharField(_('Group Code'),unique=True, max_length=50,
         blank=True,null=False)
     dataelement = models.ManyToManyField(StgDataElement,
-        db_table='stg_data_element_membership',blank=True,verbose_name=_('Data Elements'))  # Field name made lowercase.
+        db_table='stg_data_element_membership',blank=True,
+        verbose_name=_('Data Elements'))
     date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
         auto_now_add=True)
     date_lastupdated = models.DateTimeField(_('Date Modified'),blank=True,
         null=True, auto_now=True)
-
 
     class Meta:
         managed = True

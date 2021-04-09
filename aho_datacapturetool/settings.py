@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'parler', #language translation package
+    'smart_selects',
 	'import_export',
     'authentication',
     'home',
