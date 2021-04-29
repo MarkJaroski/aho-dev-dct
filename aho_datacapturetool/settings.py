@@ -25,7 +25,7 @@ SECRET_KEY = 'jz&%c@07o%z_mo&qs2t@-io)vm5ul_0j*kwm@#&m0m4nf7j5a^'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost','127.0.0.1','af-aho-datacapturetool.azurewebsites.net']
+ALLOWED_HOSTS = ['localhost','af-aho-datacapturetool.azurewebsites.net']
 
 
 # Application definition

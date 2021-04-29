@@ -113,7 +113,7 @@ class SpecialStatesAdmin(TranslatableAdmin,OverideExport):
             translations__language_code=language).order_by(
             'translations__name').distinct()
         return qs
-        
+
     resource_class = SpecialcategorizationResourceExport
     list_display=['name','code','shortname','description',]
     list_display_links = ('code', 'name',)
@@ -204,7 +204,7 @@ class LocationAdmin(TranslatableAdmin,OverideExport):
             }),
         )
     resource_class = LocationResourceExport
-    list_display=['name','code','parent','special','zone',]
+    list_display=['name','code','parent','zone','wb_income','locationlevel',]
     list_select_related = ('locationlevel','parent','wb_income','zone','special',)
     list_display_links = ('code', 'name',) #display as clickable link
     search_fields = ('translations__name','code',) #display search field
