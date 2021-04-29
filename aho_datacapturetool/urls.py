@@ -76,7 +76,7 @@ urlpatterns += i18n_patterns ( # must be python immutable list () and not []
     path('api/schema/', get_schemajs_view(title='AHO-DCT', public=False)),
     path('api/swagger-docs/', schema_view),
     # Route that allows display of uploaded files when Debug=False in settings.py
-    re_path(r'^media/(?P<path>.*)$', serve,{'document_root': settings.MEDIA_ROOT}),
+    re_path(r'^media/(?P<path>.*)$',serve,{'document_root':settings.MEDIA_ROOT}),
     prefix_default_language=False # Hide default language code (en) on all urls
 
 )
