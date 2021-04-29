@@ -208,7 +208,7 @@ class StgProductDomain(TranslatableModel):
         blank=True,null=True,verbose_name = _('Parent Theme'))
     publications = models.ManyToManyField(StgKnowledgeProduct,
         db_table='stg_product_domain_members',
-        blank=True,verbose_name = _('Resources'))  
+        blank=True,verbose_name = _('Resources'))
     date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
         auto_now_add=True)
     date_lastupdated = models.DateTimeField(_('Date Modified'),blank=True,

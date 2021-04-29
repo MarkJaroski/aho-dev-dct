@@ -124,6 +124,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.media',
             ],
         },
     },
@@ -197,9 +198,9 @@ STATIC_URL = '/static/'
 
 LOCALE_PATHS = (os.path.join(BASE_DIR, 'locale/'), # for UI language translations
 )
-
+# Base url to serve media files
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'repository') #'access media on local folder
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/') # Path where media is stored
 
 #display the AHO logo on the login screen and admin page
 ADMIN_LOGO = 'dashboard_logo.png'
