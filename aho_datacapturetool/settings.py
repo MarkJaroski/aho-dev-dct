@@ -200,7 +200,7 @@ LOCALE_PATHS = (os.path.join(BASE_DIR, 'locale/'), # for UI language translation
 )
 # Base url to serve media files
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media/') # Path where media is stored
+MEDIA_ROOT = os.path.join(BASE_DIR, 'repository/') # Path where media is stored
 
 #display the AHO logo on the login screen and admin page
 ADMIN_LOGO = 'dashboard_logo.png'
