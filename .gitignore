@@ -4,6 +4,8 @@
 *.pyc
 __pycache__
 db.sqlite3
+media/**
+repository/**
 **/migrations/
 
 # Backup files #
@@ -11,7 +13,7 @@ db.sqlite3
 *.zip
 *.gz
 
-# Python #
+#Python #
 *.py[cod]
 *$py.class
 

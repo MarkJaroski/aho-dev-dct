@@ -28,6 +28,7 @@ from commoninfo.fields import RoundingDecimalFormField # For fixing rounded deci
 from regions.models import StgLocation,StgLocationLevel
 from authentication.models import CustomUser, CustomGroup
 from home.models import ( StgDatasource,StgCategoryoption,StgMeasuremethod)
+from .filters import TranslatedFieldFilter #Danile solution to duplicate filters
 
 #These 3 functions are used to register global actions performed on the data.
 def transition_to_pending (modeladmin, request, queryset):
@@ -190,8 +191,8 @@ class IndicatorDomainAdmin(TranslatableAdmin,OverideExport):
     filter_horizontal = ('indicators',) # this should display  inline with multiselect
     exclude = ('date_created','date_lastupdated',)
     list_filter = (
-        ('parent',RelatedOnlyDropdownFilter,),
-        ('indicators',RelatedOnlyDropdownFilter,),# Added 16/12/2019 for M2M lookup
+        ('parent',TranslatedFieldFilter,),
+        ('indicators',TranslatedFieldFilter,),# Added 16/12/2019 for M2M lookup
         ('level',DropdownFilter,),# Added 16/12/2019 for M2M lookup
     )
 
@@ -415,10 +416,10 @@ class IndicatorFactAdmin(ExportActionModelAdmin,OverideExport):
     actions = ExportActionModelAdmin.actions + [transition_to_pending,
         transition_to_approved,transition_to_rejected,]
     list_filter = (
-        ('location',RelatedOnlyDropdownFilter,),
-        ('indicator', RelatedOnlyDropdownFilter,),
+        ('location',TranslatedFieldFilter,),
+        ('indicator', TranslatedFieldFilter,),
         ('period',DropdownFilter),
-        ('categoryoption', RelatedOnlyDropdownFilter,),
+        ('categoryoption', TranslatedFieldFilter,),
         ('comment',DropdownFilter),
     )
 
@@ -645,9 +646,9 @@ class IndicatorFactArchiveAdmin(OverideExport):
         'period') #display search field
     list_per_page = 100 #limit records displayed on admin site to 50
     list_filter = (
-        ('location', RelatedOnlyDropdownFilter,),
-        ('indicator', RelatedOnlyDropdownFilter,),
-        ('categoryoption', RelatedOnlyDropdownFilter,),
+        ('location', TranslatedFieldFilter,),
+        ('indicator', TranslatedFieldFilter,),
+        ('categoryoption', TranslatedFieldFilter,),
         ('comment',DropdownFilter),
     )
 

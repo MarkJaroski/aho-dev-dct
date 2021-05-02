@@ -135,10 +135,10 @@ class StgKnowledgeProduct(TranslatableModel):
             help_text=_("This marks year of publication"))
     )  # End of translatable fields
     code = models.CharField(unique=True, blank=True,null=False,max_length=45)
-    internal_url = models.FileField (_('File'),upload_to='files',
+    internal_url = models.FileField (_('File'),upload_to='files/',
         blank=True,)  # For uploading the resource into products repository.
     external_url = models.CharField(blank=True, null=True, max_length=2083)
-    cover_image = models.ImageField(_('Cover Picture'),upload_to='images',
+    cover_image = models.ImageField(_('Cover Picture'),upload_to='images/',
         blank=True,) #for thumbnail..requires pillow
     location = models.ForeignKey(StgLocation, models.PROTECT, blank=False,
         null=False,verbose_name = _('Resource Location'), default = 1)
