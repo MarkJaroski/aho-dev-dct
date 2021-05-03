@@ -46,7 +46,7 @@ pip-delete-this-directory.txt
 # Environments
 .env
 .venv
-env/
+env.*
 venv/
 ENV/
 env.bak/
