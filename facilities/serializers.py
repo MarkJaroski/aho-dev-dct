@@ -32,13 +32,13 @@ class StgServiceDomainSerializer(TranslatableModelSerializer):
 
 
 class StgHealthFacilitySerializer(ModelSerializer):
-
+    location_name = ReadOnlyField(source='location.location.name')
     class Meta:
         model = StgHealthFacility
 
-        fields = ('uuid','code','type','location','owner','name','shortname',
-                'admin_location', 'description','latitude','longitude',
-                'altitude','url','status',)
+        fields = ('uuid','code','type','location','location_name','owner','name',
+                    'shortname','admin_location', 'description','latitude',
+                    'longitude','altitude','url','status',)
 
         data_wizard = {
         'header_row': 0,

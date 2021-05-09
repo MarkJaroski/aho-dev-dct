@@ -208,7 +208,7 @@ class LocationAdmin(TranslatableAdmin,OverideExport):
     resource_class = LocationResourceExport
     filter_horizontal = ('zone',)
     list_display=['name','code','parent','wb_income','locationlevel',]
-    list_select_related = ('locationlevel','parent','wb_income','special',)
+    list_select_related = ('parent','locationlevel','wb_income','special',)
     list_display_links = ('code', 'name',) #display as clickable link
     search_fields = ('translations__name','code',) #display search field
 

@@ -39,12 +39,13 @@ class StgHealthCadreSerializer(TranslatableModelSerializer):
 
 
 class StgHealthWorkforceFactsSerializer(ModelSerializer):
-
+    location_name = ReadOnlyField(source='location.name')
     class Meta:
         model = StgHealthWorkforceFacts
 
-        fields = ('uuid','cadre','location','categoryoption','datasource',
-            'measuremethod','value', 'start_year','end_year','period','status',)
+        fields = ('uuid','cadre','location','location_name','categoryoption',
+                    'datasource','measuremethod','value', 'start_year',
+                    'end_year','period','status',)
 
         data_wizard = {
         'header_row': 0,

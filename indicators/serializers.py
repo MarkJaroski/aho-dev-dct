@@ -56,7 +56,7 @@ class FactDataIndicatorSerializer(ModelSerializer):
     class Meta:
         model = FactDataIndicator
         fields = [
-            'uuid','indicator', 'location','location_name','categoryoption',
+            'uuid','fact_id','indicator', 'location','location_name','categoryoption',
             'datasource','measuremethod','numerator_value','denominator_value',
             'value_received','min_value','max_value','target_value','string_value',
             'start_period','end_period','period',]
@@ -86,7 +86,7 @@ class FactIndicatorArchiveSerializer(ModelSerializer):
     class Meta:
         model = aho_factsindicator_archive
         fields = [
-            'uuid','indicator', 'location','location_name','categoryoption',
+            'uuid','fact_id','indicator', 'location','location_name','categoryoption',
             'datasource','measuremethod','numerator_value','denominator_value',
             'value_received','min_value','max_value','target_value','string_value',
             'start_period','end_period','period',]

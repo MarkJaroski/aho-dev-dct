@@ -123,7 +123,7 @@ class UserAdmin (UserAdmin):
             'fields': ('email', 'password1', 'password2')}
         ),
     )
-
+    list_select_related = ('location',)
     list_display = ['first_name','last_name','username','email','gender',
         'location','last_login']
     list_display_links = ['first_name','last_name','username','email']

@@ -54,8 +54,22 @@ class StgHealthFacilityViewSet(viewsets.ModelViewSet):
         CustomDjangoModelPermissions,IsOwnerOrReadOnly)
 
     def get_queryset(self):
-        return StgHealthFacility.objects.all().order_by(
-            'name').distinct()
+        language = self.request.LANGUAGE_CODE # get the en, fr or pt from the request
+        queryset = StgHealthFacility.objects.filter(
+            location__location__translations__language_code=language).order_by(
+            'location__translations__name').distinct()
+
+        user = self.request.user.id
+        groups = list(self.request.user.groups.values_list('user', flat=True))
+        location = self.request.user.location_id
+        if self.request.user.is_superuser:
+            qs=queryset
+        elif user in groups: # Match fact location field to that of logged user
+            qs=queryset.filter(location=location)
+        else:
+            qs=queryset.filter(user=user)
+        return qs
+
 
 
 class  FacilityServiceAvailabilityViewSet(viewsets.ModelViewSet):
@@ -64,9 +78,16 @@ class  FacilityServiceAvailabilityViewSet(viewsets.ModelViewSet):
         CustomDjangoModelPermissions,IsOwnerOrReadOnly)
 
     def get_queryset(self):
-        return FacilityServiceAvailability.objects.all().order_by(
-            'facility').distinct()
-
+        queryset = FacilityServiceAvailability.objects.all().order_by(
+                    'facility').distinct()
+        user = self.request.user.id
+        groups = list(self.request.user.groups.values_list('user', flat=True))
+        location = self.request.user.location_id
+        if self.request.user.is_superuser:
+            qs=queryset
+        else:
+            qs=queryset.filter(user=user)
+        return qs
 
 
 class  FacilityServiceCapacityViewSet(viewsets.ModelViewSet):
@@ -75,8 +96,16 @@ class  FacilityServiceCapacityViewSet(viewsets.ModelViewSet):
         CustomDjangoModelPermissions,IsOwnerOrReadOnly)
 
     def get_queryset(self):
-        return FacilityServiceProvision.objects.all().order_by(
-            'facility').distinct()
+        queryset = FacilityServiceProvision.objects.all().order_by(
+                    'facility').distinct()
+        user = self.request.user.id
+        groups = list(self.request.user.groups.values_list('user', flat=True))
+        location = self.request.user.location_id
+        if self.request.user.is_superuser:
+            qs=queryset
+        else:
+            qs=queryset.filter(user=user)
+        return qs
 
 
 
@@ -86,5 +115,13 @@ class  FacilityServiceReadinessViewSet(viewsets.ModelViewSet):
         CustomDjangoModelPermissions,IsOwnerOrReadOnly)
 
     def get_queryset(self):
-        return FacilityServiceReadiness.objects.all().order_by(
-            'facility').distinct()
+        queryset = FacilityServiceReadiness.objects.all().order_by(
+                    'facility').distinct()
+        user = self.request.user.id
+        groups = list(self.request.user.groups.values_list('user', flat=True))
+        location = self.request.user.location_id
+        if self.request.user.is_superuser:
+            qs=queryset
+        else:
+            qs=queryset.filter(user=user)
+        return qs

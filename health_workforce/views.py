@@ -63,5 +63,17 @@ class  StgHealthWorkforceFactsViewSet(viewsets.ModelViewSet):
         CustomDjangoModelPermissions,IsOwnerOrReadOnly)
 
     def get_queryset(self):
-        return StgHealthWorkforceFacts.objects.all().order_by(
-            'cadre').distinct()
+        language = self.request.LANGUAGE_CODE # get the en, fr or pt from the request
+        queryset = StgHealthWorkforceFacts.objects.filter(
+                    location__translations__language_code=language).order_by(
+                    'location__translations__name').distinct()
+        user = self.request.user.id
+        groups = list(self.request.user.groups.values_list('user', flat=True))
+        location = self.request.user.location_id
+        if self.request.user.is_superuser:
+            qs=queryset
+        elif user in groups: # Match fact location field to that of logged user
+            qs=queryset.filter(location=location)
+        else:
+            qs=queryset.filter(user=user)
+        return qs

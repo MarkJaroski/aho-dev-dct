@@ -51,7 +51,7 @@ class StgLocationViewSet(viewsets.ModelViewSet):
     serializer_class = StgLocationSerializer
     permission_classes = (permissions.IsAuthenticated,
         CustomDjangoModelPermissions,)
-        
+
     def get_queryset(self):
         language = self.request.LANGUAGE_CODE # get the en, fr or pt from the request
         return StgLocation.objects.filter(

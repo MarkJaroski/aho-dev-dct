@@ -25,6 +25,6 @@ class StgKnowledgeProductSerializer(ModelSerializer):
     location_name = ReadOnlyField(source='location.name')
     class Meta:
         model = StgKnowledgeProduct
-        fields = ['uuid','title','code','type','categorization',
-        'location_name','description', 'abstract','author','year_published',
-        'internal_url','external_url','cover_image','comment']
+        fields = ['uuid','title','code','type','categorization','location',
+                    'location_name','description', 'abstract','author',
+                    'year_published','internal_url','external_url','comment']

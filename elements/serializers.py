@@ -18,6 +18,7 @@ class RoundedDecimalField(DecimalField):
 
 # Force import wizard to ignore the decimal places and required validation to allow null
 class FactDataElementSerializer(ModelSerializer,):
+    location_name = ReadOnlyField(source='location.name')
     value = RoundedDecimalField(
         max_digits=20, decimal_places=3,required=True,allow_null=False)
     target_value = RoundedDecimalField(
@@ -26,6 +27,6 @@ class FactDataElementSerializer(ModelSerializer,):
     class Meta:
         model = FactDataElement
         fields = [
-            'fact_id','dataelement','location','categoryoption','datasource',
-            'valuetype','value','target_value','start_year','end_year','period',
-            'comment']
+            'uuid','fact_id','dataelement','location','location_name',
+            'categoryoption','datasource','valuetype','value','target_value',
+            'start_year','end_year','period','comment']
