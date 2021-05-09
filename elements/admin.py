@@ -28,6 +28,7 @@ from django_admin_listfilter_dropdown.filters import (
     RelatedOnlyDropdownFilter)
 from authentication.models import CustomUser, CustomGroup
 from home.models import ( StgDatasource,StgCategoryoption)
+from .filters import TranslatedFieldFilter #Danile solution to duplicate filters
 
 # The following 3 functions are used to register admin actions
 # performed on the data elements. See actions listbox
@@ -248,6 +249,10 @@ class DataElementFactAdmin(ExportActionModelAdmin,OverideExport):
         if db_field.name == "dataelement":
                 kwargs["queryset"] = StgDataElement.objects.filter(
                 translations__language_code=language).distinct()
+
+        if db_field.name == "user":
+                kwargs["queryset"] = CustomUser.objects.filter(
+                username=user)
         return super().formfield_for_foreignkey(db_field, request,**kwargs)
 
 
@@ -304,6 +309,9 @@ class DataElementFactAdmin(ExportActionModelAdmin,OverideExport):
             ('Reporting Period & Value', {
                 'fields': ('valuetype','value','target_value',),
             }),
+            ('Logged Admin/Staff', {
+                'fields': ('user',)
+            }),
         )
     # Display includes a callable get_afrocode that returns data element code
     list_display=['dataelement','location',get_afrocode,'categoryoption','period',
@@ -317,10 +325,10 @@ class DataElementFactAdmin(ExportActionModelAdmin,OverideExport):
     #this field need to be controlled for data entry. should only be active for the approving authority
 
     list_filter = (
-        ('location', RelatedOnlyDropdownFilter,),
-        ('dataelement', RelatedOnlyDropdownFilter,),
+        ('location', TranslatedFieldFilter,),
+        ('dataelement', TranslatedFieldFilter,),
         ('period',DropdownFilter),
-        ('categoryoption', RelatedOnlyDropdownFilter,),
+        ('categoryoption', TranslatedFieldFilter,),
         ('comment',DropdownFilter),
     )
     readonly_fields=('comment', 'period', )

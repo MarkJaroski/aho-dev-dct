@@ -15,13 +15,13 @@ class TranslatedFieldFilter(RelatedOnlyDropdownFilter):
             yield {
                 'selected': self.lookup_val == str(pk_val),
                 'query_string': changelist.get_query_string(
-                    {self.lookup_kwarg: pk_val}, [self.lookup_kwarg_isnull]),
+                {self.lookup_kwarg: pk_val}, [self.lookup_kwarg_isnull]),
                 'display': val,
             }
         if self.include_empty_choice:
             yield {
                 'selected': bool(self.lookup_val_isnull),
                 'query_string': changelist.get_query_string(
-                    {self.lookup_kwarg_isnull: 'True'}, [self.lookup_kwarg]),
+                {self.lookup_kwarg_isnull: 'True'}, [self.lookup_kwarg]),
                 'display': self.empty_value_display,
             }

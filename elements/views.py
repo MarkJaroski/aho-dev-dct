@@ -1,6 +1,10 @@
 from django.shortcuts import render # This is a default import
 from rest_framework import viewsets
+from rest_framework import (generics,permissions,
+    renderers,)
+from rest_framework.permissions import DjangoModelPermissions
 
+from commoninfo.permissions import IsOwnerOrReadOnly,CustomDjangoModelPermissions 
 from elements.models import (StgDataElement, FactDataElement)
 from elements.serializers import (
     StgDataElementSerializer, FactDataElementSerializer)
@@ -9,8 +13,11 @@ from elements.serializers import (
 class StgDataElementViewSet(viewsets.ModelViewSet):
     queryset = StgDataElement.objects.all()
     serializer_class = StgDataElementSerializer
-
+    permission_classes = (permissions.IsAuthenticated,
+        CustomDjangoModelPermissions,)
 
 class FactDataElementViewSet(viewsets.ModelViewSet):
     queryset = FactDataElement.objects.all()
     serializer_class = FactDataElementSerializer
+    permission_classes = (permissions.IsAuthenticated,
+        IsOwnerOrReadOnly,CustomDjangoModelPermissions,)

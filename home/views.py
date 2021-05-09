@@ -3,26 +3,81 @@ from django.http import HttpResponseRedirect
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import redirect
 from rest_framework import viewsets
-from home.models import (StgDatasource,StgCategoryParent, StgCategoryoption,)
+from rest_framework import (generics,permissions,renderers,)
+from rest_framework.decorators import api_view # new
+from rest_framework.response import Response # new
+from rest_framework.reverse import reverse # new
+
+from commoninfo.permissions import IsOwnerOrReadOnly,CustomDjangoModelPermissions
 from . serializers import (StgDatasourceSerializer,
-    StgDisagregationOptionsSerializer,StgDisagregationCategorySerializer,)
-from home.models import (StgDatasource,StgCategoryParent, StgCategoryoption,)
+    StgDisagregationOptionsSerializer,StgDisagregationCategorySerializer,
+    StgValueDatatypeSerializer,StgMeasuremethodSerializer,)
+from .models import (StgDatasource,StgCategoryParent, StgCategoryoption,
+    StgValueDatatype,StgMeasuremethod,)
 from django.conf import settings
 
-context = {}
 
 class StgDisagregationCategoryViewSet(viewsets.ModelViewSet):
-    queryset = StgCategoryParent.objects.all()
     serializer_class = StgDisagregationCategorySerializer
+    permission_classes = (permissions.IsAuthenticated,
+        CustomDjangoModelPermissions,)
+
+    def get_queryset(self):
+        language = self.request.LANGUAGE_CODE # get the en, fr or pt from the request
+        return StgCategoryParent.objects.filter(
+            translations__language_code=language).order_by(
+            'translations__name').distinct()
 
 class StgDisagregationOptionsViewSet(viewsets.ModelViewSet):
-    queryset = StgCategoryoption.objects.all()
     serializer_class = StgDisagregationOptionsSerializer
+    permission_classes = (permissions.IsAuthenticated,
+        CustomDjangoModelPermissions,)
+
+    def get_queryset(self):
+        language = self.request.LANGUAGE_CODE # get the en, fr or pt from the request
+        return StgCategoryoption.objects.filter(
+            translations__language_code=language).order_by(
+            'translations__name').distinct()
+
 
 class StgDatasourceViewSet(viewsets.ModelViewSet):
     queryset = StgDatasource.objects.all()
     serializer_class = StgDatasourceSerializer
+    permission_classes = (permissions.IsAuthenticated,
+        CustomDjangoModelPermissions,)
 
+    def get_queryset(self):
+        language = self.request.LANGUAGE_CODE # get the en, fr or pt from the request
+        return StgDatasource.objects.filter(
+            translations__language_code=language).order_by(
+            'translations__name').distinct()
+
+
+class StgValueDatatypeViewSet(viewsets.ModelViewSet):
+    serializer_class = StgValueDatatypeSerializer
+    permission_classes = (permissions.IsAuthenticated,
+        CustomDjangoModelPermissions,)
+
+    def get_queryset(self):
+        language = self.request.LANGUAGE_CODE # get the en, fr or pt from the request
+        return StgValueDatatype.objects.filter(
+            translations__language_code=language).order_by(
+            'translations__name').distinct()
+
+
+class StgMeasuremethodViewSet(viewsets.ModelViewSet):
+    serializer_class = StgMeasuremethodSerializer
+    permission_classes = (permissions.IsAuthenticated,
+        CustomDjangoModelPermissions,)
+
+    def get_queryset(self):
+        language = self.request.LANGUAGE_CODE # get the en, fr or pt from the request
+        return StgMeasuremethod.objects.filter(
+            translations__language_code=language).order_by(
+            'translations__name').distinct()
+
+#This code is for the login page
+context = {}
 def index(request):
     return render(request, 'index.html', context=context)
 

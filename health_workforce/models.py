@@ -133,6 +133,12 @@ class StgTrainingInstitution(TranslatableModel):
         blank=False,null=False,default=uuid.uuid4,editable=False)
     user = models.ForeignKey(CustomUser, models.PROTECT,blank=False,
 		verbose_name = 'User Name (Email)',default=2) ## request helper field
+    code = models.CharField(unique=True, max_length=15, blank=True, null=False,
+        verbose_name = _('Institution Code'))  # Field name made lowercase.
+    location = models.ForeignKey(StgLocation, models.PROTECT,blank=False,
+        null=False, verbose_name = _('Location'), default='1')
+    type = models.ForeignKey(StgInstitutionType, models.PROTECT, blank=False,
+        null=False, verbose_name = _('Institution Type'),default=6)
     programmes = models.ManyToManyField(StgInstitutionProgrammes,
         db_table='stg_institution_programs_lookup',blank=True,
         verbose_name = _('Training Programmes'))
@@ -162,12 +168,6 @@ class StgTrainingInstitution(TranslatableModel):
         latitude = models.FloatField(_('Latitude'),blank=True, null=True),
         longitude = models.FloatField(_('Longitude'),blank=True, null=True),
     )
-    code = models.CharField(unique=True, max_length=15, blank=True, null=False,
-        verbose_name = _('Institution Code'))  # Field name made lowercase.
-    location = models.ForeignKey(StgLocation, models.PROTECT,blank=False,
-        null=False, verbose_name = _('Location'), default='1')
-    type = models.ForeignKey(StgInstitutionType, models.PROTECT, blank=False,
-        null=False, verbose_name = _('Institution Type'),default=6)
     date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
         auto_now_add=True)
     date_lastupdated = models.DateTimeField(_('Date Modified'),blank=True,

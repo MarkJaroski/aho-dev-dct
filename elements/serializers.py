@@ -1,24 +1,23 @@
-from rest_framework.serializers import (
-    ModelSerializer, ReadOnlyField, Serializer,DecimalField)
+from rest_framework.serializers import (ReadOnlyField, Serializer,
+    DecimalField,ModelSerializer,HyperlinkedModelSerializer,)
 from parler_rest.serializers import TranslatableModelSerializer
 from parler_rest.fields import TranslatedFieldsField
 from elements.models import (StgDataElement, FactDataElement)
 
-class StgDataElementSerializer(TranslatableModelSerializer):
+class StgDataElementSerializer(TranslatableModelSerializer,HyperlinkedModelSerializer):
     translations = TranslatedFieldsField(shared_model=StgDataElement)
     class Meta:
         model = StgDataElement
         fields = ['dataelement_id','code','aggregation_type','translations']
 
 
-# This clas overrides the decimal field in order to
-# round off the decimal places.
+# This class overrides the decimal field in order to round off the decimal places.
 class RoundedDecimalField(DecimalField):
     def validate_precision(self, value):
         return value
 
 # Force import wizard to ignore the decimal places and required validation to allow null
-class FactDataElementSerializer(ModelSerializer):
+class FactDataElementSerializer(ModelSerializer,):
     value = RoundedDecimalField(
         max_digits=20, decimal_places=3,required=True,allow_null=False)
     target_value = RoundedDecimalField(

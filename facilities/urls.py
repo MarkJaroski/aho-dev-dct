@@ -1,11 +1,22 @@
 from rest_framework.routers import SimpleRouter
-from publications import views
+from facilities import views # import the views for routing on the api endpoints
 
 router = SimpleRouter()
 router.register(
-    r'resource_types', views.StgResourceTypeViewSet, 'resource_type')
+    r'facility_types', views.StgFacilityTypeViewSet,'facility_type')
 router.register(
-    r'published_resources',views.StgKnowledgeProductViewSet,'published_resources')
+    r'facility_owners',views.StgFacilityOwnershipViewSet,'facility_owner')
 router.register(
-    r'product_domains', views.StgKnowledgeDomainViewSet,'product_domains')
+    r'service_domains', views.StgServiceDomainViewSet,'service_domain')
+router.register(
+    r'facilities', views.StgHealthFacilityViewSet,'facility')
+router.register(
+    r'service_availability',views.FacilityServiceAvailabilityViewSet,
+    'service_availability')
+router.register(
+    r'service_capacity',views.FacilityServiceAvailabilityViewSet,
+    'service_capacity')
+router.register(
+    r'service_readiness',views.FacilityServiceAvailabilityViewSet,
+    'service_readiness')
 urlpatterns = router.urls

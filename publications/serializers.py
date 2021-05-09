@@ -10,7 +10,7 @@ class StgResourceTypeSerializer(TranslatableModelSerializer):
 
     class Meta:
         model = StgResourceType
-        fields = ['type_id','code','translations']
+        fields = ['uuid','code','translations']
 
 
 class StgKnowledgeDomainSerializer(TranslatableModelSerializer):
@@ -18,13 +18,13 @@ class StgKnowledgeDomainSerializer(TranslatableModelSerializer):
 
     class Meta:
         model = StgProductDomain
-        fields = ['domain_id', 'code','parent','translations']
+        fields = ['uuid', 'code','parent','translations']
 
 
 class StgKnowledgeProductSerializer(ModelSerializer):
     location_name = ReadOnlyField(source='location.name')
     class Meta:
         model = StgKnowledgeProduct
-        fields = ['product_id','title','code','type','categorization',
+        fields = ['uuid','title','code','type','categorization',
         'location_name','description', 'abstract','author','year_published',
         'internal_url','external_url','cover_image','comment']

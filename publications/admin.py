@@ -17,6 +17,8 @@ from .resources import (StgKnowledgeProductResourceExport,
 from import_export.admin import (ImportExportModelAdmin, ExportMixin,
     ExportActionModelAdmin)
 from authentication.models import CustomUser, CustomGroup
+from .filters import TranslatedFieldFilter #Danile solution to duplicate filters
+
 #Methods used to register global actions performed on data. See actions listbox
 def transition_to_pending (modeladmin, request, queryset):
     queryset.update(comment = 'pending')
@@ -284,8 +286,8 @@ class ProductAdmin(TranslatableAdmin,OverideExport,ExportActionModelAdmin):
         transition_to_approved,transition_to_rejected]
     exclude = ('date_created','date_lastupdated','code','comment')
     list_filter = (
-        ('location',RelatedOnlyDropdownFilter),
-        ('type',RelatedOnlyDropdownFilter),
+        ('location',TranslatedFieldFilter),
+        ('type',TranslatedFieldFilter),
         ('comment',DropdownFilter),
     )
 
@@ -336,6 +338,6 @@ class ProductDomainAdmin(TranslatableAdmin,OverideExport):
     exclude = ('date_created','date_lastupdated','code',)
     list_per_page = 50 #limit records displayed on admin site to 15
     list_filter = (
-        ('parent',RelatedOnlyDropdownFilter),
-        ('publications',RelatedOnlyDropdownFilter,),#Added 16/12/2019 for lookup
+        ('parent',TranslatedFieldFilter),
+        ('publications',TranslatedFieldFilter,),#Added 16/12/2019 for lookup
     )

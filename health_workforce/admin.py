@@ -20,6 +20,7 @@ from facilities.models import (StgHealthFacility,)
 from regions.models import StgLocation
 from home.models import StgDatasource
 from authentication.models import CustomUser, CustomGroup
+from .filters import TranslatedFieldFilter #Danile solution to duplicate filters
 
 #Methods used to register global actions performed on data. See actions listbox
 def transition_to_pending (modeladmin, request, queryset):
@@ -255,8 +256,6 @@ class ResourceAdmin(TranslatableAdmin,ExportActionModelAdmin):
             actions.pop('delete_selected', None)
         return actions
 
-
-
     fieldsets = (
         ('Publication Attributes', {
                 'fields':('title','type','categorization','location',)
@@ -290,9 +289,9 @@ class ResourceAdmin(TranslatableAdmin,ExportActionModelAdmin):
     list_per_page = 30 #limit records displayed on admin site to 30
     exclude = ('date_created','date_lastupdated','code',)
     list_filter = (
-        ('location',RelatedOnlyDropdownFilter),
-        ('type',RelatedOnlyDropdownFilter),
-        ('categorization',RelatedOnlyDropdownFilter),
+        ('location',TranslatedFieldFilter),
+        ('type',TranslatedFieldFilter),
+        ('categorization',TranslatedFieldFilter),
     )
 
 
@@ -399,8 +398,8 @@ class TrainingInsitutionAdmin(TranslatableAdmin,OverideExport):
     list_per_page = 30 #limit records displayed on admin site to 15
     exclude = ('date_created','date_lastupdated',)
     list_filter = (
-        ('location',RelatedOnlyDropdownFilter),
-        ('type',RelatedOnlyDropdownFilter),
+        ('location',TranslatedFieldFilter),
+        ('type',TranslatedFieldFilter),
     )
 
 
@@ -447,7 +446,7 @@ class HealthCadreAdmin(TranslatableAdmin,OverideExport):
     list_per_page = 30 #limit records displayed on admin site to 15
     exclude = ('date_created','date_lastupdated',)
     list_filter = (
-        ('code',DropdownFilter),
+        ('parent',TranslatedFieldFilter),
     )
 
 
@@ -595,11 +594,11 @@ class HealthworforceFactsAdmin(ExportActionModelAdmin,OverideExport):
     list_per_page = 30 #limit records displayed on admin site to 15
     exclude = ('date_created','date_lastupdated',)
     list_filter = (
-        ('cadre',RelatedOnlyDropdownFilter),
-        ('location', RelatedOnlyDropdownFilter,),
+        ('cadre',TranslatedFieldFilter),
+        ('location', TranslatedFieldFilter,),
         ('period',DropdownFilter),
         ('status',DropdownFilter),
-        ('categoryoption', RelatedOnlyDropdownFilter,),
+        ('categoryoption', TranslatedFieldFilter,),
     )
 
 
@@ -725,7 +724,7 @@ class RecurringEventsAdmin(TranslatableAdmin):
     list_per_page = 30 #limit records displayed on admin site to 30
     exclude = ('date_created','date_lastupdated','code',)
     list_filter = (
-        ('location',RelatedOnlyDropdownFilter),
+        ('location',TranslatedFieldFilter),
     )
 
 
@@ -848,5 +847,5 @@ class EventsAnnouncementAdmin(TranslatableAdmin):
     list_per_page = 50 #limit records displayed on admin site to 30
     exclude = ('date_created','date_lastupdated','code',)
     list_filter = (
-        ('location',RelatedOnlyDropdownFilter),
+        ('location',TranslatedFieldFilter),
     )

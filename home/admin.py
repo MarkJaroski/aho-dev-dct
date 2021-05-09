@@ -15,7 +15,7 @@ from import_export.admin import (ImportExportModelAdmin,
 from django_admin_listfilter_dropdown.filters import (
     DropdownFilter, RelatedDropdownFilter, ChoiceDropdownFilter,
     RelatedOnlyDropdownFilter) #custom import
-
+from .filters import TranslatedFieldFilter #Danile solution to duplicate filters
 
 @admin.register(StgCategoryParent)
 class DisaggregateCategoryAdmin(TranslatableAdmin,OverideExport):
@@ -64,7 +64,7 @@ class DisaggregationAdmin(TranslatableAdmin,OverideExport):
     list_per_page = 15 #limit records displayed on admin site to 15
     exclude = ('date_created','date_lastupdated',)
     list_filter = (
-        ('category',RelatedOnlyDropdownFilter,), #Use the comma for inheritance
+        ('category',TranslatedFieldFilter,), #Use the comma for inheritance
     )
 
 
@@ -120,6 +120,9 @@ class DatasourceAdmin(TranslatableAdmin,OverideExport):
         'code','translations__level') #display search field
     list_per_page = 50 #limit records displayed on admin site to 15
     exclude = ('date_created','date_lastupdated',)
+    list_filter = (
+        ('translations__level',DropdownFilter,), #Use the comma for inheritance
+    )
 
 
 @admin.register(StgMeasuremethod)

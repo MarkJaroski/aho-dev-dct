@@ -110,20 +110,20 @@ class StgServiceDomain(TranslatableModel):
     domain_id = models.AutoField(primary_key=True)
     uuid = uuid = models.CharField(_('Unique ID'),unique=True,max_length=36,
         blank=False,null=False,default=uuid.uuid4,editable=False)
+    code = models.CharField(_('Code'),unique=True, max_length=50, blank=True,
+            null=True)  # Field name made lowercase.
+    category = models.SmallIntegerField(_('Service Category'),choices=(CATEGORY),
+        blank=False,null=False)
+    level = models.CharField(_('Category Level'),max_length=50,
+        choices=make_choices(LEVEL),default=LEVEL[0])
+    parent = models.ForeignKey('self',on_delete=models.CASCADE,
+        blank=True,null=True,verbose_name =_('Parent Domain'),)
     translations = TranslatedFields(
         name = models.CharField(_('Service Name'),max_length=230, blank=False,
             null=False),  # Field name made lowercase.
         shortname = models.CharField(_('Short Name'),max_length=45,null=True),
         description = models.TextField(_('Service Description'),blank=True,null=True)
     )
-    category = models.SmallIntegerField(_('Service Category'),choices=(CATEGORY),
-        blank=False,null=False)
-    level = models.CharField(_('Category Level'),max_length=50,
-        choices=make_choices(LEVEL),default=LEVEL[0])
-    code = models.CharField(_('Code'),unique=True, max_length=50, blank=True,
-            null=True)  # Field name made lowercase.
-    parent = models.ForeignKey('self',on_delete=models.CASCADE,
-        blank=True,null=True,verbose_name =_('Parent Domain'),)
     date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
         auto_now_add=True)
     date_lastupdated = models.DateTimeField(_('Date Modified'),blank=True,
@@ -352,7 +352,7 @@ class StgFacilityServiceAreas(TranslatableModel):
             ),  # Field name made lowercase.
         shortname = models.CharField(_('Short Name'),unique=True,max_length=50,
             blank=False,null=False),  # Field name made lowercase.
-        description = models.TextField(_('Description'),blank=True, null=True)  
+        description = models.TextField(_('Description'),blank=True, null=True)
     )
     date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,
         auto_now_add=True)

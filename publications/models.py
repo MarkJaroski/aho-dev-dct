@@ -129,7 +129,8 @@ class StgKnowledgeProduct(TranslatableModel):
         abstract = models.TextField(_('Abstract/Summary'),blank=True, null=True),
         author = models.CharField(_('Author/Owner'),max_length=200, blank=False,
             null=False),  # Field name made lowercase.
-        year_published=models.PositiveIntegerField(_('Year Published'),null=False,blank=False,
+        year_published=models.PositiveIntegerField(_('Year Published'),
+            null=False,blank=False,
             validators=[MinValueValidator(1900),max_value_current_year],
             default=current_year(),
             help_text=_("This marks year of publication"))

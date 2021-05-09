@@ -1,22 +1,29 @@
-from rest_framework.serializers import (
-    ModelSerializer, HyperlinkedModelSerializer, HyperlinkedRelatedField)
+from parler_rest.serializers import TranslatableModelSerializer
+from rest_framework.serializers import (ModelSerializer,
+        HyperlinkedModelSerializer, HyperlinkedRelatedField)
+from .models import (StgLocationLevel, StgEconomicZones, StgLocation,
+        StgWorldbankIncomegroups,)
 
-from regions.models import (
-    StgLocationLevel, StgEconomicZones, StgLocation)
 
-class StgLocationLevelSerializer(ModelSerializer):
+class StgLocationLevelSerializer(TranslatableModelSerializer):
     class Meta:
         model = StgLocationLevel
-        fields = ['locationlevel_id', 'type', 'name', 'code', 'description']
+        fields = ['uuid', 'type', 'name', 'code', 'description']
 
 
-class StgEconomicZonesSerializer(ModelSerializer):
+class StgEconomicZonesSerializer(TranslatableModelSerializer):
     class Meta:
         model = StgEconomicZones
-        fields = ['economiczone_id', 'name', 'code', 'shortname', 'description']
+        fields = ['uuid', 'name', 'code', 'shortname', 'description']
 
 
-class StgLocationSerializer(ModelSerializer):
+class StgWorldbankIncomegroupsSerializer(TranslatableModelSerializer):
+    class Meta:
+        model = StgWorldbankIncomegroups
+        fields = ['uuid', 'name', 'code', 'shortname', 'description']
+
+
+class StgLocationSerializer(TranslatableModelSerializer):
     class Meta:
         model = StgLocation
         fields = [

@@ -28,15 +28,18 @@ from rest_framework.documentation import (
     include_docs_urls, get_schemajs_view)
 from rest_framework_swagger.views import get_swagger_view
 
-schema_view = get_swagger_view(title='AHO Data Capture API Endpoints')
+schema_view = get_swagger_view(title='iAHO Data Capture API Endpoints')
 
 api_patterns = [
-    path('', views.index, name='index'), # If no APi route load the login page
+    path('', schema_view, name='swagger_docs'), # Load swagger docs page 3/5/21
     path('', include(('regions.urls','regions'),namespace='regions')),
     path('', include(('indicators.urls','indicators'),namespace='indicators')),
     path('', include(('publications.urls','publications'),namespace='publications')),
     path('', include(('elements.urls', 'elements'), namespace='elements')),
     path('', include(('home.urls', 'home'), namespace='home')),
+    path('', include(('facilities.urls', 'facilities'), namespace='facilities')),
+    path('', include(('health_workforce.urls', 'health_workforce'),
+        namespace='health_workforce')),
 ]
 """
 This pattern was added on 25/10/2020 to allow setting of the base/root URL to
@@ -68,13 +71,14 @@ urlpatterns += i18n_patterns ( # must be python immutable list () and not []
         name='password_change_done'),
 
    # API-based URL patterns for hitting KHRO endpoints for consuming data in JSON
+
     path('api/', include((api_patterns, 'api'), namespace='api')),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('api-auth/', include('rest_framework.urls')),
-    path('api/docs/', include_docs_urls(title='AHO-DCT', public=False)),
-    path('api/schema/', get_schemajs_view(title='AHO-DCT', public=False)),
-    path('api/swagger-docs/', schema_view),
+    path('api-auth/', include('rest_framework.urls')), # For browsable REST API
+    path('api/docs/', include_docs_urls(title='iAHO-DCT',public=False)),
+    path('api/schema/', get_schemajs_view(title='iAHO-DCT', public=False)),
+    path('api/swagger-docs/',schema_view),
     # Route that allows display of uploaded files when Debug=False in settings.py
     re_path(r'^media/(?P<path>.*)$',serve,{'document_root':settings.MEDIA_ROOT}),
     prefix_default_language=False # Hide default language code (en) on all urls

@@ -27,6 +27,7 @@ from import_export.admin import (ImportExportModelAdmin, ExportMixin,
     ImportExportActionModelAdmin,ExportActionModelAdmin,)
 from authentication.models import CustomUser, CustomGroup
 from bootstrap_datepicker_plus import DatePickerInput # Nice date picker 06/03
+from .filters import TranslatedFieldFilter #Danile solution to duplicate filters
 
 #Methods used to register global actions performed on data. See actions listbox
 def transition_to_pending (modeladmin, request, queryset):
@@ -216,8 +217,6 @@ class FacilityServiceAvailabilityInline(admin.TabularInline):
         db_sevicedomains = StgServiceDomain.objects.all()
         db_sevicesubdomains=db_sevicedomains.exclude(
             parent_id__isnull=True).filter(category=1)
-
-
         if db_field.name == "domain":
             kwargs["queryset"]=db_sevicesubdomains
 
@@ -377,7 +376,7 @@ class ServiceDomainAdmin(TranslatableAdmin,OverideExport):
     exclude = ('date_created','date_lastupdated','code',)
     list_per_page = 30 #limit records displayed on admin site to 15
     list_filter = (
-        ('parent',RelatedOnlyDropdownFilter),
+        ('parent',TranslatedFieldFilter),
         ('level',DropdownFilter,),# Added 16/12/2019 for M2M lookup
     )
 
@@ -506,9 +505,9 @@ class FacilityAdmin(ImportExportModelAdmin,ImportExportActionModelAdmin):
     exclude = ('date_created','date_lastupdated','code',)
     readonly_fields = ('phone_code',)
     list_filter = (
-        ('location',RelatedOnlyDropdownFilter),
-        ('type',RelatedOnlyDropdownFilter),
-        ('owner',RelatedOnlyDropdownFilter),
+        ('location',TranslatedFieldFilter),
+        ('type',TranslatedFieldFilter),
+        ('owner',TranslatedFieldFilter),
         ('status',DropdownFilter),
     )
 
@@ -619,9 +618,9 @@ class FacilityServiceAvailabilityAdmin(ExportActionModelAdmin,OverideExport):
     list_select_related = ('type','owner','location','owner',)
     readonly_fields = ('name','type','location','admin_location','owner',)
     list_filter = (
-        ('location',RelatedOnlyDropdownFilter),
-        ('type',RelatedOnlyDropdownFilter),
-        ('owner',RelatedOnlyDropdownFilter),
+        ('location',TranslatedFieldFilter),
+        ('type',TranslatedFieldFilter),
+        ('owner',TranslatedFieldFilter),
         ('status',DropdownFilter),
     )
 
@@ -730,9 +729,9 @@ class FacilityServiceProvisionAdmin(ExportActionModelAdmin,OverideExport):
         'owner__translations__name')
     list_per_page = 50 #limit records displayed on admin site to 50
     list_filter = (
-        ('location',RelatedOnlyDropdownFilter),
-        ('type',RelatedOnlyDropdownFilter),
-        ('owner',RelatedOnlyDropdownFilter),
+        ('location',TranslatedFieldFilter),
+        ('type',TranslatedFieldFilter),
+        ('owner',TranslatedFieldFilter),
         ('status',DropdownFilter),
     )
 
@@ -840,9 +839,9 @@ class FacilityServiceReadinessAdmin(ExportActionModelAdmin,OverideExport):
         'owner__translations__name')
     list_per_page = 50 #limit records displayed on admin site to 50
     list_filter = (
-        ('location',RelatedOnlyDropdownFilter),
-        ('type',RelatedOnlyDropdownFilter),
-        ('owner',RelatedOnlyDropdownFilter),
+        ('location',TranslatedFieldFilter),
+        ('type',TranslatedFieldFilter),
+        ('owner',TranslatedFieldFilter),
         ('status',DropdownFilter),
     )
 
@@ -949,7 +948,7 @@ class FacilityServiceInterventionAdmin(TranslatableAdmin):
     exclude = ('date_created','date_lastupdated','code',)
     list_per_page = 30 #limit records displayed on admin site to 15
     list_filter = (
-        ('domain',RelatedOnlyDropdownFilter),
+        ('domain',TranslatedFieldFilter),
     )
 
 
@@ -1002,5 +1001,5 @@ class FacilityServiceAreasAdmin(TranslatableAdmin):
     exclude = ('date_created','date_lastupdated','code',)
     list_per_page = 30 #limit records displayed on admin site to 15
     list_filter = (
-        ('intervention',RelatedOnlyDropdownFilter),
+        ('intervention',TranslatedFieldFilter),
     )

@@ -14,6 +14,7 @@ from import_export.admin import (ExportMixin, ImportExportModelAdmin,
     ImportExportActionModelAdmin,)
 #This is required to limit the import/export fields 26/10/2018
 from import_export import resources
+from .filters import TranslatedFieldFilter #Danile solution to duplicate filters
 
 #the following 3 functions are used to register global actions performed on data
 def pending (modeladmin, request, queryset):
@@ -194,26 +195,28 @@ class LocationAdmin(TranslatableAdmin,OverideExport):
     fieldsets = (
         ('Location Details',{
                 'fields': (
-                    'locationlevel','name','iso_alpha','iso_number','description', )
+                    'locationlevel','name','iso_alpha','iso_number',
+                    'description','wb_income','special', )
             }),
             ('Geo-map Info', {
                 'fields': ('parent','longitude','latitude', 'cordinate',),
             }),
             ('Socioeconomic Status', {
-                'fields': ('wb_income','zone','special',),
+                'fields': ('zone',),
             }),
         )
     resource_class = LocationResourceExport
-    list_display=['name','code','parent','zone','wb_income','locationlevel',]
-    list_select_related = ('locationlevel','parent','wb_income','zone','special',)
+    filter_horizontal = ('zone',)
+    list_display=['name','code','parent','wb_income','locationlevel',]
+    list_select_related = ('locationlevel','parent','wb_income','special',)
     list_display_links = ('code', 'name',) #display as clickable link
     search_fields = ('translations__name','code',) #display search field
 
     list_per_page = 30 #limit records displayed on admin site to 15
     exclude = ('date_created','date_lastupdated',)
     list_filter = (
-        ('locationlevel',RelatedOnlyDropdownFilter),
-        ('parent',RelatedOnlyDropdownFilter),
+        ('locationlevel',TranslatedFieldFilter),
+        ('parent',TranslatedFieldFilter),
     )
 
 
@@ -252,5 +255,5 @@ class LocationCodesAdmin(admin.ModelAdmin):
     list_per_page = 50 #limit records displayed on admin site to 15
     exclude = ('date_created','date_lastupdated',)
     list_filter = (
-        ('location',RelatedOnlyDropdownFilter),
+        ('location',TranslatedFieldFilter),
     )

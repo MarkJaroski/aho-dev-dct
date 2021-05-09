@@ -184,8 +184,10 @@ class StgLocation(TranslatableModel):
         related to other records"))
     wb_income = models.ForeignKey(StgWorldbankIncomegroups, models.PROTECT,
         blank=False,null=False, verbose_name = _('Income level'), default='99')
-    zone = models.ForeignKey(StgEconomicZones, models.PROTECT, blank=False,
-        null=False, verbose_name = _('Economic Block'),default=6)
+    zone = models.ManyToManyField(StgEconomicZones,verbose_name=_('Economic Block'),
+        db_table='stg_economic_group_members',blank=True,)
+    # zone = models.ForeignKey(StgEconomicZones, models.PROTECT, blank=False,
+    #     null=False, verbose_name = _('Economic Block'),default=6)
     special = models.ForeignKey(StgSpecialcategorization, models.PROTECT,
         blank=False, null=False, verbose_name = _('Special Categorization'))
     date_created = models.DateTimeField(_('Date Created'),blank=True, null=True,

@@ -1,20 +1,34 @@
 from rest_framework.serializers import ModelSerializer
-from home.models import (StgDatasource, StgCategoryParent, StgCategoryoption)
+from parler_rest.serializers import TranslatableModelSerializer
+from .models import (StgDatasource, StgCategoryParent,
+    StgCategoryoption,StgValueDatatype,StgMeasuremethod,)
 
 
-class StgDisagregationCategorySerializer(ModelSerializer):
+class StgDisagregationCategorySerializer(TranslatableModelSerializer):
     class Meta:
         model = StgCategoryParent
-        fields = ['category_id', 'name', 'shortname', 'code', 'description',]
+        fields = ['uuid', 'name', 'shortname', 'code', 'description',]
 
 
-class StgDisagregationOptionsSerializer(ModelSerializer):
+class StgDisagregationOptionsSerializer(TranslatableModelSerializer):
     class Meta:
         model = StgCategoryoption
-        fields = ['categoryoption_id', 'category','name', 'shortname', 'code',
+        fields = ['uuid', 'category','name', 'shortname', 'code',
                 'description']
 
-class StgDatasourceSerializer(ModelSerializer):
+class StgDatasourceSerializer(TranslatableModelSerializer):
     class Meta:
         model = StgDatasource
-        fields = ['datasource_id', 'name', 'shortname', 'code','description']
+        fields = ['uuid', 'name', 'shortname', 'code','description']
+
+
+class StgValueDatatypeSerializer(TranslatableModelSerializer):
+    class Meta:
+        model = StgValueDatatype
+        fields = ['uuid', 'name', 'shortname', 'code','description']
+
+
+class StgMeasuremethodSerializer(TranslatableModelSerializer):
+    class Meta:
+        model = StgMeasuremethod
+        fields = ['uuid', 'name', 'code','description']

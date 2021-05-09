@@ -4,6 +4,7 @@ from django.conf import settings # for resolving translation issues
 from django.utils import timezone
 import datetime
 from regions.models import StgLocation
+from authentication.models import CustomUser
 from django.utils.translation import gettext_lazy as _ # The _ is alias for gettext
 from parler.models import TranslatableModel,TranslatedFields
 from django.core.exceptions import ValidationError
@@ -60,6 +61,8 @@ class FactDataElement(models.Model):
     fact_id = models.AutoField(primary_key=True)  # Field name made lowercase.
     uuid = uuid = models.CharField(unique=True,max_length=36, blank=False,
         null=False,default=uuid.uuid4,editable=False,verbose_name=_('Unique ID'))
+    user = models.ForeignKey(CustomUser, models.PROTECT,default=2,
+        verbose_name='User Name (Email)') # request helper field
     dataelement = models.ForeignKey(StgDataElement, models.PROTECT,
         verbose_name =_('Data Element'))  # Field name made lowercase.
     location = models.ForeignKey(StgLocation,models.PROTECT,
