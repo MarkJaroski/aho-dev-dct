@@ -3,7 +3,7 @@ from .settings import *
 DEBUG = True # Will be moved to external variables in Phase 2
 # Configure default domain name
 ALLOWED_HOSTS = [os.environ['WEBSITE_SITE_NAME'] + '.azurewebsites.net',
-'*','dct.aho.afro.who.int'] if 'WEBSITE_SITE_NAME' in os.environ else []
+'*','af-aho-datacapturetool-noauth.azurewebsites.net'] if 'WEBSITE_SITE_NAME' in os.environ else []
 
 # WhiteNoise configuration
 MIDDLEWARE = [
