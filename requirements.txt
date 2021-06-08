@@ -19,3 +19,4 @@ git+git://github.com/ahoazure/django-admin-menu.git
 git+git://github.com/ahoazure/django-data-wizard.git
 Pillow>=6.0.0
 python-dotenv
+social-auth-app-django
