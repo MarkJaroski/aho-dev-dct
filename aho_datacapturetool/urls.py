@@ -50,7 +50,6 @@ urlpatterns = [
 ]
 
 urlpatterns += i18n_patterns ( # must be python immutable list () and not []
-    path('social-auth/', include('social_django.urls', namespace="social")),
     path('', views.index, name='index'),
     path('admin/', admin.site.urls,name='dashboard'),
     path('accounts/login/', views.login_view, name='login'),

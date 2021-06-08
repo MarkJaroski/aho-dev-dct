@@ -11,19 +11,16 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 from django.utils.translation import ugettext_lazy as _
 import os
-import dotenv
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-dotenv_file = os.path.join(BASE_DIR, ".env")
-if os.path.isfile(dotenv_file):
-    dotenv.load_dotenv(dotenv_file)
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ['SECRET_KEY'] # get secret key from the environ variables
+SECRET_KEY = 'jz&%c@07o%z_mo&qs2t@-io)vm5ul_0j*kwm@#&m0m4nf7j5a^'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -57,8 +54,6 @@ INSTALLED_APPS = [
     'rest_framework', # register Django
     'rest_framework_swagger',
     'django_admin_listfilter_dropdown',
-    # 3rd party SSO authentication packages for Google, Facebook and Azure AD
-    'social_django',
 ]
 
 DATA_WIZARD = {
@@ -140,11 +135,11 @@ WSGI_APPLICATION = 'aho_datacapturetool.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': os.environ['DBENGINE'],
-        'NAME': os.environ['DBNAME'],
-        'HOST': os.environ['DBHOST'],
-        'USER': os.environ['DBUSER'],
-        'PASSWORD': os.environ['DBPASS'],
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'aho_azure_database', #temporary
+		'HOST': 'localhost',
+		'USER': 'ahodbadmin',
+		'PASSWORD': 'Aho@1234',
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
             'ssl': {'ca': '/site/cert/BaltimoreCyberTrustRoot.crt.pem'}
