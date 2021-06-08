@@ -11,16 +11,19 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 from django.utils.translation import ugettext_lazy as _
 import os
+import dotenv
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+# Add .env variables before assiging the values to the SECRET_KEY variable
+dotenv_file = os.path.join(BASE_DIR, ".env")
+if os.path.isfile(dotenv_file):
+    dotenv.load_dotenv(dotenv_file)
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'jz&%c@07o%z_mo&qs2t@-io)vm5ul_0j*kwm@#&m0m4nf7j5a^'
+SECRET_KEY = os.environ['SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -163,8 +166,8 @@ AUTHENTICATION_BACKENDS = [
 
 
 #Facebook authnetication keys for SSO
-SOCIAL_AUTH_FACEBOOK_KEY = '145244124328202'        # App ID
-SOCIAL_AUTH_FACEBOOK_SECRET = '4ec7aa6b4517abba82050319379fae94'  # App Secret
+SOCIAL_AUTH_FACEBOOK_KEY = os.environ['SOCIAL_AUTH_FACEBOOK_KEY']      # App ID
+SOCIAL_AUTH_FACEBOOK_SECRET = os.environ['SOCIAL_AUTH_FACEBOOK_SECRET']  # App Secret
 SOCIAL_AUTH_FACEBOOK_SCOPE = ['email', 'user_link'] # add this
 SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {       # add this
   'fields': 'id, name, email, picture.type(large), link'
@@ -177,14 +180,14 @@ SOCIAL_AUTH_FACEBOOK_EXTRA_DATA = [                 # add this
 ]
 
 # Google authnetication keys for SSO
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '476751384586-u2aa5ec055sh7d9nsduoq935l6gqt0gc.apps.googleusercontent.com'
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = 'uqjDh4Yo9M203QTGP1fFp_Bm'
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.environ['SOCIAL_AUTH_GOOGLE_OAUTH2_KEY']
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.environ['SOCIAL_AUTH_FACEBOOK_KEY']
 
 
 # Microft Azure AD authnetication keys for SSO
-SOCIAL_AUTH_AZUREAD_OAUTH2_KEY = 'd1103fb4-2480-4a25-80f0-ba36b2b81be7'
-SOCIAL_AUTH_AZUREAD_OAUTH2_SECRET = '3yM9vd~B.I~F0O8X2v_kzoM.7XrU_JJg6H'
-SOCIAL_AUTH_AZUREAD_TENANT_OAUTH2_TENANT_ID = 'f610c0b7-bd24-4b39-810b-3dc280afb590'
+SOCIAL_AUTH_AZUREAD_OAUTH2_KEY = os.environ['SOCIAL_AUTH_AZUREAD_OAUTH2_KEY']
+SOCIAL_AUTH_AZUREAD_OAUTH2_SECRET = os.environ['SOCIAL_AUTH_AZUREAD_OAUTH2_SECRET']
+SOCIAL_AUTH_AZUREAD_TENANT_OAUTH2_TENANT_ID = os.environ['SOCIAL_AUTH_AZUREAD_TENANT_OAUTH2_TENANT_ID']
 SOCIAL_AUTH_ADMIN_USER_SEARCH_FIELDS = ['username', 'first_name', 'last_name', 'email']
 SOCIAL_AUTH_AZUREAD_OAUTH2_RESOURCE = 'https://graph.microsoft.com/'# Not sure whether needed for DCT
 
