@@ -23,60 +23,32 @@
                 {% csrf_token %}
                 <table class="table">
 									<div>
-										<img src="{% static "aho_en.png" %}" class="logo">
+										<img src="{% static "iaho_logo.png" %}" class="logo">
 									</div>
 									{% if error_message %}
-									<div class="login-valivation alert alert-danger">
+									<div class="login-validation alert alert-danger">
 										<p>
 										{{error_message}}
 										</p>
 									</div>
 									{% endif %}
-										<tr>
-                        <td>
-													<label for="id_username" class="labels">{% trans "Username" %}</label>
-												</td>
-                        <td>
-													<input type="text" name="username" class="form-control" required="" placeholder="myemail@who.int">
-												</td>
-                    </tr>
 
-										<tr>
-                        <td>
-													<label for="id_password" class="labels">{% trans "Password" %} </label>
-												</td>
-                        <td>
-													<input type="password" name="password" class="form-control" required="" placeholder="Mysecret.pass">
-												</td>
-                    </tr>
+									<div class="row">
+											<div class="col-md-8 mx-auto social-container my-2 order-md-1">
+													<button class="btn btn-danger  mb-2">
+															<a href="{% url 'social:begin' 'google-oauth2' %}">{% trans 'Login with Google' %} </a>
+													</button>
+													<button class="btn btn-info mb-2">
+															<a href="{% url 'social:begin' 'azuread-tenant-oauth2' %}">{% trans 'Login with Microsoft' %}</a>
+													</button>
+
+
+											</div>
+									</div>
                 </table>
-
-                <input type="submit" value={% trans "Login" %} class="btn btn-primary pull-right" />
-                <input type="hidden" name="next" value="{{ next }}" />
 					  </form>
-						<h5 class="labels"> {% trans "Choose language" %} </h5>
-						<form action="{% url 'set_language' %}" method="post">
-							{% csrf_token %}
-							<input name="next" type="hidden" value="{{ redirect_to }}">
-							<select name="language" onChange="form.submit();";>
-									{% get_current_language as LANGUAGE_CODE %}
-									{% get_available_languages as LANGUAGES %}
-									{% get_language_info_list for LANGUAGES as languages %}
-									{% for language in languages %}
-											<option value="{{ language.code }}"{% if language.code == LANGUAGE_CODE %} selected{% endif %}>
-													{{ language.name_local|title }} ({{ language.code }})
-											</option>
-									{% endfor %}
-							</select>
-						</form>
-
-						<div id="password-reset-link">
-								<a href="{% url 'password_reset' %}">{% trans "Forgot your password?" %}</a>
-						</div>
-
-						</div>
 					</div>
-
+					</div>
 				</div>
 
 			</div>

@@ -138,7 +138,7 @@ WSGI_APPLICATION = 'aho_datacapturetool.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'aho_azure_database', #temporary
+        'NAME': 'aho_dev_database', #temporary
 		'HOST': 'localhost',
 		'USER': 'ahodbadmin',
 		'PASSWORD': 'Aho@1234',
@@ -151,6 +151,43 @@ DATABASES = {
 
 # custom user authentication and Password validation settings
 AUTH_USER_MODEL = 'authentication.CustomUser'
+
+#add this
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend', # Fall back admin authentication
+    'social_core.backends.facebook.FacebookOAuth2', #Facebook SSO 04/06/2021
+    'social_core.backends.google.GoogleOAuth2', # New for google SSO 05/06/2021
+    'social_core.backends.azuread.AzureADOAuth2', # Microsoft Aazure AD pending
+    'social_core.backends.azuread_tenant.AzureADTenantOAuth2', # Microsoft Aazure AD pending
+]
+
+
+#Facebook authnetication keys for SSO
+SOCIAL_AUTH_FACEBOOK_KEY = '145244124328202'        # App ID
+SOCIAL_AUTH_FACEBOOK_SECRET = '4ec7aa6b4517abba82050319379fae94'  # App Secret
+SOCIAL_AUTH_FACEBOOK_SCOPE = ['email', 'user_link'] # add this
+SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {       # add this
+  'fields': 'id, name, email, picture.type(large), link'
+}
+SOCIAL_AUTH_FACEBOOK_EXTRA_DATA = [                 # add this
+    ('name', 'name'),
+    ('email', 'email'),
+    ('picture', 'picture'),
+    ('link', 'profile_url'),
+]
+
+# Google authnetication keys for SSO
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '476751384586-u2aa5ec055sh7d9nsduoq935l6gqt0gc.apps.googleusercontent.com'
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = 'uqjDh4Yo9M203QTGP1fFp_Bm'
+
+
+# Microft Azure AD authnetication keys for SSO
+SOCIAL_AUTH_AZUREAD_OAUTH2_KEY = 'd1103fb4-2480-4a25-80f0-ba36b2b81be7'
+SOCIAL_AUTH_AZUREAD_OAUTH2_SECRET = '460707ea-3675-43a4-9c41-04332ce8441a'
+SOCIAL_AUTH_AZUREAD_TENANT_OAUTH2_TENANT_ID = 'f610c0b7-bd24-4b39-810b-3dc280afb590'
+SOCIAL_AUTH_ADMIN_USER_SEARCH_FIELDS = ['username', 'first_name', 'last_name', 'email']
+SOCIAL_AUTH_AZUREAD_OAUTH2_RESOURCE = 'https://graph.microsoft.com/'# Not sure whether needed for DCT
+
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -208,6 +245,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'repository/') # Path where media is stored
 #display the AHO logo on the login screen and admin page
 ADMIN_LOGO = 'dashboard_logo.png'
 LOGOUT_REDIRECT_URL='/'
+LOGIN_REDIRECT_URL = 'admin:index' # redirect to django admin dashboard
 
 ADMIN_STYLE = {
     'background': 'white',
